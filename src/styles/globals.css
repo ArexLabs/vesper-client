@@ -1,0 +1,238 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-VariableItalic.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --bg: 220 7% 8.4%;
+  --surface-1: 217.5 12.5% 12.5%;
+  --surface-2: 218 12% 15.5%;
+  --surface-3: 218 11% 19%;
+  --border: 220 16% 100% / 0.09;
+  --muted: 221 16% 18%;
+  --text: 220 22% 93%;
+  --text-muted: 220 14% 67%;
+  --accent: 26.6 100% 82.7%;
+  --accent-foreground: 24 25% 10%;
+  --ring: 26.6 100% 82.7%;
+  --shadow: 0 14px 36px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --radius: 14px;
+
+  --success: 147 62% 43%;
+  --warning: 26.6 100% 82.7%;
+  --danger: 0 72% 58%;
+
+  /* shadcn semantic tokens */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface-2);
+  --card-foreground: var(--text);
+  --popover: var(--surface-2);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-foreground);
+  --secondary: var(--surface-3);
+  --secondary-foreground: var(--text);
+  --muted-foreground: var(--text-muted);
+  --destructive: var(--danger);
+  --destructive-foreground: 0 0% 98%;
+  --input: var(--surface-3);
+
+  --sidebar: var(--surface-1);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: var(--accent-foreground);
+  --sidebar-accent: var(--surface-3);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: 220 16% 100% / 0.09;
+  --sidebar-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    @apply min-h-screen;
+  }
+
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(255, 206, 167, 0.08), transparent 32%),
+      radial-gradient(circle at 86% 12%, rgba(255, 206, 167, 0.06), transparent 36%),
+      radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.018), transparent 52%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0));
+  }
+
+  * {
+    scrollbar-color: rgba(255, 206, 167, 0.4) rgba(255, 255, 255, 0.03);
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  *::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255, 206, 167, 0.7), rgba(255, 206, 167, 0.35));
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(255, 206, 167, 0.82), rgba(255, 206, 167, 0.46));
+    background-clip: padding-box;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply tracking-tight;
+  }
+
+  button,
+  input,
+  select,
+  textarea,
+  summary {
+    @apply focus-visible:outline-none;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-[var(--radius)] border shadow-panel;
+    background-color: hsl(var(--surface-2) / 0.92);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0));
+  }
+
+  .panel-soft {
+    @apply rounded-[calc(var(--radius)-2px)] border;
+    background-color: hsl(var(--surface-1) / 0.85);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0));
+  }
+
+  .section-shell {
+    @apply rounded-[calc(var(--radius)+2px)] border shadow-panel;
+    background-color: hsl(var(--surface-1) / 0.7);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0));
+  }
+
+  .field {
+    @apply h-10 w-full rounded-[calc(var(--radius)-4px)] border px-3 text-sm text-text transition;
+    background-color: hsl(var(--surface-1) / 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  }
+
+  .field::placeholder {
+    @apply text-textMuted;
+  }
+
+  .field:hover {
+    @apply border-white/15 bg-surface1;
+  }
+
+  .field:focus-visible {
+    @apply border-white/15 ring-2;
+    --tw-ring-color: hsl(var(--ring) / 0.25);
+  }
+
+  .field-invalid {
+    @apply ring-2;
+    border-color: hsl(var(--danger) / 0.45);
+    --tw-ring-color: hsl(var(--danger) / 0.15);
+  }
+
+  .field-mono {
+    @apply field font-mono text-[12px] leading-5;
+  }
+
+  .select-field {
+    @apply field appearance-none bg-[linear-gradient(45deg,transparent_50%,rgba(255,255,255,0.55)_50%),linear-gradient(135deg,rgba(255,255,255,0.55)_50%,transparent_50%),linear-gradient(to_right,transparent,transparent)] bg-[position:calc(100%-16px)_16px,calc(100%-11px)_16px,100%_0] bg-[size:5px_5px,5px_5px,2.4rem_100%] bg-no-repeat pr-10;
+  }
+
+  .label {
+    @apply text-xs font-semibold tracking-[0.02em] text-textMuted;
+  }
+
+  .muted {
+    @apply text-sm text-textMuted;
+  }
+
+  .helper {
+    @apply text-xs leading-5 text-textMuted;
+  }
+
+  .kbd {
+    @apply inline-flex h-6 items-center rounded-md border px-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-textMuted;
+    background-color: hsl(var(--muted) / 0.55);
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-md bg-white/5;
+  }
+
+  .focus-ring {
+    @apply focus-visible:ring-2 focus-visible:ring-offset-0;
+  }
+
+  .focus-ring:focus-visible {
+    --tw-ring-color: hsl(var(--ring) / 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
