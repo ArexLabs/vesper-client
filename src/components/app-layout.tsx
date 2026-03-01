@@ -1,10 +1,10 @@
-import { Activity, Boxes, Compass, Settings2, SlidersHorizontal } from "lucide-react";
-import { useEffect } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
+import { Activity, Boxes, Compass, Settings2, SlidersHorizontal } from "lucide-react";
+import { useEffect } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 export function AppLayout() {
   const boot = useLauncherStore((s) => s.boot);
@@ -114,7 +114,9 @@ export function AppLayout() {
               <div className="grid min-h-[50vh] place-items-center">
                 <div className="panel w-full max-w-md p-6 text-center">
                   <div className="mb-2 text-sm font-semibold">Initializing Vesper</div>
-                  <div className="text-sm text-textMuted">Loading state and validating schemas…</div>
+                  <div className="text-sm text-textMuted">
+                    Loading state and validating schemas…
+                  </div>
                 </div>
               </div>
             ) : (

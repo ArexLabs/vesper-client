@@ -1,5 +1,5 @@
-import type { CSSProperties, HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import type { CSSProperties, HTMLAttributes } from "react";
 
 type AssetIconProps = HTMLAttributes<HTMLSpanElement> & {
   src: string;
@@ -13,5 +13,12 @@ export function AssetIcon({ className, src, style, ...props }: AssetIconProps) {
     mask: `url(${src}) center / contain no-repeat`,
   } satisfies CSSProperties;
 
-  return <span aria-hidden="true" className={cn("inline-block shrink-0 bg-current", className)} style={iconStyle} {...props} />;
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("inline-block shrink-0 bg-current", className)}
+      style={iconStyle}
+      {...props}
+    />
+  );
 }

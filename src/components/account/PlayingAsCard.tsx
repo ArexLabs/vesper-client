@@ -1,8 +1,8 @@
-import { ChevronUp, ExternalLink, LogOut, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
+import { ChevronUp, ExternalLink, LogOut, Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type LoginFlowState = {
   sessionId: string;
@@ -174,7 +174,9 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
           : "pointer-events-none -mb-2 h-0 w-0 opacity-0 scale-90",
       )}
       onClick={() => setShowLoginPanel((current) => !current)}
-      aria-label={isLoggedIn ? `Open player switcher for ${displayName}` : "Open player login panel"}
+      aria-label={
+        isLoggedIn ? `Open player switcher for ${displayName}` : "Open player login panel"
+      }
       tabIndex={collapsed ? 0 : -1}
     >
       <ChevronUp
@@ -186,37 +188,35 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
     </button>
   );
 
-  const expandedAction = !collapsed
-    ? isLoggedIn
-      ? (
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            aria-label="Log out Microsoft account"
-            title="Log out"
-            onClick={() => void signOut()}
-            disabled={isLoggingOut}
-            className="ml-auto h-9 w-9 text-textMuted transition-[opacity,transform] duration-300 ease-in-out hover:bg-white/6 hover:text-text"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        )
-      : (
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            aria-label="Log in with Microsoft"
-            title="Log in with Microsoft"
-            onClick={() => void startLogin()}
-            disabled={isStartingLogin}
-            className="ml-auto h-9 w-9 border-white/10 bg-[#11161c] transition-[opacity,transform] duration-300 ease-in-out hover:bg-white/6"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        )
-    : null;
+  const expandedAction = !collapsed ? (
+    isLoggedIn ? (
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        aria-label="Log out Microsoft account"
+        title="Log out"
+        onClick={() => void signOut()}
+        disabled={isLoggingOut}
+        className="ml-auto h-9 w-9 text-textMuted transition-[opacity,transform] duration-300 ease-in-out hover:bg-white/6 hover:text-text"
+      >
+        <LogOut className="h-4 w-4" />
+      </Button>
+    ) : (
+      <Button
+        type="button"
+        size="icon"
+        variant="outline"
+        aria-label="Log in with Microsoft"
+        title="Log in with Microsoft"
+        onClick={() => void startLogin()}
+        disabled={isStartingLogin}
+        className="ml-auto h-9 w-9 border-white/10 bg-[#11161c] transition-[opacity,transform] duration-300 ease-in-out hover:bg-white/6"
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+    )
+  ) : null;
 
   return (
     <div className={cn("relative", collapsed && "justify-self-center")}>
@@ -230,7 +230,9 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
         <div
           className={cn(
             "z-50 w-[320px] rounded-3xl border border-white/10 bg-[#11161c]/95 p-3 shadow-lift backdrop-blur sm:w-[360px]",
-            collapsed ? "absolute bottom-0 left-[calc(100%+12px)]" : "absolute bottom-[calc(100%+8px)] left-0",
+            collapsed
+              ? "absolute bottom-0 left-[calc(100%+12px)]"
+              : "absolute bottom-[calc(100%+8px)] left-0",
           )}
         >
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -248,17 +250,26 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
           {loginFlow ? (
             <div className="grid gap-3">
               <div className="text-xs leading-5 text-textMuted">
-                Open Microsoft and enter this code to continue. The launcher will finish sign-in automatically after authorization.
+                Open Microsoft and enter this code to continue. The launcher will finish sign-in
+                automatically after authorization.
               </div>
               <div className="rounded-md border border-border bg-bg px-3 py-2">
                 <div className="text-[10px] uppercase tracking-[0.16em] text-textMuted">Code</div>
-                <div className="font-mono text-lg font-semibold tracking-[0.15em] text-text">{loginFlow.userCode}</div>
+                <div className="font-mono text-lg font-semibold tracking-[0.15em] text-text">
+                  {loginFlow.userCode}
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
                   type="button"
                   size="sm"
-                  onClick={() => window.open(loginFlow.verificationUriComplete ?? loginFlow.verificationUri, "_blank", "noopener,noreferrer")}
+                  onClick={() =>
+                    window.open(
+                      loginFlow.verificationUriComplete ?? loginFlow.verificationUri,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Open Microsoft
@@ -288,27 +299,46 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
                   decoding="async"
                 />
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-textMuted">Playing As</div>
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-textMuted">
+                    Playing As
+                  </div>
                   <div className="truncate text-sm font-semibold text-text">{displayName}</div>
                   <div className="truncate text-[11px] text-textMuted">Microsoft connected</div>
                 </div>
               </div>
-              <Button type="button" size="sm" variant="outline" onClick={() => void signOut()} disabled={isLoggingOut}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void signOut()}
+                disabled={isLoggingOut}
+              >
                 <LogOut className="h-3.5 w-3.5" />
                 Sign Out
               </Button>
             </div>
           ) : (
             <div className="grid gap-2">
-              <div className="text-xs text-textMuted">Start a Microsoft device login flow to sign into Minecraft securely.</div>
-              <Button type="button" size="sm" onClick={() => void startLogin()} disabled={isStartingLogin}>
+              <div className="text-xs text-textMuted">
+                Start a Microsoft device login flow to sign into Minecraft securely.
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void startLogin()}
+                disabled={isStartingLogin}
+              >
                 <Plus className="h-3.5 w-3.5" />
                 Start Login
               </Button>
             </div>
           )}
 
-          {localError ? <div className="mt-3 rounded-md border border-danger/25 bg-danger/10 px-2 py-1.5 text-xs text-danger">{localError}</div> : null}
+          {localError ? (
+            <div className="mt-3 rounded-md border border-danger/25 bg-danger/10 px-2 py-1.5 text-xs text-danger">
+              {localError}
+            </div>
+          ) : null}
           {!localError && authRuntimeMessage ? (
             <div className="mt-3 rounded-md border border-borderSoft bg-surface1 px-2 py-1.5 text-xs text-textMuted">
               {authRuntimeMessage}

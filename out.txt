@@ -1,0 +1,1 @@
+src/lib/ipc.ts(206,3): error TS2739: Type '{ source: "modrinth"; projectId: string; title: string; summary: string; downloads: number; iconUrl: string | null; url: string | null; author: string | null; }' is missing the following properties from type 'DiscoverSearchResult': loaders, latestVersion

@@ -55,6 +55,7 @@ struct DiscoverSearchInput {
     loader: Option<String>,
     game_version: Option<String>,
     limit: Option<u32>,
+    offset: Option<u32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -230,7 +231,8 @@ fn default_launcher_config() -> Value {
             "width": 1280,
             "height": 800,
             "fullscreen": false
-        }
+        },
+        "globalVersionFilter": null
     })
 }
 
@@ -671,6 +673,24 @@ fn map_modrinth_hit(hit: &Value) -> Value {
         .or_else(|| hit.get("id").and_then(Value::as_str))
         .unwrap_or_default();
 
+    let loaders: Vec<String> = hit
+        .get("categories")
+        .and_then(Value::as_array)
+        .map(|cats| {
+            cats.iter()
+                .filter_map(Value::as_str)
+                .map(String::from)
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let latest_version = hit
+        .get("versions")
+        .and_then(Value::as_array)
+        .and_then(|v| v.last())
+        .and_then(Value::as_str)
+        .unwrap_or("Unknown");
+
     json!({
         "source": "modrinth",
         "projectId": project_id,
@@ -680,6 +700,8 @@ fn map_modrinth_hit(hit: &Value) -> Value {
         "iconUrl": hit.get("icon_url").and_then(Value::as_str),
         "url": if slug.is_empty() { Value::Null } else { Value::String(format!("https://modrinth.com/mod/{slug}")) },
         "author": hit.get("author").and_then(Value::as_str),
+        "loaders": loaders,
+        "latestVersion": latest_version,
     })
 }
 
@@ -703,6 +725,54 @@ fn map_curseforge_mod(raw: &Value) -> Value {
         .and_then(|a| a.get("name"))
         .and_then(Value::as_str);
 
+    let mut loaders = Vec::new();
+    let mut latest_version = "Unknown".to_string();
+
+    if let Some(files) = raw.get("latestFilesIndexes").and_then(Value::as_array) {
+        if let Some(first_file) = files.first() {
+            if let Some(gv) = first_file.get("gameVersion").and_then(Value::as_str) {
+                latest_version = gv.to_string();
+            }
+        }
+        for file in files {
+            if let Some(mod_loader) = file.get("modLoader").and_then(Value::as_u64) {
+                let loader_str = match mod_loader {
+                    1 => "forge",
+                    4 => "fabric",
+                    5 => "quilt",
+                    6 => "neoforge",
+                    _ => continue,
+                };
+                if !loaders.contains(&loader_str.to_string()) {
+                    loaders.push(loader_str.to_string());
+                }
+            }
+        }
+    }
+
+    // fallback extraction for loaders if index is missing it (sometimes happens on CF)
+    if loaders.is_empty() {
+        if let Some(categories) = raw.get("categories").and_then(Value::as_array) {
+            for cat in categories {
+                if let Some(name) = cat.get("name").and_then(Value::as_str) {
+                    let s = name.to_lowercase();
+                    if s.contains("fabric") && !loaders.contains(&"fabric".to_string()) {
+                        loaders.push("fabric".to_string());
+                    }
+                    if s.contains("forge") && !loaders.contains(&"forge".to_string()) {
+                        loaders.push("forge".to_string());
+                    }
+                    if s.contains("quilt") && !loaders.contains(&"quilt".to_string()) {
+                        loaders.push("quilt".to_string());
+                    }
+                    if s.contains("neoforge") && !loaders.contains(&"neoforge".to_string()) {
+                        loaders.push("neoforge".to_string());
+                    }
+                }
+            }
+        }
+    }
+
     json!({
         "source": "curseforge",
         "projectId": id.to_string(),
@@ -712,6 +782,8 @@ fn map_curseforge_mod(raw: &Value) -> Value {
         "iconUrl": icon,
         "url": website,
         "author": author,
+        "loaders": loaders,
+        "latestVersion": latest_version,
     })
 }
 
@@ -721,9 +793,6 @@ fn discover_search_modrinth(
     input: DiscoverSearchInput,
 ) -> Result<Vec<Value>, String> {
     let query = input.query.trim();
-    if query.is_empty() {
-        return Ok(vec![]);
-    }
 
     let limit = input.limit.unwrap_or(20).clamp(1, 60);
     let mut url = Url::parse(MODRINTH_SEARCH_URL).map_err(|e| e.to_string())?;
@@ -748,11 +817,16 @@ fn discover_search_modrinth(
     }
 
     let facets_json = serde_json::to_string(&facets).map_err(|e| e.to_string())?;
-    url.query_pairs_mut()
-        .append_pair("query", query)
-        .append_pair("limit", &limit.to_string())
-        .append_pair("index", "relevance")
-        .append_pair("facets", &facets_json);
+    {
+        let mut qp = url.query_pairs_mut();
+        qp.append_pair("query", query);
+        qp.append_pair("limit", &limit.to_string());
+        if let Some(offset) = input.offset {
+            qp.append_pair("offset", &offset.to_string());
+        }
+        qp.append_pair("index", "relevance");
+        qp.append_pair("facets", &facets_json);
+    }
 
     let client = http_client()?;
     let response = client
@@ -780,9 +854,6 @@ fn discover_search_curseforge(
     input: DiscoverSearchInput,
 ) -> Result<Vec<Value>, String> {
     let query = input.query.trim();
-    if query.is_empty() {
-        return Ok(vec![]);
-    }
 
     let api_key = curseforge_api_key()?;
     let limit = input.limit.unwrap_or(20).clamp(1, 50);
@@ -795,6 +866,9 @@ fn discover_search_curseforge(
         qp.append_pair("classId", "6");
         qp.append_pair("searchFilter", query);
         qp.append_pair("pageSize", &limit.to_string());
+        if let Some(offset) = input.offset {
+            qp.append_pair("index", &offset.to_string());
+        }
         if let Some(version) = input
             .game_version
             .as_ref()
@@ -1325,7 +1399,9 @@ pub fn run() {
             secure_store_write_placeholder,
             secure_store_read_placeholder,
             discover_search_modrinth,
-            discover_download_modrinth
+            discover_download_modrinth,
+            discover_search_curseforge,
+            discover_download_curseforge
         ])
         .run(tauri::generate_context!())
         .expect("error while running Vesper Launcher");

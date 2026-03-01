@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { diffLauncherConfig, mergeLauncherConfig } from "@/lib/config";
 import { defaultGlobalConfig } from "@/lib/dummy";
+import { describe, expect, it } from "vitest";
 
 describe("config helpers", () => {
   it("merges and creates diff-only overrides", () => {

@@ -15,13 +15,16 @@ const launcherConfigBaseSchema = z.object({
     height: z.number().int().min(360).max(4320),
     fullscreen: z.boolean(),
   }),
+  globalVersionFilter: z.string().nullable().default(null),
 });
 
-export const launcherConfigSchema = launcherConfigBaseSchema
-  .refine((cfg) => cfg.memoryMbMax >= cfg.memoryMbMin, {
+export const launcherConfigSchema = launcherConfigBaseSchema.refine(
+  (cfg) => cfg.memoryMbMax >= cfg.memoryMbMin,
+  {
     path: ["memoryMbMax"],
     message: "memoryMbMax must be >= memoryMbMin",
-  });
+  },
+);
 
 export const launcherConfigPatchSchema = launcherConfigBaseSchema.deepPartial().refine(
   (cfg) => {

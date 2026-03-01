@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
+    "dev": "npm run tauri:dev",
+    "vite:dev": "node ./node_modules/vite/bin/vite.js",
     "build": "node ./node_modules/vite/bin/vite.js build",
     "preview": "node ./node_modules/vite/bin/vite.js preview",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
@@ -17,6 +18,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@heroicons/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.2",
     "@tauri-apps/api": "^2.0.0",
@@ -25,6 +27,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.34.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.468.0",
     "next-themes": "^0.4.6",

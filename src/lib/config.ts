@@ -30,13 +30,17 @@ export function mergeLauncherConfig(
   return launcherConfigSchema.parse(out);
 }
 
-export function diffLauncherConfig(base: LauncherConfig, next: LauncherConfig): LauncherConfigPatch {
+export function diffLauncherConfig(
+  base: LauncherConfig,
+  next: LauncherConfig,
+): LauncherConfigPatch {
   const patch: LauncherConfigPatch = {};
   if (base.javaPath !== next.javaPath) patch.javaPath = next.javaPath;
   if (base.memoryMbMin !== next.memoryMbMin) patch.memoryMbMin = next.memoryMbMin;
   if (base.memoryMbMax !== next.memoryMbMax) patch.memoryMbMax = next.memoryMbMax;
   if (!sameArray(base.jvmArgs, next.jvmArgs)) patch.jvmArgs = [...next.jvmArgs];
-  if (!sameArray(base.rendererFlags, next.rendererFlags)) patch.rendererFlags = [...next.rendererFlags];
+  if (!sameArray(base.rendererFlags, next.rendererFlags))
+    patch.rendererFlags = [...next.rendererFlags];
   if (!sameArray(base.launchArgs, next.launchArgs)) patch.launchArgs = [...next.launchArgs];
   const windowPatch: NonNullable<LauncherConfigPatch["window"]> = {};
   if (base.window.width !== next.window.width) windowPatch.width = next.window.width;
@@ -49,11 +53,17 @@ export function diffLauncherConfig(base: LauncherConfig, next: LauncherConfig): 
 }
 
 export function resolveInstanceConfig(state: AppState, instance: Instance): LauncherConfig {
-  const preset = instance.presetId ? state.presets.find((p) => p.id === instance.presetId) ?? null : null;
+  const preset = instance.presetId
+    ? (state.presets.find((p) => p.id === instance.presetId) ?? null)
+    : null;
   return mergeLauncherConfig(state.globalDefaults, preset?.configPatch, instance.overrides);
 }
 
-export function buildInstanceSnapshot(state: AppState, instance: Instance, note: string): InstanceSnapshot {
+export function buildInstanceSnapshot(
+  state: AppState,
+  instance: Instance,
+  note: string,
+): InstanceSnapshot {
   return {
     id: safeRandomId("snap"),
     createdAt: new Date().toISOString(),

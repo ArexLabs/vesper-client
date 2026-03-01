@@ -46,10 +46,11 @@ export type DiscoverSearchInput = {
   loader?: string | null;
   gameVersion?: string | null;
   limit?: number | null;
+  offset?: number | null;
 };
 
 export type DiscoverSearchResult = {
-  source: "modrinth";
+  source: "modrinth" | "curseforge";
   projectId: string;
   title: string;
   summary: string;
@@ -57,10 +58,12 @@ export type DiscoverSearchResult = {
   iconUrl: string | null;
   url: string | null;
   author: string | null;
+  loaders: string[];
+  latestVersion: string;
 };
 
 export type DiscoverDownloadResult = {
-  source: "modrinth";
+  source: "modrinth" | "curseforge";
   projectId: string;
   fileName: string;
   filePath: string;
@@ -173,8 +176,12 @@ export async function beginMicrosoftDeviceLoginNative(): Promise<MicrosoftDevice
   return await invokeOrThrow<MicrosoftDeviceLoginStart>("auth_begin_microsoft_device_login");
 }
 
-export async function pollMicrosoftDeviceLoginNative(sessionId: string): Promise<MicrosoftDeviceLoginPoll> {
-  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("auth_poll_microsoft_device_login", { sessionId });
+export async function pollMicrosoftDeviceLoginNative(
+  sessionId: string,
+): Promise<MicrosoftDeviceLoginPoll> {
+  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("auth_poll_microsoft_device_login", {
+    sessionId,
+  });
 }
 
 export async function logoutMicrosoftNative(): Promise<RuntimeAuthStatus> {
@@ -210,10 +217,14 @@ function mapModrinthHit(raw: unknown): DiscoverSearchResult | null {
     iconUrl: typeof hit.icon_url === "string" ? hit.icon_url : null,
     url: slug ? `https://modrinth.com/mod/${slug}` : null,
     author: typeof hit.author === "string" ? hit.author : null,
+    loaders: [],
+    latestVersion: "",
   };
 }
 
-export async function discoverSearchModrinthNative(input: DiscoverSearchInput): Promise<DiscoverSearchResult[]> {
+export async function discoverSearchModrinthNative(
+  input: DiscoverSearchInput,
+): Promise<DiscoverSearchResult[]> {
   try {
     return await invokeOrThrow<DiscoverSearchResult[]>("discover_search_modrinth", { input });
   } catch {
@@ -230,7 +241,9 @@ export async function discoverSearchModrinthNative(input: DiscoverSearchInput): 
       throw new Error(`Modrinth search failed (${response.status})`);
     }
     const body = (await response.json()) as { hits?: unknown[] };
-    return (body.hits ?? []).map(mapModrinthHit).filter((item): item is DiscoverSearchResult => Boolean(item));
+    return (body.hits ?? [])
+      .map(mapModrinthHit)
+      .filter((item): item is DiscoverSearchResult => Boolean(item));
   }
 }
 
@@ -241,6 +254,29 @@ export async function discoverDownloadModrinthNative(
   return await invokeOrThrow<DiscoverDownloadResult>("discover_download_modrinth", {
     input: {
       projectId,
+      loader: options?.loader ?? null,
+      gameVersion: options?.gameVersion ?? null,
+    },
+  });
+}
+
+export async function discoverSearchCurseforgeNative(
+  input: DiscoverSearchInput,
+): Promise<DiscoverSearchResult[]> {
+  try {
+    return await invokeOrThrow<DiscoverSearchResult[]>("discover_search_curseforge", { input });
+  } catch {
+    return [];
+  }
+}
+
+export async function discoverDownloadCurseforgeNative(
+  modId: string,
+  options?: { loader?: string | null; gameVersion?: string | null },
+): Promise<DiscoverDownloadResult> {
+  return await invokeOrThrow<DiscoverDownloadResult>("discover_download_curseforge", {
+    input: {
+      modId: Number(modId),
       loader: options?.loader ?? null,
       gameVersion: options?.gameVersion ?? null,
     },

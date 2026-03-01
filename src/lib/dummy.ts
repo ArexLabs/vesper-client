@@ -10,6 +10,7 @@ export const defaultGlobalConfig: LauncherConfig = {
   rendererFlags: [],
   launchArgs: [],
   window: { width: 1280, height: 800, fullscreen: false },
+  globalVersionFilter: null,
 };
 
 export const builtinPresets: Preset[] = [

@@ -1,10 +1,10 @@
-import { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { DiscoverModsSection } from "@/components/discover/DiscoverModsSection";
 import { InstanceCard } from "@/components/instances/InstanceCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLauncherStore } from "@/store/launcher-store";
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
 
 export function HomePage() {
   const lang = useLauncherStore((state) => state.data.ui.language);
@@ -36,7 +36,9 @@ export function HomePage() {
         {lastPlayedInstances.length === 0 ? (
           <Card className="rounded-3xl border-white/8 bg-white/[0.03] shadow-panel">
             <CardContent className="grid gap-3 p-6 text-center">
-              <p className="text-sm text-textMuted">No instances yet. Create one in your library to start launching Minecraft.</p>
+              <p className="text-sm text-textMuted">
+                No instances yet. Create one in your library to start launching Minecraft.
+              </p>
               <div>
                 <Button asChild className="rounded-2xl" type="button">
                   <Link to="/instances">Open Library</Link>
@@ -51,7 +53,9 @@ export function HomePage() {
                 key={instance.id}
                 instance={instance}
                 lang={lang}
-                presetName={instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null}
+                presetName={
+                  instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null
+                }
               />
             ))}
           </div>

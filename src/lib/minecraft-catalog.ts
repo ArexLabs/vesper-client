@@ -11,7 +11,9 @@ let cachedVersions: MinecraftVersionItem[] | null = null;
 let cachedLoaders: string[] | null = null;
 
 function isMinecraftVersionType(value: string): value is MinecraftVersionItem["type"] {
-  return value === "release" || value === "snapshot" || value === "old_beta" || value === "old_alpha";
+  return (
+    value === "release" || value === "snapshot" || value === "old_beta" || value === "old_alpha"
+  );
 }
 
 export async function fetchMinecraftVersions(limit = 160): Promise<MinecraftVersionItem[]> {
@@ -29,7 +31,8 @@ export async function fetchMinecraftVersions(limit = 160): Promise<MinecraftVers
   const versions = (body.versions ?? [])
     .map((raw) => {
       const id = typeof raw.id === "string" ? raw.id : "";
-      const type = typeof raw.type === "string" && isMinecraftVersionType(raw.type) ? raw.type : null;
+      const type =
+        typeof raw.type === "string" && isMinecraftVersionType(raw.type) ? raw.type : null;
       const releaseTime = typeof raw.releaseTime === "string" ? raw.releaseTime : "";
       if (!id || !type) return null;
       return { id, type, releaseTime } satisfies MinecraftVersionItem;

@@ -1,8 +1,8 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useEffect, useState } from "react";
+import { AssetIcon } from "@/components/layout/AssetIcon";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { AssetIcon } from "@/components/layout/AssetIcon";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useEffect, useState } from "react";
 
 const WINDOW_CONTROLS = [
   {
@@ -97,7 +97,13 @@ export function TitleBar() {
             <TooltipTrigger
               render={
                 <Button
-                  aria-label={control.key === "maximize" ? (isMaximized ? "Restore window" : control.label) : control.label}
+                  aria-label={
+                    control.key === "maximize"
+                      ? isMaximized
+                        ? "Restore window"
+                        : control.label
+                      : control.label
+                  }
                   className={`h-8 w-8 rounded-xl hover:bg-white/6 ${control.textClassName}`}
                   onClick={() => void runWindowAction(control.key)}
                   size="icon-sm"
@@ -109,7 +115,11 @@ export function TitleBar() {
               }
             />
             <TooltipContent>
-              {control.key === "maximize" ? (isMaximized ? "Restore window" : "Maximize window") : control.label}
+              {control.key === "maximize"
+                ? isMaximized
+                  ? "Restore window"
+                  : "Maximize window"
+                : control.label}
             </TooltipContent>
           </Tooltip>
         ))}

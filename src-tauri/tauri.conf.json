@@ -2,9 +2,9 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Vesper Client",
   "version": "0.1.0",
-  "identifier": "io.vesper.launcher",
+  "identifier": "de.devflare.launcher",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run vite:dev",
     "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
