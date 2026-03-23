@@ -1248,6 +1248,168 @@ fn auth_begin_microsoft_device_login(
 }
 
 #[tauri::command]
+fn auth_open_browser_and_get_code(
+    _app: AppHandle,
+    url: String,
+    verifier: String,
+) -> Result<String, String> {
+    // Open the system browser
+    match open::that(&url) {
+        Ok(_) => (),
+        Err(e) => return Err(format!("Failed to open browser: {e}")),
+    }
+
+    // Set up a temporary loopback listener to catch the auth code
+    let listener = std::net::TcpListener::bind("127.0.0.1:1420")
+        .map_err(|e| format!("Failed to bind to 127.0.0.1:1420: {e}"))?;
+
+    // Set non-blocking mode with a timeout
+    listener.set_nonblocking(true).map_err(|e| e.to_string())?;
+
+    let start_time = std::time::Instant::now();
+    let timeout_duration = StdDuration::from_secs(120);
+
+    loop {
+        if start_time.elapsed() > timeout_duration {
+            return Err("Authentication timed out or failed.".to_string());
+        }
+
+        match listener.accept() {
+            Ok((mut stream, _)) => {
+                let mut reader = std::io::BufReader::new(&stream);
+                let mut first_line = String::new();
+                if std::io::BufRead::read_line(&mut reader, &mut first_line).is_err() {
+                    continue;
+                }
+
+                if let Some(pos) = first_line.find("GET /auth/callback?code=") {
+                    let code_start = pos + "GET /auth/callback?code=".len();
+                    let code_end = first_line[code_start..]
+                        .find(' ')
+                        .unwrap_or(first_line.len() - code_start);
+                    let code = first_line[code_start..code_start + code_end].to_string();
+
+                    // Send a simple success response to the browser
+                    let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body style=\"background: #121212; color: #f0f0f0; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh;\"><div style=\"text-align: center;\"><h1>Authenticated!</h1><p>You can close this window now and return to Vesper Launcher.</p></div></body></html>";
+                    use std::io::Write;
+                    let _ = stream.write_all(response.as_bytes());
+                    return Ok(code);
+                }
+            }
+            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+            Err(_) => continue,
+        }
+    }
+}
+
+#[tauri::command]
+fn auth_complete_ms_minecraft_chain(
+    _app: AppHandle,
+    code: String,
+    verifier: String,
+) -> Result<Value, String> {
+    let client_id = microsoft_client_id()?;
+    let client = http_client()?;
+
+    // 1. Exchange Code for MS Tokens
+    let response = client
+        .post(MS_TOKEN_URL)
+        .form(&[
+            ("client_id", client_id.as_str()),
+            ("code", &code),
+            ("grant_type", "authorization_code"),
+            ("redirect_uri", "http://localhost:1420/auth/callback"),
+            ("code_verifier", &verifier),
+        ])
+        .send()
+        .map_err(|e| format!("MS token exchange failed: {e}"))?;
+
+    let tokens: OAuthTokenResponse = response
+        .json()
+        .map_err(|e| format!("Failed to parse MS tokens: {e}"))?;
+    let refresh_token = tokens.refresh_token.ok_or("No refresh token returned")?;
+
+    // 2. Auth Chain to Minecraft
+    let mc_profile = resolve_minecraft_profile_from_ms_access_token(&tokens.access_token)?;
+
+    // 3. Save Refresh Token in Keyring
+    secure_storage::write_secret(MS_REFRESH_TOKEN_KEY, &refresh_token)?;
+
+    // 4. Update Profile in State
+    let profile = upsert_microsoft_profile(&mc_profile.name, "signed_in")?;
+    let mut profile_obj = profile.as_object().cloned().unwrap_or_default();
+    profile_obj.insert("minecraftUuid".to_string(), json!(mc_profile.id));
+    profile_obj.insert("minecraftUsername".to_string(), json!(mc_profile.name));
+    let final_profile = Value::Object(profile_obj);
+
+    // 5. Construct Session for Frontend (excluding refresh token for safety, though it's already in keyring)
+    let session = json!({
+        "profileId": final_profile.get("id").unwrap_or(&json!("")),
+        "microsoftAccessToken": tokens.access_token,
+        "microsoftRefreshToken": refresh_token,
+        "expiresAt": Utc::now().timestamp() + 3600 // roughly
+    });
+
+    Ok(json!({
+        "session": session,
+        "profile": final_profile
+    }))
+}
+
+#[tauri::command]
+fn auth_refresh_ms_minecraft_chain(
+    _app: AppHandle,
+    refresh_token: String,
+) -> Result<Value, String> {
+    let client_id = microsoft_client_id()?;
+    let client = http_client()?;
+
+    // 1. Refresh MS Tokens
+    let response = client
+        .post(MS_TOKEN_URL)
+        .form(&[
+            ("client_id", client_id.as_str()),
+            ("refresh_token", &refresh_token),
+            ("grant_type", "refresh_token"),
+            ("scope", MS_SCOPE),
+        ])
+        .send()
+        .map_err(|e| format!("MS token refresh failed: {e}"))?;
+
+    let tokens: OAuthTokenResponse = response
+        .json()
+        .map_err(|e| format!("Failed to parse refreshed MS tokens: {e}"))?;
+    let new_refresh_token = tokens.refresh_token.unwrap_or(refresh_token);
+
+    // 2. Auth Chain to Minecraft
+    let mc_profile = resolve_minecraft_profile_from_ms_access_token(&tokens.access_token)?;
+
+    // 3. Save New Refresh Token
+    secure_storage::write_secret(MS_REFRESH_TOKEN_KEY, &new_refresh_token)?;
+
+    // 4. Update Profile
+    let profile = upsert_microsoft_profile(&mc_profile.name, "signed_in")?;
+    let mut profile_obj = profile.as_object().cloned().unwrap_or_default();
+    profile_obj.insert("minecraftUuid".to_string(), json!(mc_profile.id));
+    profile_obj.insert("minecraftUsername".to_string(), json!(mc_profile.name));
+    let final_profile = Value::Object(profile_obj);
+
+    let session = json!({
+        "profileId": final_profile.get("id").unwrap_or(&json!("")),
+        "microsoftAccessToken": tokens.access_token,
+        "microsoftRefreshToken": new_refresh_token,
+        "expiresAt": Utc::now().timestamp() + 3600
+    });
+
+    Ok(json!({
+        "session": session,
+        "profile": final_profile
+    }))
+}
+
+#[tauri::command]
 fn auth_poll_microsoft_device_login(
     _app: AppHandle,
     session_id: String,
@@ -1396,6 +1558,9 @@ pub fn run() {
             auth_begin_microsoft_device_login,
             auth_poll_microsoft_device_login,
             auth_logout_microsoft,
+            auth_open_browser_and_get_code,
+            auth_complete_ms_minecraft_chain,
+            auth_refresh_ms_minecraft_chain,
             secure_store_write_placeholder,
             secure_store_read_placeholder,
             discover_search_modrinth,

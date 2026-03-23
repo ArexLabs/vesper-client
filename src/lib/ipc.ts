@@ -1,4 +1,4 @@
-import type { AppState, Instance } from "@/lib/schemas";
+import type { AppState, Instance, Profile, UserSession } from "@/lib/schemas";
 
 const STORAGE_KEY = "vesper-launcher-state-v1";
 
@@ -83,7 +83,7 @@ async function getInvoke() {
   return mod.invoke;
 }
 
-async function invokeOrThrow<T>(command: string, args?: Record<string, unknown>) {
+export async function invokeOrThrow<T>(command: string, args?: Record<string, unknown>) {
   const invoke = await getInvoke();
   if (!invoke) throw new Error("Tauri runtime unavailable");
   return await invoke<T>(command, args);
@@ -186,6 +186,32 @@ export async function pollMicrosoftDeviceLoginNative(
 
 export async function logoutMicrosoftNative(): Promise<RuntimeAuthStatus> {
   return await invokeOrThrow<RuntimeAuthStatus>("auth_logout_microsoft");
+}
+
+export async function openBrowserAndGetAuthCodeNative(
+  url: string,
+  verifier: string,
+): Promise<string> {
+  return await invokeOrThrow<string>("auth_open_browser_and_get_code", { url, verifier });
+}
+
+export async function completeMsMinecraftChainNative(
+  code: string,
+  verifier: string,
+): Promise<{ session: UserSession; profile: Profile }> {
+  return await invokeOrThrow<{ session: UserSession; profile: Profile }>(
+    "auth_complete_ms_minecraft_chain",
+    { code, verifier },
+  );
+}
+
+export async function refreshMsMinecraftChainNative(
+  refreshToken: string,
+): Promise<{ session: UserSession; profile: Profile }> {
+  return await invokeOrThrow<{ session: UserSession; profile: Profile }>(
+    "auth_refresh_ms_minecraft_chain",
+    { refreshToken },
+  );
 }
 
 function toModrinthFacets(input: DiscoverSearchInput) {

@@ -87,8 +87,20 @@ export const profileSchema = z.object({
   id: z.string(),
   provider: z.enum(["offline", "microsoft"]),
   displayName: z.string(),
+  minecraftUuid: z.string().nullable(),
+  minecraftUsername: z.string().nullable(),
   offlineUsername: z.string().nullable(),
   authState: z.enum(["signed_out", "signed_in", "expired"]),
+});
+
+export const userSessionSchema = z.object({
+  profileId: z.string(),
+  microsoftAccessToken: z.string(),
+  microsoftRefreshToken: z.string().nullable(),
+  xboxToken: z.string().nullable(),
+  xstsToken: z.string().nullable(),
+  minecraftAccessToken: z.string().nullable(),
+  expiresAt: z.number(), // timestamp
 });
 
 export const uiSettingsSchema = z.object({
@@ -114,6 +126,7 @@ export type InstanceSnapshot = z.infer<typeof instanceSnapshotSchema>;
 export type Instance = z.infer<typeof instanceSchema>;
 export type SettingsSnapshot = z.infer<typeof settingsSnapshotSchema>;
 export type Profile = z.infer<typeof profileSchema>;
+export type UserSession = z.infer<typeof userSessionSchema>;
 export type AppState = z.infer<typeof appStateSchema>;
 
 export function formatZodIssues(issues: z.ZodIssue[]) {
