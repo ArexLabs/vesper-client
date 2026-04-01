@@ -1,0 +1,10 @@
+C:\Users\mateo\Documents\GitHub\vesper-client\target\debug\deps\accesskit_consumer-f48f1a0e7a4b6660.d: C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\lib.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\tree.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\node.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\filters.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\iterators.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\text.rs
+
+C:\Users\mateo\Documents\GitHub\vesper-client\target\debug\deps\libaccesskit_consumer-f48f1a0e7a4b6660.rmeta: C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\lib.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\tree.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\node.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\filters.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\iterators.rs C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\text.rs
+
+C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\lib.rs:
+C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\tree.rs:
+C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\node.rs:
+C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\filters.rs:
+C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\iterators.rs:
+C:\Users\mateo\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\accesskit_consumer-0.26.0\src\text.rs:
