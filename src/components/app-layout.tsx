@@ -36,69 +36,88 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-bg text-text">
       <div className="grid min-h-screen grid-cols-1 md:grid-cols-[280px_1fr]">
-        <aside className="border-b border-border bg-surface1/95 p-4 md:border-b-0 md:border-r">
-          <div className="mb-5">
-            <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-xl border border-accent/30 bg-accent/10">
-                <div className="h-4 w-4 rounded-full border border-accent/40 bg-accent/50" />
-              </div>
-              <div>
-                <div className="text-sm font-bold tracking-tight">
-                  <span className="text-accent">Vesper</span>
-                  <span className="ml-1 text-text">Client</span>
+        <aside className="glass-panel relative flex flex-col border-b border-white/5 md:border-b-0 md:border-r">
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/[0.02] to-transparent" />
+          <div className="p-4">
+            <div className="mb-5">
+              <div className="flex items-center gap-3">
+                <div className="glow-button grid h-10 w-10 place-items-center rounded-xl">
+                  <div className="h-5 w-5 rounded-full bg-gradient-to-br from-white/30 to-white/10" />
                 </div>
-                <div className="text-xs text-textMuted">{t(lang, "productTagline")}</div>
+                <div>
+                  <div className="text-sm font-bold tracking-tight">
+                    <span className="text-brand-accent">Vesper</span>
+                    <span className="ml-1 text-text">Client</span>
+                  </div>
+                  <div className="text-xs text-textMuted">{t(lang, "productTagline")}</div>
+                </div>
               </div>
             </div>
+
+            <nav className="grid gap-1.5">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "nav-item-active border-brand-accent/30 text-brand-accent"
+                          : "border-transparent text-textMuted hover:border-white/10 hover:bg-white/[0.03] hover:text-text",
+                      )
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
           </div>
 
-          <nav className="grid gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition",
-                      isActive
-                        ? "border-accent/25 bg-accent/10 text-text"
-                        : "border-transparent text-textMuted hover:border-border hover:bg-surface2 hover:text-text",
-                    )
-                  }
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
+          <div className="mt-auto p-4">
+            <div className="glass-card rounded-xl border border-white/5 p-3">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-textMuted">
+                  {t(lang, "instances")}
+                </span>
+                <Badge variant="accent">{instanceCount}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-textMuted">
+                  {t(lang, "presets")}
+                </span>
+                <Badge variant="muted">{presetCount}</Badge>
+              </div>
+            </div>
 
-          <div className="mt-6 grid gap-2 rounded-lg border border-borderSoft bg-surface2/60 p-3 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-textMuted">{t(lang, "instances")}</span>
-              <Badge variant="accent">{instanceCount}</Badge>
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2">
+              <div className="status-indicator status-online" />
+              <span className="text-xs text-textMuted">System Online</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-textMuted">{t(lang, "presets")}</span>
-              <Badge variant="muted">{presetCount}</Badge>
-            </div>
-            <div className="text-textMuted">Snapshots & rollback enabled</div>
           </div>
         </aside>
 
         <div className="flex min-h-screen flex-col">
-          <header className="sticky top-0 z-10 border-b border-border bg-bg/80 px-4 py-3 backdrop-blur md:px-6">
+          <header className="sticky top-0 z-10 glass-panel border-b border-white/5 px-4 py-3 md:px-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-lg font-bold tracking-tight">{pageTitle}</h1>
                 <p className="text-xs text-textMuted">Twilight UI • peach accents • EN/DE</p>
               </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="kbd">Zod</span>
-                <span className="kbd">Zustand</span>
-                <span className="kbd">Tauri</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-1.5">
+                  <div className="status-indicator status-online" />
+                  <span className="text-xs font-medium text-textMuted">Ready</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-1.5">
+                  <span className="kbd border-white/10 bg-white/5 text-white/50">Zod</span>
+                  <span className="kbd border-white/10 bg-white/5 text-white/50">Zustand</span>
+                  <span className="kbd border-white/10 bg-white/5 text-white/50">Tauri</span>
+                </div>
               </div>
             </div>
           </header>

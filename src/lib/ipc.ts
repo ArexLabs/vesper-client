@@ -169,23 +169,32 @@ export function isTauriRuntime() {
 }
 
 export async function getAuthStatusNative(): Promise<RuntimeAuthStatus> {
-  return await invokeOrThrow<RuntimeAuthStatus>("auth_get_status");
+  return await invokeOrThrow<RuntimeAuthStatus>("get_auth_status");
 }
 
 export async function beginMicrosoftDeviceLoginNative(): Promise<MicrosoftDeviceLoginStart> {
-  return await invokeOrThrow<MicrosoftDeviceLoginStart>("auth_begin_microsoft_device_login");
+  const result = await invokeOrThrow<{ user_code: string; verification_uri: string; expires_in: number; interval: number; message: string }>("begin_microsoft_device_login");
+  return {
+    sessionId: "session-" + Date.now(),
+    userCode: result.user_code,
+    verificationUri: result.verification_uri,
+    verificationUriComplete: null,
+    expiresInSeconds: result.expires_in,
+    intervalSeconds: result.interval,
+    message: result.message,
+  };
 }
 
 export async function pollMicrosoftDeviceLoginNative(
   sessionId: string,
 ): Promise<MicrosoftDeviceLoginPoll> {
-  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("auth_poll_microsoft_device_login", {
+  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("poll_microsoft_device_login", {
     sessionId,
   });
 }
 
 export async function logoutMicrosoftNative(): Promise<RuntimeAuthStatus> {
-  return await invokeOrThrow<RuntimeAuthStatus>("auth_logout_microsoft");
+  return await invokeOrThrow<RuntimeAuthStatus>("logout_microsoft");
 }
 
 export async function openBrowserAndGetAuthCodeNative(

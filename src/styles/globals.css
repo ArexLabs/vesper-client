@@ -80,7 +80,7 @@
   --accent: 0.269 0 0;
   --accent-foreground: 0.985 0 0;
   --brand-accent: #ffcfa8;
-  --card: 0.185 0 0; /* less contrast than before */
+  --card: 0.185 0 0;
   --card-foreground: 0.985 0 0;
   --popover: 0.205 0 0;
   --popover-foreground: 0.985 0 0;
@@ -99,6 +99,16 @@
   --sidebar-accent-foreground: 0.985 0 0;
   --sidebar-border: 0.214 0.029 250;
   --sidebar-ring: 0.482 0.02 300;
+  --success: 0.416 0.795 254.118;
+  --warning: 0.089 0.735 41.647;
+  --info: 0.547 0.811 226.471;
+  --surface1: color-mix(in oklab, var(--background) 100%, transparent);
+  --surface2: color-mix(in oklab, var(--background) 90%, var(--muted));
+  --surface3: color-mix(in oklab, var(--background) 85%, var(--muted));
+  --glass: rgba(28, 31, 36, 0.75);
+  --glass-border: rgba(255, 207, 168, 0.08);
+  --glow-primary: 0 0 20px rgba(255, 207, 168, 0.3);
+  --glow-accent: 0 0 30px rgba(255, 207, 168, 0.15);
 }
 
 body {
@@ -291,6 +301,128 @@ body {
 
   .focus-ring:focus-visible {
     --tw-ring-color: var(--ring);
+  }
+
+  .glass-panel {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), var(--glow-accent);
+  }
+
+  .glass-card {
+    background: linear-gradient(
+      135deg,
+      rgba(28, 31, 36, 0.85) 0%,
+      rgba(20, 21, 23, 0.9) 100%
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glow-button {
+    position: relative;
+    background: linear-gradient(135deg, var(--brand-accent) 0%, #ffb888 100%);
+    box-shadow: var(--glow-primary), 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .glow-button:hover {
+    box-shadow: 0 0 30px rgba(255, 207, 168, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .glow-button:active {
+    transform: translateY(0);
+    box-shadow: 0 0 15px rgba(255, 207, 168, 0.3), 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .stat-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--brand-accent), #ffe4c4);
+    box-shadow: 0 0 10px rgba(255, 207, 168, 0.5);
+    transition: width 0.3s ease;
+  }
+
+  .nav-item-active {
+    background: linear-gradient(135deg, rgba(255, 207, 168, 0.15) 0%, rgba(255, 207, 168, 0.05) 100%);
+    border-color: rgba(255, 207, 168, 0.3);
+    box-shadow: inset 0 0 20px rgba(255, 207, 168, 0.1);
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .metric-value {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--brand-accent);
+    text-shadow: 0 0 20px rgba(255, 207, 168, 0.3);
+  }
+
+  .play-button {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 0 25px rgba(34, 197, 94, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .play-button:hover {
+    box-shadow: 0 0 35px rgba(34, 197, 94, 0.6), 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .status-online {
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+  }
+
+  .status-offline {
+    background: #6b7280;
+    box-shadow: none;
+  }
+
+  .status-warning {
+    background: #f59e0b;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+  }
+
+  .scroll-fade-bottom {
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  }
+
+  .scroll-fade-right {
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   }
 }
 

@@ -1,12 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { argsToMultiline, multilineToArgs } from "@/lib/config";
 import { t } from "@/lib/i18n";
 import { fetchMinecraftVersions } from "@/lib/minecraft-catalog";
 import { type LauncherConfig, formatZodIssues, launcherConfigPatchSchema } from "@/lib/schemas";
 import { downloadJson, formatDateTime, readTextFile } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
+import { Cpu, HardDrive, Monitor, Save, Settings, Upload, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export function SettingsPage() {
@@ -109,191 +112,257 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t(lang, "globalDefaults")}</CardTitle>
-            <CardDescription>
-              Java, Memory, JVM Args, Renderer Flags, Window and Launch Args.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="grid grid-cols-2 gap-3">
+    <div className="grid gap-6">
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-6">
+          <Card className="glass-card overflow-hidden rounded-2xl border border-white/5">
+            <CardHeader className="border-b border-white/5 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-brand-accent/10 p-2">
+                  <Zap className="h-5 w-5 text-brand-accent" />
+                </div>
                 <div>
-                  <label className="label">Java Path</label>
-                  <input
-                    className="field mt-1"
-                    value={globalDraft.javaPath}
-                    onChange={(e) => setGlobalDraft({ ...globalDraft, javaPath: e.target.value })}
+                  <CardTitle>{t(lang, "globalDefaults")}</CardTitle>
+                  <CardDescription>Java, Memory, JVM Args, Renderer Flags, Window and Launch Args.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-6 pt-6">
+              <div className="grid gap-5">
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <HardDrive className="h-4 w-4 text-brand-accent" />
+                      <span className="text-sm font-medium">Memory Allocation</span>
+                    </div>
+                    <span className="font-mono text-sm text-brand-accent">
+                      {globalDraft.memoryMbMin} - {globalDraft.memoryMbMax} MB
+                    </span>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-xs text-textMuted">Minimum</label>
+                      <Slider
+                        value={[globalDraft.memoryMbMin]}
+                        onValueChange={([val]) => setGlobalDraft({ ...globalDraft, memoryMbMin: val })}
+                        min={512}
+                        max={16384}
+                        step={256}
+                        className="py-2"
+                      />
+                      <div className="flex justify-between text-xs text-textMuted">
+                        <span>512 MB</span>
+                        <span>{globalDraft.memoryMbMin} MB</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-textMuted">Maximum</label>
+                      <Slider
+                        value={[globalDraft.memoryMbMax]}
+                        onValueChange={([val]) => setGlobalDraft({ ...globalDraft, memoryMbMax: val })}
+                        min={1024}
+                        max={32768}
+                        step={512}
+                        className="py-2"
+                      />
+                      <div className="flex justify-between text-xs text-textMuted">
+                        <span>1 GB</span>
+                        <span>{globalDraft.memoryMbMax} MB</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-brand-accent" />
+                      <span className="text-sm font-medium">Java Path</span>
+                    </div>
+                    <input
+                      className="field bg-white/[0.02]"
+                      value={globalDraft.javaPath}
+                      onChange={(e) => setGlobalDraft({ ...globalDraft, javaPath: e.target.value })}
+                      placeholder="java"
+                    />
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Monitor className="h-4 w-4 text-brand-accent" />
+                      <span className="text-sm font-medium">Resolution</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        className="field bg-white/[0.02]"
+                        value={globalDraft.window.width}
+                        onChange={(e) =>
+                          setGlobalDraft({
+                            ...globalDraft,
+                            window: { ...globalDraft.window, width: Number(e.target.value || 0) },
+                          })
+                        }
+                        placeholder="Width"
+                      />
+                      <span className="flex items-center text-textMuted">×</span>
+                      <input
+                        type="number"
+                        className="field bg-white/[0.02]"
+                        value={globalDraft.window.height}
+                        onChange={(e) =>
+                          setGlobalDraft({
+                            ...globalDraft,
+                            window: { ...globalDraft.window, height: Number(e.target.value || 0) },
+                          })
+                        }
+                        placeholder="Height"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="h-4 w-4 text-brand-accent" />
+                      <span className="text-sm font-medium">Display Mode</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={globalDraft.window.fullscreen}
+                        onCheckedChange={(checked) =>
+                          setGlobalDraft({
+                            ...globalDraft,
+                            window: { ...globalDraft.window, fullscreen: checked },
+                          })
+                        }
+                      />
+                      <span className="text-xs text-textMuted">Fullscreen</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="label mb-2 block">JVM Args</label>
+                  <textarea
+                    className="field-mono min-h-[120px] bg-white/[0.02]"
+                    value={argsToMultiline(globalDraft.jvmArgs)}
+                    onChange={(e) =>
+                      setGlobalDraft({ ...globalDraft, jvmArgs: multilineToArgs(e.target.value) })
+                    }
                   />
                 </div>
                 <div>
-                  <label className="label">Global Version Filter</label>
-                  <select
-                    className="field mt-1"
-                    value={globalDraft.globalVersionFilter ?? "none"}
+                  <label className="label mb-2 block">Renderer Flags</label>
+                  <textarea
+                    className="field-mono min-h-[120px] bg-white/[0.02]"
+                    value={argsToMultiline(globalDraft.rendererFlags)}
                     onChange={(e) =>
                       setGlobalDraft({
                         ...globalDraft,
-                        globalVersionFilter: e.target.value === "none" ? null : e.target.value,
+                        rendererFlags: multilineToArgs(e.target.value),
                       })
                     }
-                  >
-                    <option value="none">No Filter</option>
-                    {versions.map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Min MB</label>
-                  <input
-                    type="number"
-                    className="field mt-1"
-                    value={globalDraft.memoryMbMin}
-                    onChange={(e) =>
-                      setGlobalDraft({ ...globalDraft, memoryMbMin: Number(e.target.value || 0) })
-                    }
                   />
                 </div>
                 <div>
-                  <label className="label">Max MB</label>
-                  <input
-                    type="number"
-                    className="field mt-1"
-                    value={globalDraft.memoryMbMax}
+                  <label className="label mb-2 block">Launch Args</label>
+                  <textarea
+                    className="field-mono min-h-[120px] bg-white/[0.02]"
+                    value={argsToMultiline(globalDraft.launchArgs)}
                     onChange={(e) =>
-                      setGlobalDraft({ ...globalDraft, memoryMbMax: Number(e.target.value || 0) })
+                      setGlobalDraft({ ...globalDraft, launchArgs: multilineToArgs(e.target.value) })
                     }
                   />
                 </div>
               </div>
-            </div>
-            <div className="grid gap-3 md:grid-cols-3">
-              <div>
-                <label className="label">Window Width</label>
-                <input
-                  type="number"
-                  className="field mt-1"
-                  value={globalDraft.window.width}
-                  onChange={(e) =>
-                    setGlobalDraft({
-                      ...globalDraft,
-                      window: { ...globalDraft.window, width: Number(e.target.value || 0) },
+
+              {globalMsg ? (
+                <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
+                  {globalMsg}
+                </div>
+              ) : null}
+              {globalErr ? (
+                <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                  {globalErr}
+                </div>
+              ) : null}
+
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => void saveGlobal()} className="gap-2">
+                  <Save className="h-4 w-4" />
+                  {t(lang, "saveGlobalDefaults")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() =>
+                    downloadJson("vesper-global-defaults.json", {
+                      schema: "vesper/global-defaults/v1",
+                      globalDefaults: globalDraft,
                     })
                   }
-                />
+                >
+                  <Upload className="h-4 w-4" />
+                  {t(lang, "export")}
+                </Button>
               </div>
-              <div>
-                <label className="label">Window Height</label>
-                <input
-                  type="number"
-                  className="field mt-1"
-                  value={globalDraft.window.height}
-                  onChange={(e) =>
-                    setGlobalDraft({
-                      ...globalDraft,
-                      window: { ...globalDraft.window, height: Number(e.target.value || 0) },
-                    })
-                  }
-                />
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card overflow-hidden rounded-2xl border border-white/5">
+            <CardHeader className="border-b border-white/5 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-blue-500/10 p-2">
+                  <Cpu className="h-5 w-5 text-blue-500" />
+                </div>
+                <div>
+                  <CardTitle>Performance Presets</CardTitle>
+                  <CardDescription>Quick performance configurations</CardDescription>
+                </div>
               </div>
-              <label className="mt-6 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={globalDraft.window.fullscreen}
-                  onChange={(e) =>
-                    setGlobalDraft({
-                      ...globalDraft,
-                      window: { ...globalDraft.window, fullscreen: e.target.checked },
-                    })
-                  }
-                />
-                Fullscreen
-              </label>
-            </div>
-            <div className="grid gap-3 md:grid-cols-3">
-              <div>
-                <label className="label">JVM Args</label>
-                <textarea
-                  className="field-mono mt-1 min-h-[130px]"
-                  value={argsToMultiline(globalDraft.jvmArgs)}
-                  onChange={(e) =>
-                    setGlobalDraft({ ...globalDraft, jvmArgs: multilineToArgs(e.target.value) })
-                  }
-                />
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="grid gap-3 md:grid-cols-3">
+                <button
+                  type="button"
+                  className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left transition-all hover:border-brand-accent/30"
+                >
+                  <div className="mb-2 text-sm font-medium text-text">Low</div>
+                  <div className="text-xs text-textMuted">2GB RAM • FPS+</div>
+                </button>
+                <button
+                  type="button"
+                  className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left transition-all hover:border-brand-accent/30"
+                >
+                  <div className="mb-2 text-sm font-medium text-text">Medium</div>
+                  <div className="text-xs text-textMuted">4GB RAM • Balanced</div>
+                </button>
+                <button
+                  type="button"
+                  className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left transition-all hover:border-brand-accent/30"
+                >
+                  <div className="mb-2 text-sm font-medium text-text">High</div>
+                  <div className="text-xs text-textMuted">8GB RAM • Max FPS</div>
+                </button>
               </div>
-              <div>
-                <label className="label">Renderer Flags</label>
-                <textarea
-                  className="field-mono mt-1 min-h-[130px]"
-                  value={argsToMultiline(globalDraft.rendererFlags)}
-                  onChange={(e) =>
-                    setGlobalDraft({
-                      ...globalDraft,
-                      rendererFlags: multilineToArgs(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Launch Args</label>
-                <textarea
-                  className="field-mono mt-1 min-h-[130px]"
-                  value={argsToMultiline(globalDraft.launchArgs)}
-                  onChange={(e) =>
-                    setGlobalDraft({ ...globalDraft, launchArgs: multilineToArgs(e.target.value) })
-                  }
-                />
-              </div>
-            </div>
-            {globalMsg ? (
-              <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                {globalMsg}
-              </div>
-            ) : null}
-            {globalErr ? (
-              <div className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-                {globalErr}
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={() => void saveGlobal()}>{t(lang, "saveGlobalDefaults")}</Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  downloadJson("vesper-global-defaults.json", {
-                    schema: "vesper/global-defaults/v1",
-                    globalDefaults: globalDraft,
-                  })
-                }
-              >
-                {t(lang, "export")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="grid gap-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <CardTitle>{t(lang, "presets")}</CardTitle>
-                  <CardDescription>Apply/edit/export/import preset patches.</CardDescription>
-                </div>
+          <Card className="glass-card overflow-hidden rounded-2xl border border-white/5">
+            <CardHeader className="border-b border-white/5 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle>{t(lang, "presets")}</CardTitle>
                 <Badge variant="accent">{data.presets.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="grid gap-3">
+            <CardContent className="grid gap-3 pt-4">
               <select
-                className="field"
+                className="field bg-white/[0.02]"
                 value={selectedPreset?.id ?? ""}
                 onChange={(e) => setSelectedPresetId(e.target.value)}
               >
@@ -304,13 +373,13 @@ export function SettingsPage() {
                 ))}
               </select>
               {selectedPreset ? (
-                <div className="panel-soft p-3 text-sm">
-                  <div className="font-semibold">{selectedPreset.name}</div>
+                <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-sm">
+                  <div className="font-semibold text-text">{selectedPreset.name}</div>
                   <div className="text-textMuted">{selectedPreset.description}</div>
                 </div>
               ) : null}
               <textarea
-                className="field-mono min-h-[220px]"
+                className="field-mono min-h-[200px] bg-white/[0.02]"
                 value={presetJson}
                 onChange={(e) => {
                   setPresetJson(e.target.value);
@@ -319,12 +388,12 @@ export function SettingsPage() {
                 }}
               />
               {presetValidation.parseError ? (
-                <div className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
                   Parse error: {presetValidation.parseError}
                 </div>
               ) : null}
               {presetValidation.errors.length > 0 ? (
-                <div className="rounded-md border border-danger/30 bg-danger/10 p-3 text-danger">
+                <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-red-400">
                   <ul className="grid gap-1 text-xs">
                     {presetValidation.errors.map((e) => (
                       <li key={e}>• {e}</li>
@@ -333,12 +402,12 @@ export function SettingsPage() {
                 </div>
               ) : null}
               {presetMsg ? (
-                <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
                   {presetMsg}
                 </div>
               ) : null}
               {presetErr ? (
-                <div className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
                   {presetErr}
                 </div>
               ) : null}
@@ -378,19 +447,18 @@ export function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="glass-card overflow-hidden rounded-2xl border border-white/5">
+            <CardHeader className="border-b border-white/5 pb-4">
               <CardTitle>Interface</CardTitle>
-              <CardDescription>Client display preferences.</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-3 text-sm">
-              <label className="flex items-center justify-between gap-4 rounded-md border border-borderSoft bg-surface1 p-3">
+            <CardContent className="grid gap-4 pt-4">
+              <label className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4">
                 <div>
-                  <div className="font-semibold">{t(lang, "language")}</div>
-                  <div className="text-textMuted">English / Deutsch</div>
+                  <div className="font-medium">{t(lang, "language")}</div>
+                  <div className="text-xs text-textMuted">English / Deutsch</div>
                 </div>
                 <select
-                  className="field w-36"
+                  className="field w-36 bg-white/[0.02]"
                   value={data.ui.language}
                   onChange={(e) => void setLanguage(e.target.value as "en" | "de")}
                 >
@@ -401,21 +469,18 @@ export function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="glass-card overflow-hidden rounded-2xl border border-white/5">
+            <CardHeader className="border-b border-white/5 pb-4">
               <CardTitle>Settings Snapshot History</CardTitle>
-              <CardDescription>
-                Rollback for global defaults, presets and UI language.
-              </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-2">
+            <CardContent className="grid gap-2 pt-4">
               {data.settingsSnapshots.length === 0 ? (
-                <div className="panel-soft p-3 text-sm text-textMuted">
+                <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-sm text-textMuted">
                   No settings snapshots yet.
                 </div>
               ) : null}
-              {data.settingsSnapshots.slice(0, 12).map((snap) => (
-                <div key={snap.id} className="panel-soft p-3">
+              {data.settingsSnapshots.slice(0, 8).map((snap) => (
+                <div key={snap.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <div>
                       <div className="text-sm font-semibold">
@@ -433,17 +498,6 @@ export function SettingsPage() {
                       {t(lang, "rollback")}
                     </Button>
                   </div>
-                  <pre className="field-mono max-h-40 overflow-auto whitespace-pre-wrap">
-                    {JSON.stringify(
-                      {
-                        globalDefaults: snap.globalDefaults,
-                        presetPatch: snap.presetPatch,
-                        uiLanguage: snap.uiLanguage,
-                      },
-                      null,
-                      2,
-                    )}
-                  </pre>
                 </div>
               ))}
             </CardContent>
