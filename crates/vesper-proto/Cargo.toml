@@ -1,0 +1,17 @@
+[package]
+name = "vesper-proto"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+vesper-core.workspace = true
+tonic.workspace = true
+prost.workspace = true
+serde.workspace = true
+async-stream.workspace = true
+
+[build-dependencies]
+tonic-build.workspace = true
+prost-build.workspace = true

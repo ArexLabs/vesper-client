@@ -1,0 +1,321 @@
+syntax = "proto3";
+
+package vesper;
+
+option go_package = "github.com/vesper/vesper-proto;vesper";
+
+service DaemonService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc GetDaemonStatus(GetDaemonStatusRequest) returns (DaemonStatus);
+
+  rpc ListInstances(ListInstancesRequest) returns (ListInstancesResponse);
+  rpc GetInstance(GetInstanceRequest) returns (InstanceInfo);
+  rpc CreateInstance(CreateInstanceRequest) returns (InstanceInfo);
+  rpc UpdateInstance(UpdateInstanceRequest) returns (InstanceInfo);
+  rpc DeleteInstance(DeleteInstanceRequest) returns (DeleteInstanceResponse);
+  rpc LaunchInstance(LaunchInstanceRequest) returns (LaunchInstanceResponse);
+  rpc StopInstance(StopInstanceRequest) returns (StopInstanceResponse);
+  rpc GetInstanceStatus(GetInstanceStatusRequest) returns (InstanceStatus);
+
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+  rpc AddMicrosoftAccount(AddMicrosoftAccountRequest) returns (AccountInfo);
+  rpc AddCrackedAccount(AddCrackedAccountRequest) returns (AccountInfo);
+  rpc RemoveAccount(RemoveAccountRequest) returns (RemoveAccountResponse);
+  rpc SelectAccount(SelectAccountRequest) returns (SelectAccountResponse);
+  rpc RefreshAccountToken(RefreshAccountTokenRequest) returns (RefreshAccountTokenResponse);
+
+  rpc CreateDownloadTask(CreateDownloadTaskRequest) returns (DownloadTaskInfo);
+  rpc GetDownloadProgress(GetDownloadProgressRequest) returns (DownloadProgress);
+  rpc CancelDownload(CancelDownloadRequest) returns (CancelDownloadResponse);
+
+  rpc ListBackups(ListBackupsRequest) returns (ListBackupsResponse);
+  rpc CreateBackup(CreateBackupRequest) returns (BackupInfo);
+  rpc RestoreBackup(RestoreBackupRequest) returns (RestoreBackupResponse);
+  rpc ConfigureBackupSchedule(ConfigureBackupScheduleRequest) returns (BackupSchedule);
+  rpc GetBackupSchedule(GetBackupScheduleRequest) returns (BackupSchedule);
+
+  rpc GetCacheStatus(GetCacheStatusRequest) returns (CacheStatus);
+  rpc ClearCache(ClearCacheRequest) returns (ClearCacheResponse);
+
+  rpc CheckForUpdates(CheckForUpdatesRequest) returns (UpdateInfo);
+  rpc ApplyUpdate(ApplyUpdateRequest) returns (ApplyUpdateResponse);
+
+  rpc StreamEvents(StreamEventsRequest) returns (stream DaemonEvent);
+}
+
+message HealthCheckRequest {
+  string client_version = 1;
+}
+
+message HealthCheckResponse {
+  bool healthy = 1;
+  string daemon_version = 2;
+  int64 uptime_seconds = 3;
+}
+
+message GetDaemonStatusRequest {}
+
+message DaemonStatus {
+  bool running = 1;
+  int32 cpu_percent = 2;
+  int64 memory_used_bytes = 3;
+  int32 active_instances = 4;
+  int32 download_tasks = 5;
+  int64 cache_size_bytes = 6;
+  string data_dir = 7;
+}
+
+message ListInstancesRequest {}
+
+message ListInstancesResponse {
+  repeated InstanceInfo instances = 1;
+}
+
+message InstanceInfo {
+  string id = 1;
+  string name = 2;
+  string game_version = 3;
+  string loader = 4;
+  string loader_version = 5;
+  string java_path = 6;
+  string java_version = 7;
+  bool running = 8;
+  int64 play_time_seconds = 9;
+  string last_played = 10;
+  string created_at = 11;
+  string folder_path = 12;
+}
+
+message GetInstanceRequest {
+  string instance_id = 1;
+}
+
+message CreateInstanceRequest {
+  string name = 1;
+  string game_version = 2;
+  string loader = 3;
+  string loader_version = 4;
+  string java_path = 5;
+}
+
+message UpdateInstanceRequest {
+  string instance_id = 1;
+  optional string name = 2;
+  optional string game_version = 3;
+  optional string loader = 4;
+  optional string loader_version = 5;
+  optional string java_path = 6;
+}
+
+message DeleteInstanceRequest {
+  string instance_id = 1;
+  bool delete_files = 2;
+}
+
+message DeleteInstanceResponse {
+  bool success = 1;
+}
+
+message LaunchInstanceRequest {
+  string instance_id = 1;
+  string account_id = 2;
+  string server_address = 3;
+}
+
+message LaunchInstanceResponse {
+  bool success = 1;
+  int32 pid = 2;
+  string error_message = 3;
+}
+
+message StopInstanceRequest {
+  string instance_id = 1;
+}
+
+message StopInstanceResponse {
+  bool success = 1;
+}
+
+message GetInstanceStatusRequest {
+  string instance_id = 1;
+}
+
+message InstanceStatus {
+  string instance_id = 1;
+  bool running = 2;
+  int32 pid = 3;
+  int64 memory_used_mb = 4;
+  float cpu_percent = 5;
+  int64 ticks = 6;
+}
+
+message ListAccountsRequest {}
+
+message AccountInfo {
+  string id = 1;
+  string username = 2;
+  string uuid = 3;
+  string account_type = 4;
+  string last_used = 5;
+}
+
+message ListAccountsResponse {
+  repeated AccountInfo accounts = 1;
+}
+
+message AddMicrosoftAccountRequest {
+  string auth_code = 1;
+}
+
+message AddCrackedAccountRequest {
+  string username = 1;
+}
+
+message RemoveAccountRequest {
+  string account_id = 1;
+}
+
+message RemoveAccountResponse {
+  bool success = 1;
+}
+
+message SelectAccountRequest {
+  string instance_id = 1;
+  string account_id = 2;
+}
+
+message SelectAccountResponse {
+  bool success = 1;
+}
+
+message RefreshAccountTokenRequest {
+  string account_id = 1;
+}
+
+message RefreshAccountTokenResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message CreateDownloadTaskRequest {
+  string source = 1;
+  string url = 2;
+  string dest_path = 3;
+  int64 expected_size = 4;
+  string expected_sha1 = 5;
+}
+
+message DownloadTaskInfo {
+  string id = 1;
+  string status = 2;
+  int64 downloaded_bytes = 3;
+  int64 total_bytes = 4;
+}
+
+message GetDownloadProgressRequest {
+  string task_id = 1;
+}
+
+message CancelDownloadRequest {
+  string task_id = 1;
+}
+
+message CancelDownloadResponse {
+  bool success = 1;
+}
+
+message ListBackupsRequest {
+  string instance_id = 1;
+}
+
+message BackupInfo {
+  string id = 1;
+  string instance_id = 2;
+  string created_at = 3;
+  string message = 4;
+  string commit_hash = 5;
+  string status = 6;
+  int64 size_bytes = 7;
+  int32 file_count = 8;
+  bool remote_synced = 9;
+}
+
+message ListBackupsResponse {
+  repeated BackupInfo backups = 1;
+}
+
+message CreateBackupRequest {
+  string instance_id = 1;
+  string message = 2;
+}
+
+message RestoreBackupRequest {
+  string instance_id = 1;
+  string backup_id = 2;
+  bool force = 3;
+}
+
+message RestoreBackupResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message ConfigureBackupScheduleRequest {
+  string instance_id = 1;
+  string schedule_type = 2;
+  double decimal_time = 3;
+  bool enabled = 4;
+}
+
+message GetBackupScheduleRequest {
+  string instance_id = 1;
+}
+
+message GetCacheStatusRequest {}
+
+message CacheStatus {
+  int64 total_size_bytes = 1;
+  int64 version_manifest_size = 2;
+  int64 asset_size = 3;
+  int64 library_size = 4;
+  int64 mod_size = 5;
+}
+
+message ClearCacheRequest {
+  string cache_type = 1;
+  bool all = 2;
+}
+
+message ClearCacheResponse {
+  bool success = 1;
+  int64 freed_bytes = 2;
+}
+
+message CheckForUpdatesRequest {}
+
+message UpdateInfo {
+  bool available = 1;
+  string latest_version = 2;
+  string download_url = 3;
+  string release_notes = 4;
+  bool critical = 5;
+}
+
+message ApplyUpdateRequest {
+  string version = 1;
+}
+
+message ApplyUpdateResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message StreamEventsRequest {}
+
+message DaemonEvent {
+  string event_type = 1;
+  string instance_id = 2;
+  string message = 3;
+  int64 timestamp = 4;
+  map<string, string> data = 5;
+}
