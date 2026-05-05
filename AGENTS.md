@@ -1,77 +1,81 @@
-# Vesper Launcher - Development Guide
+# Repository Guidelines
 
-## Quick Start
+## Project Structure & Module Organization
+This repository is a Tauri v2 desktop app with a React/Vite frontend.
 
-### Prerequisites
-- Rust 1.75+ with stable toolchain
-- OpenSSL (for reqwest with rustls-tls)
-- CMake (for some native dependencies)
-- Protocol Buffer compiler
+- `src/`: React + TypeScript UI code (`components/`, `routes/`, `lib/`, `store/`, `styles/`)
+- `src/test/`: test setup (`vitest` + Testing Library matchers)
+- `public/`: static assets (fonts are loaded from `public/fonts/`)
+- `src-tauri/`: Rust backend (`src/`, `Cargo.toml`, `tauri.conf.json`)
+- `.github/workflows/`: CI and release workflows
 
-### Building
+Use the `@/` alias for imports from `src` (configured in `tsconfig.json` and `vite.config.ts`).
 
-```bash
-cd /path/to/vesper-launcher
+## Build, Test, and Development Commands
+- `npm install`: install frontend and Tauri CLI dependencies
+- `npm run dev`: start the Vite dev server (web UI)
+- `npm run tauri:dev`: run the desktop app in Tauri dev mode
+- `npm run build`: build the frontend bundle
+- `npm run tauri:build`: build the desktop app package
+- `npm run lint`: run Biome checks
+- `npm run format`: format code with Biome
+- `npm run typecheck`: run TypeScript type checks
+- `npm run test` / `npm run test:run`: run Vitest (watch / single run)
+- `cargo check --manifest-path src-tauri/Cargo.toml`: validate Rust backend changes
 
-# Build all crates
-cargo build --release
+## Coding Style & Naming Conventions
+- TypeScript/TSX uses Biome formatting: 2-space indentation, double quotes, trailing commas.
+- Keep files and exports descriptive: `kebab-case` for route/component files (for example, `settings-page.tsx`), `camelCase` for variables/functions, `PascalCase` for React components and types.
+- Prefer small utilities in `src/lib/` and colocate UI primitives under `src/components/ui/`.
+- Theme palette defaults: use `#ffcea7` for accents (replace amber), with dark surfaces anchored on `#1C1F24` and `#141517`.
 
-# Or build individually
-cargo build -p vesper-ui --release
-cargo build -p vesper-daemon --release
-cargo build -p vesper-supervisor --release
-```
+## Testing Guidelines
+- Framework: `Vitest` with `jsdom`; test setup lives in `src/test/setup.ts`.
+- Name tests `*.test.ts` (example: `src/lib/config.test.ts`).
+- Add/adjust tests for config, schema, and utility logic when behavior changes.
+- Before opening a PR, run: `npm run lint && npm run typecheck && npm run test:run && npm run build`.
 
-### Running
+## Commit & Pull Request Guidelines
+This checkout has no commit history yet, so use a consistent convention going forward.
 
-```bash
-# Start supervisor (recommended)
-./target/release/vesper-supervisor
+- Commit format: Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`).
+- Keep commits focused (frontend UI, Rust backend, and tooling changes separate when practical).
+- PRs should include: summary, testing performed, linked issue (if any), and screenshots/GIFs for UI changes.
+- Ensure CI passes (`frontend` and `rust-check` jobs) before requesting review.
 
-# Or start directly
-./target/release/vesper-daemon &
-./target/release/vesper-ui
-```
+## Security & Configuration Tips
+- Do not commit secrets, tokens, or local machine paths.
+- Treat launcher/command execution changes as high risk; keep Tauri command surfaces explicit and minimal.
 
-## Architecture Overview
+## Tech Stack Overview
 
-- **UI Process**: Uses eframe/egui for rendering
-- **Daemon Process**: gRPC server managing all background operations
-- **Supervisor Process**: Auto-restarts daemon on crash
+### Frontend
 
-## Key Commands
+* **React** (TypeScript) – UI framework
+* **Vite** – frontend bundler and dev server
+* **shadcn/ui** – UI component primitives (built on Radix + Tailwind)
+* **Tailwind CSS** – utility-first styling
+* **Zustand** – state management
+* **Zod** – schema validation
 
-```bash
-# Check formatting
-cargo fmt --all
+### Backend (Desktop)
 
-# Run lints
-cargo clippy --all
+* **Tauri v2** – desktop application framework
+* **Rust** – backend logic and system integration
 
-# Run tests
-cargo test --all
+### Tooling & Quality
 
-# Build with all features
-cargo build --all-features
-```
+* **Vitest** – unit testing framework (with `jsdom`)
+* **Testing Library** – component testing utilities
+* **Biome** – linting and formatting
+* **TypeScript** – static typing
 
-## Crate Structure
+### Optional / Service Integrations
 
-| Crate | Purpose |
-|-------|---------|
-| vesper-core | Shared types, domain models |
-| vesper-proto | gRPC service definitions |
-| vesper-ui | eframe/egui application |
-| vesper-daemon | Background service |
-| vesper-supervisor | Process supervisor |
-| vesper-download | Download subsystem |
-| vesper-auth | Authentication |
-| vesper-git | Git operations |
-| vesper-update | Update system |
+* **Convex** – backend/database (if enabled)
+* **Resend** – email delivery (if enabled)
 
-## Development Notes
-
-- Use `tracing` for logging
-- gRPC runs on `127.0.0.1:50051`
-- Instance storage: `~/.local/share/vesper/instances/`
-- Global cache: `~/.cache/vesper/`
+## Notes
+- After completing the request, commit the changes to a local git repository. Branch: master
+- Use Bun > pnpm > npm
+- Play with rounded corners and squircles if you think its fitting for that specific object.
