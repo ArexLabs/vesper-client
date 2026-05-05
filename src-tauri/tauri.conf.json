@@ -4,9 +4,8 @@
   "version": "0.1.0",
   "identifier": "io.vesper.launcher",
   "build": {
-    "beforeDevCommand": "npm run dev:server",
     "beforeBuildCommand": "npm run build",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:1423",
     "frontendDist": "../dist"
   },
   "app": {
