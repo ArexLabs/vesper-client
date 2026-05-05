@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
+    "dev": "npm run tauri:dev",
+    "dev:server": "node ./node_modules/vite/bin/vite.js",
     "build": "node ./node_modules/vite/bin/vite.js build",
     "preview": "node ./node_modules/vite/bin/vite.js preview",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
