@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "identifier": "ai.vesper.client",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run dev:server",
     "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
