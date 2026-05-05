@@ -8,8 +8,21 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { t } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
 import { formatDateTime } from "@/lib/utils";
@@ -92,7 +105,10 @@ export function InstancesPage() {
                       setLoaderFilter(value);
                     }}
                   >
-                    <SelectTrigger className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]" id="library-loader-filter">
+                    <SelectTrigger
+                      className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
+                      id="library-loader-filter"
+                    >
                       <SelectValue placeholder={t(lang, "allLoaders")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -108,8 +124,14 @@ export function InstancesPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="library-sort">Sort</Label>
-                  <Select value={sortMode} onValueChange={(value) => setSortMode(value as SortMode)}>
-                    <SelectTrigger className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]" id="library-sort">
+                  <Select
+                    value={sortMode}
+                    onValueChange={(value) => setSortMode(value as SortMode)}
+                  >
+                    <SelectTrigger
+                      className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
+                      id="library-sort"
+                    >
                       <SelectValue placeholder={t(lang, "sortUpdated")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -176,7 +198,9 @@ export function InstancesPage() {
                 key={instance.id}
                 instance={instance}
                 lang={lang}
-                presetName={instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null}
+                presetName={
+                  instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null
+                }
               />
             ))}
           </section>
@@ -200,11 +224,17 @@ export function InstancesPage() {
                     <TableRow key={instance.id}>
                       <TableCell>
                         <div className="font-medium text-text">{instance.name}</div>
-                        <div className="mt-1 text-xs text-textMuted">{instance.modpackName ?? "No pack name"}</div>
+                        <div className="mt-1 text-xs text-textMuted">
+                          {instance.modpackName ?? "No pack name"}
+                        </div>
                       </TableCell>
                       <TableCell>{instance.mcVersion}</TableCell>
                       <TableCell>{instance.loader}</TableCell>
-                      <TableCell>{instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : "None"}</TableCell>
+                      <TableCell>
+                        {instance.presetId
+                          ? (presetById[instance.presetId] ?? instance.presetId)
+                          : "None"}
+                      </TableCell>
                       <TableCell>{formatDateTime(instance.lastPlayedAt, lang)}</TableCell>
                       <TableCell>{formatDateTime(instance.updatedAt, lang)}</TableCell>
                       <TableCell className="text-right">
@@ -230,7 +260,12 @@ export function InstancesPage() {
         )}
       </div>
 
-      <CreateInstanceSheet lang={lang} onCreate={handleCreate} onOpenChange={setCreateOpen} open={createOpen} />
+      <CreateInstanceSheet
+        lang={lang}
+        onCreate={handleCreate}
+        onOpenChange={setCreateOpen}
+        open={createOpen}
+      />
     </>
   );
 }

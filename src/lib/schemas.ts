@@ -17,11 +17,13 @@ const launcherConfigBaseSchema = z.object({
   }),
 });
 
-export const launcherConfigSchema = launcherConfigBaseSchema
-  .refine((cfg) => cfg.memoryMbMax >= cfg.memoryMbMin, {
+export const launcherConfigSchema = launcherConfigBaseSchema.refine(
+  (cfg) => cfg.memoryMbMax >= cfg.memoryMbMin,
+  {
     path: ["memoryMbMax"],
     message: "memoryMbMax must be >= memoryMbMin",
-  });
+  },
+);
 
 export const launcherConfigPatchSchema = launcherConfigBaseSchema.deepPartial().refine(
   (cfg) => {

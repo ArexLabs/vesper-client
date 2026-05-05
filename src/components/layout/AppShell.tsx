@@ -178,16 +178,28 @@ export function AppShell() {
             </p>
             <div className="mb-4 rounded-md border border-border bg-[#0a0a0a] px-3 py-2">
               <div className="text-[10px] uppercase tracking-[0.16em] text-textMuted">Code</div>
-              <div className="font-mono text-lg font-semibold tracking-[0.15em] text-text">{loginFlow.userCode}</div>
+              <div className="font-mono text-lg font-semibold tracking-[0.15em] text-text">
+                {loginFlow.userCode}
+              </div>
             </div>
             <div className="flex gap-2">
               <Button
                 size="sm"
-                onClick={() => window.open(loginFlow.verificationUriComplete ?? loginFlow.verificationUri, "_blank", "noopener,noreferrer")}
+                onClick={() =>
+                  window.open(
+                    loginFlow.verificationUriComplete ?? loginFlow.verificationUri,
+                    "_blank",
+                    "noopener,noreferrer",
+                  )
+                }
               >
                 Open Microsoft
               </Button>
-              <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(loginFlow.userCode)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(loginFlow.userCode)}
+              >
                 Copy Code
               </Button>
             </div>

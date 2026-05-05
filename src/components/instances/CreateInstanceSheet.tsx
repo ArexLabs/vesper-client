@@ -2,7 +2,13 @@ import { Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { t } from "@/lib/i18n";
 import type { CreateInstanceInput } from "@/lib/ipc";
@@ -30,7 +36,12 @@ type CreateInstanceSheetProps = {
   lang: Language;
 };
 
-export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: CreateInstanceSheetProps) {
+export function CreateInstanceSheet({
+  open,
+  onOpenChange,
+  onCreate,
+  lang,
+}: CreateInstanceSheetProps) {
   const [name, setName] = useState("");
   const [mcVersion, setMcVersion] = useState("1.20.1");
   const [loader, setLoader] = useState<z.infer<typeof loaderSchema>>("fabric");
@@ -71,7 +82,10 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
       setCatalogLoading(true);
       setCatalogError(null);
       try {
-        const [versions, loaders] = await Promise.all([fetchMinecraftVersions(180), fetchLoaderOptions()]);
+        const [versions, loaders] = await Promise.all([
+          fetchMinecraftVersions(180),
+          fetchLoaderOptions(),
+        ]);
         if (!mounted) return;
 
         const sortedVersions = versions.map((v) => v.id);
@@ -93,7 +107,9 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
         }
       } catch (error) {
         if (!mounted) return;
-        setCatalogError(error instanceof Error ? error.message : "Failed to load Minecraft catalog metadata.");
+        setCatalogError(
+          error instanceof Error ? error.message : "Failed to load Minecraft catalog metadata.",
+        );
       } finally {
         if (mounted) {
           setCatalogLoading(false);
@@ -147,7 +163,9 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
       setName("");
       setModpackName("");
       const resetVersion = versionOptions[0] ?? "1.20.1";
-      const resetLoader = loaderOptions.includes("fabric") ? "fabric" : (loaderOptions[0] ?? "vanilla");
+      const resetLoader = loaderOptions.includes("fabric")
+        ? "fabric"
+        : (loaderOptions[0] ?? "vanilla");
       setMcVersion(resetVersion);
       setLoader(resetLoader);
       setShowValidation(false);
@@ -182,12 +200,15 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
         <div className="flex h-full flex-col">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent/90">New Instance</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent/90">
+                New Instance
+              </p>
               <h2 id="create-instance-title" className="mt-1 text-xl font-semibold text-text">
                 {t(lang, "createInstance")}
               </h2>
               <p className="mt-1 text-sm text-textMuted">
-                Create a local instance preset shell. Validation runs before dispatching to the store.
+                Create a local instance preset shell. Validation runs before dispatching to the
+                store.
               </p>
             </div>
             <Tooltip>
@@ -227,7 +248,9 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                  error={showValidation || fieldTouched.mcVersion ? fieldErrors.mcVersion : undefined}
+                  error={
+                    showValidation || fieldTouched.mcVersion ? fieldErrors.mcVersion : undefined
+                  }
                   helper="Live versions sourced from Mojang metadata."
                   label={t(lang, "mcVersion")}
                 >
@@ -239,8 +262,14 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
                       setFieldTouched((prev) => ({ ...prev, mcVersion: true }));
                     }}
                   >
-                    <SelectTrigger className={cn("h-10", invalidFor("mcVersion") && "ring-2 ring-danger/30")}>
-                      <SelectValue placeholder={catalogLoading ? "Loading versions…" : "Select a Minecraft version"} />
+                    <SelectTrigger
+                      className={cn("h-10", invalidFor("mcVersion") && "ring-2 ring-danger/30")}
+                    >
+                      <SelectValue
+                        placeholder={
+                          catalogLoading ? "Loading versions…" : "Select a Minecraft version"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {versionOptions.length > 0 ? (
@@ -281,7 +310,9 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
               </div>
 
               <Field
-                error={showValidation || fieldTouched.modpackName ? fieldErrors.modpackName : undefined}
+                error={
+                  showValidation || fieldTouched.modpackName ? fieldErrors.modpackName : undefined
+                }
                 helper="Optional. Used as secondary metadata in cards and table rows."
                 label={t(lang, "modpackNameOptional")}
               >
@@ -297,7 +328,9 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate, lang }: Crea
             </div>
 
             <div className="mt-5 rounded-lg border border-border bg-surface1/60 p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-textMuted">Validation</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-textMuted">
+                Validation
+              </p>
               <p className="mt-1 text-xs text-textMuted">
                 {validation.success
                   ? "All fields look valid. You can create the instance."

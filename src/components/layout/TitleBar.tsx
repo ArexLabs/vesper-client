@@ -100,7 +100,13 @@ export function TitleBar() {
             <TooltipTrigger
               render={
                 <Button
-                  aria-label={control.key === "maximize" ? (isMaximized ? "Restore window" : control.label) : control.label}
+                  aria-label={
+                    control.key === "maximize"
+                      ? isMaximized
+                        ? "Restore window"
+                        : control.label
+                      : control.label
+                  }
                   className={`h-8 w-8 rounded-lg hover:bg-white/5 transition-colors ${control.textClassName}`}
                   onClick={() => void runWindowAction(control.key)}
                   size="icon-sm"
@@ -112,7 +118,11 @@ export function TitleBar() {
               }
             />
             <TooltipContent>
-              {control.key === "maximize" ? (isMaximized ? "Restore window" : "Maximize window") : control.label}
+              {control.key === "maximize"
+                ? isMaximized
+                  ? "Restore window"
+                  : "Maximize window"
+                : control.label}
             </TooltipContent>
           </Tooltip>
         ))}

@@ -97,8 +97,7 @@
 
   body {
     @apply bg-bg text-text font-sans antialiased;
-    background-image:
-      radial-gradient(circle at 12% 0%, rgba(255, 206, 167, 0.04), transparent 32%),
+    background-image: radial-gradient(circle at 12% 0%, rgba(255, 206, 167, 0.04), transparent 32%),
       radial-gradient(circle at 86% 12%, rgba(255, 206, 167, 0.03), transparent 36%);
   }
 

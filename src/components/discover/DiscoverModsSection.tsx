@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +29,14 @@ export function DiscoverModsSection({
   const [sort, setSort] = useState<"relevance" | "downloads" | "follows" | "updated">("downloads");
   const [loader, setLoader] = useState("all");
   const [gameVersion, setGameVersion] = useState("all");
-  const [loaderOptions, setLoaderOptions] = useState<string[]>(["all", "vanilla", "fabric", "forge", "neoforge", "quilt"]);
+  const [loaderOptions, setLoaderOptions] = useState<string[]>([
+    "all",
+    "vanilla",
+    "fabric",
+    "forge",
+    "neoforge",
+    "quilt",
+  ]);
   const [versions, setVersions] = useState<string[]>([]);
 
   const {
@@ -72,12 +85,16 @@ export function DiscoverModsSection({
       <CardHeader className="space-y-4 p-5">
         <div className="space-y-1">
           <CardTitle className="text-xl font-semibold text-text">Discover Mods</CardTitle>
-          <p className="text-sm text-textMuted">Search Modrinth and install directly into the client download cache.</p>
+          <p className="text-sm text-textMuted">
+            Search Modrinth and install directly into the client download cache.
+          </p>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_180px_180px_180px]">
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}>Search</Label>
+            <Label htmlFor={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}>
+              Search
+            </Label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-textMuted" />
               <Input
@@ -109,7 +126,9 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-loader-home" : "discover-loader-explore"}>Loader</Label>
+            <Label htmlFor={compact ? "discover-loader-home" : "discover-loader-explore"}>
+              Loader
+            </Label>
             <Select
               value={loader}
               onValueChange={(value) => {
@@ -134,7 +153,9 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-version-home" : "discover-version-explore"}>Minecraft</Label>
+            <Label htmlFor={compact ? "discover-version-home" : "discover-version-explore"}>
+              Minecraft
+            </Label>
             <Select
               value={gameVersion}
               onValueChange={(value) => {
@@ -172,7 +193,9 @@ export function DiscoverModsSection({
         ) : null}
 
         {error ? (
-          <div className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
+          <div className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger">
+            {error}
+          </div>
         ) : null}
 
         {loading ? (
@@ -182,7 +205,11 @@ export function DiscoverModsSection({
               compact ? "max-h-[30rem]" : "max-h-[calc(100vh-19rem)]",
             )}
           >
-            <div className={compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
+            <div
+              className={
+                compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+              }
+            >
               {Array.from({ length: compact ? 4 : 6 }).map((_, index) => (
                 <div key={index} className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4">
                   <div className="flex gap-3">
@@ -212,13 +239,25 @@ export function DiscoverModsSection({
               compact ? "max-h-[30rem]" : "max-h-[calc(100vh-19rem)]",
             )}
           >
-            <div className={compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
+            <div
+              className={
+                compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+              }
+            >
               {results.map((project) => (
-                <article key={project.id} className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4">
+                <article
+                  key={project.id}
+                  className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4"
+                >
                   <div className="flex items-start gap-3">
                     <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/8 bg-[#0d0d0d]">
                       {project.iconUrl ? (
-                        <img alt="" className="h-full w-full object-cover" loading="lazy" src={project.iconUrl} />
+                        <img
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          src={project.iconUrl}
+                        />
                       ) : (
                         <span className="text-xs font-semibold text-textMuted">MOD</span>
                       )}
@@ -226,10 +265,14 @@ export function DiscoverModsSection({
 
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-sm font-semibold text-text">{project.title}</h3>
-                      <p className="truncate text-xs text-textMuted">{project.author ?? "Unknown author"}</p>
+                      <p className="truncate text-xs text-textMuted">
+                        {project.author ?? "Unknown author"}
+                      </p>
                       <p className="mt-2 text-xs text-textMuted">
                         {project.downloads.toLocaleString()} downloads
-                        {project.followers > 0 ? ` · ${project.followers.toLocaleString()} followers` : ""}
+                        {project.followers > 0
+                          ? ` · ${project.followers.toLocaleString()} followers`
+                          : ""}
                       </p>
                     </div>
                   </div>

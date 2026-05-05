@@ -173,8 +173,12 @@ export async function beginMicrosoftDeviceLoginNative(): Promise<MicrosoftDevice
   return await invokeOrThrow<MicrosoftDeviceLoginStart>("auth_begin_microsoft_device_login");
 }
 
-export async function pollMicrosoftDeviceLoginNative(sessionId: string): Promise<MicrosoftDeviceLoginPoll> {
-  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("auth_poll_microsoft_device_login", { sessionId });
+export async function pollMicrosoftDeviceLoginNative(
+  sessionId: string,
+): Promise<MicrosoftDeviceLoginPoll> {
+  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("auth_poll_microsoft_device_login", {
+    sessionId,
+  });
 }
 
 export async function logoutMicrosoftNative(): Promise<RuntimeAuthStatus> {
@@ -213,7 +217,9 @@ function mapModrinthHit(raw: unknown): DiscoverSearchResult | null {
   };
 }
 
-export async function discoverSearchModrinthNative(input: DiscoverSearchInput): Promise<DiscoverSearchResult[]> {
+export async function discoverSearchModrinthNative(
+  input: DiscoverSearchInput,
+): Promise<DiscoverSearchResult[]> {
   try {
     return await invokeOrThrow<DiscoverSearchResult[]>("discover_search_modrinth", { input });
   } catch {
@@ -230,7 +236,9 @@ export async function discoverSearchModrinthNative(input: DiscoverSearchInput): 
       throw new Error(`Modrinth search failed (${response.status})`);
     }
     const body = (await response.json()) as { hits?: unknown[] };
-    return (body.hits ?? []).map(mapModrinthHit).filter((item): item is DiscoverSearchResult => Boolean(item));
+    return (body.hits ?? [])
+      .map(mapModrinthHit)
+      .filter((item): item is DiscoverSearchResult => Boolean(item));
   }
 }
 

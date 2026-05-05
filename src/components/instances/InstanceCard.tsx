@@ -76,10 +76,16 @@ export function InstanceCard({ instance, lang, presetName, className }: Instance
           </Tooltip>
 
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={() => navigate(`/instances/${instance.id}`)}>Open</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate(`/config-studio?instance=${instance.id}`)}>Edit</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate(`/instances/${instance.id}`)}>
+              Open
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate(`/config-studio?instance=${instance.id}`)}>
+              Edit
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => void duplicateInstance(instance.id)}>Duplicate</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => void duplicateInstance(instance.id)}>
+              Duplicate
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => void handleDelete()} variant="destructive">
               Delete
             </DropdownMenuItem>
@@ -90,13 +96,20 @@ export function InstanceCard({ instance, lang, presetName, className }: Instance
       <div className="mt-4 grid gap-3 rounded-3xl border border-white/8 bg-[#0d0d0d] p-4 text-sm">
         <InfoCell label={t(lang, "preset")} value={presetName ?? "None"} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <InfoCell label={t(lang, "lastPlayed")} value={formatDateTime(instance.lastPlayedAt, lang)} />
+          <InfoCell
+            label={t(lang, "lastPlayed")}
+            value={formatDateTime(instance.lastPlayedAt, lang)}
+          />
           <InfoCell label="Updated" value={formatDateTime(instance.updatedAt, lang)} />
         </div>
       </div>
 
       <div className="mt-4 flex gap-2">
-        <Button className="flex-1 rounded-2xl" onClick={() => void launchInstance(instance.id)} type="button">
+        <Button
+          className="flex-1 rounded-2xl"
+          onClick={() => void launchInstance(instance.id)}
+          type="button"
+        >
           Play
         </Button>
         <Button
@@ -120,7 +133,9 @@ type InfoCellProps = {
 function InfoCell({ label, value }: InfoCellProps) {
   return (
     <div className="min-w-0 space-y-1">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-textMuted">{label}</div>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-textMuted">
+        {label}
+      </div>
       <div className="truncate text-sm text-text">{value}</div>
     </div>
   );

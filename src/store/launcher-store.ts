@@ -61,7 +61,11 @@ type LauncherStore = {
   duplicateInstance: (instanceId: string) => Promise<void>;
   deleteInstance: (instanceId: string) => Promise<void>;
   applyPresetToInstance: (instanceId: string, presetId: string | null) => Promise<SaveResult>;
-  saveInstanceResolvedConfig: (instanceId: string, config: unknown, note?: string) => Promise<SaveResult>;
+  saveInstanceResolvedConfig: (
+    instanceId: string,
+    config: unknown,
+    note?: string,
+  ) => Promise<SaveResult>;
   rollbackInstanceSnapshot: (instanceId: string, snapshotId: string) => Promise<SaveResult>;
   exportPresetJson: (presetId: string) => string | null;
   importPresetJson: (jsonText: string) => Promise<SaveResult>;
@@ -129,7 +133,9 @@ function duplicateName(name: string, existingNames: string[]) {
 }
 
 function stripSeededPlaceholderInstances(data: AppState) {
-  const instances = data.instances.filter((instance) => !SEEDED_PLACEHOLDER_INSTANCE_IDS.has(instance.id));
+  const instances = data.instances.filter(
+    (instance) => !SEEDED_PLACEHOLDER_INSTANCE_IDS.has(instance.id),
+  );
   if (instances.length === data.instances.length) return data;
   return appStateSchema.parse({
     ...data,
@@ -219,7 +225,9 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
 
     shouldPromptLogin() {
       const profiles = get().data.profiles;
-      const isLoggedIn = profiles.some((p) => p.provider === "microsoft" && p.authState === "signed_in");
+      const isLoggedIn = profiles.some(
+        (p) => p.provider === "microsoft" && p.authState === "signed_in",
+      );
       return !isLoggedIn;
     },
 
@@ -278,7 +286,11 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
     async updateGlobalDefaults(config) {
       const parsed = launcherConfigSchema.safeParse(config);
       if (!parsed.success) {
-        return { ok: false, error: "Invalid global defaults", issues: formatZodIssues(parsed.error.issues) };
+        return {
+          ok: false,
+          error: "Invalid global defaults",
+          issues: formatZodIssues(parsed.error.issues),
+        };
       }
       commit((draft) => {
         draft.settingsSnapshots.unshift(
@@ -297,7 +309,11 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
     async savePresetPatch(presetId, patch, note = "Preset patch updated") {
       const parsed = launcherConfigPatchSchema.safeParse(patch);
       if (!parsed.success) {
-        return { ok: false, error: "Invalid preset patch", issues: formatZodIssues(parsed.error.issues) };
+        return {
+          ok: false,
+          error: "Invalid preset patch",
+          issues: formatZodIssues(parsed.error.issues),
+        };
       }
       let found = false;
       commit((draft) => {
@@ -397,7 +413,9 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
         if (!instance) return;
         instance.presetId = presetId;
         instance.updatedAt = nowIso();
-        instance.snapshots.unshift(buildInstanceSnapshot(draft, instance, "Preset applied/changed"));
+        instance.snapshots.unshift(
+          buildInstanceSnapshot(draft, instance, "Preset applied/changed"),
+        );
         clamp(instance.snapshots, 100);
         ok = true;
       });
@@ -408,14 +426,28 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
     async saveInstanceResolvedConfig(instanceId, config, note = "Config Studio save") {
       const parsed = launcherConfigSchema.safeParse(config);
       if (!parsed.success) {
-        return { ok: false, error: "Invalid instance config", issues: formatZodIssues(parsed.error.issues) };
+        return {
+          ok: false,
+          error: "Invalid instance config",
+          issues: formatZodIssues(parsed.error.issues),
+        };
       }
       let found = false;
       commit((draft) => {
         const instance = draft.instances.find((i) => i.id === instanceId);
         if (!instance) return;
-        const preset = instance.presetId ? draft.presets.find((p) => p.id === instance.presetId) ?? null : null;
-        const base = resolveInstanceConfig({ ...draft, presets: preset ? [preset, ...draft.presets.filter((p) => p.id !== preset.id)] : draft.presets }, { ...instance, overrides: {} });
+        const preset = instance.presetId
+          ? (draft.presets.find((p) => p.id === instance.presetId) ?? null)
+          : null;
+        const base = resolveInstanceConfig(
+          {
+            ...draft,
+            presets: preset
+              ? [preset, ...draft.presets.filter((p) => p.id !== preset.id)]
+              : draft.presets,
+          },
+          { ...instance, overrides: {} },
+        );
         instance.overrides = diffLauncherConfig(base, parsed.data);
         instance.updatedAt = nowIso();
         instance.snapshots.unshift(buildInstanceSnapshot(draft, instance, note));
@@ -436,7 +468,9 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
         instance.presetId = snap.presetId;
         instance.overrides = structuredClone(snap.overrides);
         instance.updatedAt = nowIso();
-        instance.snapshots.unshift(buildInstanceSnapshot(draft, instance, `Rollback to ${snapshotId}`));
+        instance.snapshots.unshift(
+          buildInstanceSnapshot(draft, instance, `Rollback to ${snapshotId}`),
+        );
         clamp(instance.snapshots, 100);
         ok = true;
       });
@@ -459,7 +493,11 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
             : raw;
         const parsed = presetSchema.safeParse(candidate);
         if (!parsed.success) {
-          return { ok: false, error: "Invalid preset JSON", issues: formatZodIssues(parsed.error.issues) };
+          return {
+            ok: false,
+            error: "Invalid preset JSON",
+            issues: formatZodIssues(parsed.error.issues),
+          };
         }
         commit((draft) => {
           const idx = draft.presets.findIndex((p) => p.id === parsed.data.id);
@@ -480,7 +518,10 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
         });
         return { ok: true };
       } catch (error) {
-        return { ok: false, error: error instanceof Error ? error.message : "Failed to parse preset JSON" };
+        return {
+          ok: false,
+          error: error instanceof Error ? error.message : "Failed to parse preset JSON",
+        };
       }
     },
 
@@ -489,7 +530,12 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
       if (!instance) return null;
       const resolved = resolveInstanceConfig(get().data, instance);
       return JSON.stringify(
-        { schema: "vesper/instance-config/v1", instanceId, exportedAt: nowIso(), resolvedConfig: resolved },
+        {
+          schema: "vesper/instance-config/v1",
+          instanceId,
+          exportedAt: nowIso(),
+          resolvedConfig: resolved,
+        },
         null,
         2,
       );
@@ -502,9 +548,16 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
           raw && typeof raw === "object" && "resolvedConfig" in (raw as Record<string, unknown>)
             ? (raw as { resolvedConfig: unknown }).resolvedConfig
             : raw;
-        return await get().saveInstanceResolvedConfig(instanceId, candidate, "Imported instance config JSON");
+        return await get().saveInstanceResolvedConfig(
+          instanceId,
+          candidate,
+          "Imported instance config JSON",
+        );
       } catch (error) {
-        return { ok: false, error: error instanceof Error ? error.message : "Failed to parse instance JSON" };
+        return {
+          ok: false,
+          error: error instanceof Error ? error.message : "Failed to parse instance JSON",
+        };
       }
     },
 

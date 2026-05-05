@@ -114,7 +114,9 @@ export function AppLayout() {
               <div className="grid min-h-[50vh] place-items-center">
                 <div className="panel w-full max-w-md p-6 text-center">
                   <div className="mb-2 text-sm font-semibold">Initializing Vesper</div>
-                  <div className="text-sm text-textMuted">Loading state and validating schemas…</div>
+                  <div className="text-sm text-textMuted">
+                    Loading state and validating schemas…
+                  </div>
                 </div>
               </div>
             ) : (

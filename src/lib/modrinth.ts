@@ -39,7 +39,8 @@ function buildFacets(input: SearchModrinthProjectsInput) {
 function mapHit(raw: unknown): ModrinthProject | null {
   if (!raw || typeof raw !== "object") return null;
   const hit = raw as Record<string, unknown>;
-  const id = typeof hit.project_id === "string" ? hit.project_id : typeof hit.id === "string" ? hit.id : "";
+  const id =
+    typeof hit.project_id === "string" ? hit.project_id : typeof hit.id === "string" ? hit.id : "";
   if (!id) return null;
 
   const slug = typeof hit.slug === "string" ? hit.slug : null;
@@ -59,7 +60,9 @@ function mapHit(raw: unknown): ModrinthProject | null {
   };
 }
 
-export async function searchModrinthProjects(input: SearchModrinthProjectsInput): Promise<ModrinthProject[]> {
+export async function searchModrinthProjects(
+  input: SearchModrinthProjectsInput,
+): Promise<ModrinthProject[]> {
   const query = input.query.trim();
   const url = new URL("https://api.modrinth.com/v2/search");
   url.searchParams.set("query", query);

@@ -74,23 +74,21 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
     </>
   );
 
-  const expandedAction = !collapsed
-    ? isLoggedIn
-        ? (
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              aria-label="Log out Microsoft account"
-              title="Log out"
-              onClick={() => void signOut()}
-              className="ml-auto h-9 w-9 text-textMuted transition-[opacity,transform] duration-300 ease-in-out hover:bg-white/6 hover:text-text"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          )
-        : null
-    : null;
+  const expandedAction = !collapsed ? (
+    isLoggedIn ? (
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        aria-label="Log out Microsoft account"
+        title="Log out"
+        onClick={() => void signOut()}
+        className="ml-auto h-9 w-9 text-textMuted transition-[opacity,transform] duration-300 ease-in-out hover:bg-white/6 hover:text-text"
+      >
+        <LogOut className="h-4 w-4" />
+      </Button>
+    ) : null
+  ) : null;
 
   return (
     <div className={cn("relative", collapsed && "justify-self-center")}>

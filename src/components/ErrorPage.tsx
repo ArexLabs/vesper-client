@@ -28,32 +28,34 @@ export function ErrorPage() {
 // Fallback error page in case the main one fails
 export function DefaultErrorPage() {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      backgroundColor: '#0a0a0a',
-      color: '#fafafa',
-      fontFamily: 'system-ui, sans-serif',
-    }}>
-      <div style={{ textAlign: 'center', padding: '20px' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-        <h1 style={{ fontSize: '20px', marginBottom: '8px' }}>Something went wrong</h1>
-        <p style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '24px' }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        backgroundColor: "#0a0a0a",
+        color: "#fafafa",
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
+      <div style={{ textAlign: "center", padding: "20px" }}>
+        <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
+        <h1 style={{ fontSize: "20px", marginBottom: "8px" }}>Something went wrong</h1>
+        <p style={{ fontSize: "14px", color: "#a1a1aa", marginBottom: "24px" }}>
           An unexpected error occurred.
         </p>
         <button
           onClick={() => window.location.reload()}
           style={{
-            padding: '8px 16px',
-            backgroundColor: '#ffcea7',
-            color: '#0a0a0a',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
+            padding: "8px 16px",
+            backgroundColor: "#ffcea7",
+            color: "#0a0a0a",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: "500",
+            cursor: "pointer",
           }}
         >
           Reload App
@@ -62,4 +64,3 @@ export function DefaultErrorPage() {
     </div>
   );
 }
-

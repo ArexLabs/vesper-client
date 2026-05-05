@@ -1,21 +1,28 @@
 [package]
-name = "vesper-launcher"
-version = "0.1.0"
+name = "vesper-client"
+version = "1.0.0"
+description = "Vesper Minecraft Client"
+authors = ["Vesper Team"]
 edition = "2021"
 
 [lib]
-name = "vesper_launcher_lib"
-crate-type = ["cdylib", "rlib", "staticlib"]
-
-[build-dependencies]
-tauri-build = { version = "2", features = [] }
+crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-chrono = { version = "0.4", features = ["serde"] }
-directories = "5"
-keyring = "2.3"
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tauri = { version = "2", features = [] }
-uuid = { version = "1", features = ["v4", "serde"] }
+tauri = { version = "2.0.0", features = ["devtools"] }
+reqwest = { version = "0.11", features = ["json", "native-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+thiserror = "1.0"
+dirs = "5.0"
+tracing = "0.1"
+urlencoding = "2.1"
+open = "5.0"
+
+[build-dependencies]
+tauri-build = "2.0.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

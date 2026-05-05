@@ -13,5 +13,12 @@ export function AssetIcon({ className, src, style, ...props }: AssetIconProps) {
     mask: `url(${src}) center / contain no-repeat`,
   } satisfies CSSProperties;
 
-  return <span aria-hidden="true" className={cn("inline-block shrink-0 bg-current", className)} style={iconStyle} {...props} />;
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("inline-block shrink-0 bg-current", className)}
+      style={iconStyle}
+      {...props}
+    />
+  );
 }
