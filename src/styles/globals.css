@@ -40,22 +40,22 @@
   --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --bg: 220 7% 8.4%;
-  --surface-1: 217.5 12.5% 12.5%;
-  --surface-2: 218 12% 15.5%;
-  --surface-3: 218 11% 19%;
-  --border: 220 16% 100% / 0.09;
-  --muted: 221 16% 18%;
-  --text: 220 22% 93%;
-  --text-muted: 220 14% 67%;
-  --accent: 26.6 100% 82.7%;
+  --bg: 0 0% 3.9%;
+  --surface-1: 0 0% 6.5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 12%;
+  --border: 0 0% 100% / 0.06;
+  --muted: 0 0% 10%;
+  --text: 0 0% 95%;
+  --text-muted: 0 0% 60%;
+  --accent: 26.6 100% 70%;
   --accent-foreground: 24 25% 10%;
-  --ring: 26.6 100% 82.7%;
-  --shadow: 0 14px 36px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  --radius: 14px;
+  --ring: 26.6 100% 70%;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --radius: 12px;
 
   --success: 147 62% 43%;
-  --warning: 26.6 100% 82.7%;
+  --warning: 26.6 100% 70%;
   --danger: 0 72% 58%;
 
   /* shadcn semantic tokens */
@@ -80,7 +80,7 @@
   --sidebar-primary-foreground: var(--accent-foreground);
   --sidebar-accent: var(--surface-3);
   --sidebar-accent-foreground: var(--text);
-  --sidebar-border: 220 16% 100% / 0.09;
+  --sidebar-border: 0 0% 100% / 0.06;
   --sidebar-ring: var(--ring);
 }
 
@@ -98,36 +98,34 @@
   body {
     @apply bg-bg text-text font-sans antialiased;
     background-image:
-      radial-gradient(circle at 12% 0%, rgba(255, 206, 167, 0.08), transparent 32%),
-      radial-gradient(circle at 86% 12%, rgba(255, 206, 167, 0.06), transparent 36%),
-      radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.018), transparent 52%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0));
+      radial-gradient(circle at 12% 0%, rgba(255, 206, 167, 0.04), transparent 32%),
+      radial-gradient(circle at 86% 12%, rgba(255, 206, 167, 0.03), transparent 36%);
   }
 
   * {
-    scrollbar-color: rgba(255, 206, 167, 0.4) rgba(255, 255, 255, 0.03);
+    scrollbar-color: rgba(255, 206, 167, 0.25) rgba(255, 255, 255, 0.02);
     scrollbar-width: thin;
   }
 
   *::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 8px;
+    height: 8px;
   }
 
   *::-webkit-scrollbar-track {
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
   }
 
   *::-webkit-scrollbar-thumb {
-    border: 3px solid transparent;
+    border: 2px solid transparent;
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(255, 206, 167, 0.7), rgba(255, 206, 167, 0.35));
+    background: rgba(255, 206, 167, 0.35);
     background-clip: padding-box;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(255, 206, 167, 0.82), rgba(255, 206, 167, 0.46));
+    background: rgba(255, 206, 167, 0.5);
     background-clip: padding-box;
   }
 
@@ -150,8 +148,31 @@
 @layer components {
   .panel {
     @apply rounded-[var(--radius)] border shadow-panel;
-    background-color: hsl(var(--surface-2) / 0.92);
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0));
+    background-color: hsl(var(--surface-2) / 0.8);
+  }
+
+  .panel-soft {
+    @apply rounded-[calc(var(--radius)-2px)] border;
+    background-color: hsl(var(--surface-1) / 0.6);
+  }
+
+  .section-shell {
+    @apply rounded-[calc(var(--radius)+2px)] border shadow-panel;
+    background-color: hsl(var(--surface-1) / 0.5);
+  }
+
+  .field {
+    @apply h-10 w-full rounded-[calc(var(--radius)-4px)] border px-3 text-sm text-text transition;
+    background-color: hsl(var(--surface-1) / 0.7);
+  }
+
+  .field:hover {
+    @apply border-white/10 bg-surface1;
+  }
+
+  .field:focus-visible {
+    @apply border-white/15 ring-2;
+    --tw-ring-color: hsl(var(--ring) / 0.2);
   }
 
   .panel-soft {

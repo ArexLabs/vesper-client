@@ -1,5 +1,6 @@
 import { createHashRouter } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
+import { ErrorLayout } from "@/components/layout/ErrorLayout";
 import { ConfigStudioPage } from "@/routes/config-studio-page";
 import { DiagnosticsPage } from "@/routes/diagnostics-page";
 import { DiscoverPage } from "@/routes/discover-page";
@@ -13,6 +14,7 @@ export const router = createHashRouter([
   {
     path: "/",
     element: <AppShell />,
+    errorElement: <ErrorLayout />,
     children: [
       { index: true, element: <HomePage /> },
       { path: "instances", element: <InstancesPage /> },

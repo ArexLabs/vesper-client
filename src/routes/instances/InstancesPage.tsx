@@ -75,7 +75,7 @@ export function InstancesPage() {
                 <div className="space-y-2">
                   <Label htmlFor="library-search">Search</Label>
                   <Input
-                    className="h-10 rounded-2xl border-white/10 bg-[#11161c]"
+                    className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                     id="library-search"
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={t(lang, "searchPlaceholder")}
@@ -92,7 +92,7 @@ export function InstancesPage() {
                       setLoaderFilter(value);
                     }}
                   >
-                    <SelectTrigger className="h-10 rounded-2xl border-white/10 bg-[#11161c]" id="library-loader-filter">
+                    <SelectTrigger className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]" id="library-loader-filter">
                       <SelectValue placeholder={t(lang, "allLoaders")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -109,7 +109,7 @@ export function InstancesPage() {
                 <div className="space-y-2">
                   <Label htmlFor="library-sort">Sort</Label>
                   <Select value={sortMode} onValueChange={(value) => setSortMode(value as SortMode)}>
-                    <SelectTrigger className="h-10 rounded-2xl border-white/10 bg-[#11161c]" id="library-sort">
+                    <SelectTrigger className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]" id="library-sort">
                       <SelectValue placeholder={t(lang, "sortUpdated")} />
                     </SelectTrigger>
                     <SelectContent>

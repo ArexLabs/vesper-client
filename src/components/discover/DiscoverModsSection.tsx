@@ -82,7 +82,7 @@ export function DiscoverModsSection({
               <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-textMuted" />
               <Input
                 id={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}
-                className="h-10 rounded-2xl border-white/10 bg-[#11161c] pl-9"
+                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d] pl-9"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search Modrinth mods"
                 value={query}
@@ -94,7 +94,7 @@ export function DiscoverModsSection({
             <Label htmlFor={compact ? "discover-sort-home" : "discover-sort-explore"}>Sort</Label>
             <Select value={sort} onValueChange={(value) => setSort(value as typeof sort)}>
               <SelectTrigger
-                className="h-10 rounded-2xl border-white/10 bg-[#11161c]"
+                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                 id={compact ? "discover-sort-home" : "discover-sort-explore"}
               >
                 <SelectValue />
@@ -118,7 +118,7 @@ export function DiscoverModsSection({
               }}
             >
               <SelectTrigger
-                className="h-10 rounded-2xl border-white/10 bg-[#11161c]"
+                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                 id={compact ? "discover-loader-home" : "discover-loader-explore"}
               >
                 <SelectValue />
@@ -143,7 +143,7 @@ export function DiscoverModsSection({
               }}
             >
               <SelectTrigger
-                className="h-10 rounded-2xl border-white/10 bg-[#11161c]"
+                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                 id={compact ? "discover-version-home" : "discover-version-explore"}
               >
                 <SelectValue />
@@ -184,7 +184,7 @@ export function DiscoverModsSection({
           >
             <div className={compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
               {Array.from({ length: compact ? 4 : 6 }).map((_, index) => (
-                <div key={index} className="rounded-3xl border border-white/8 bg-[#11161c] p-4">
+                <div key={index} className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4">
                   <div className="flex gap-3">
                     <Skeleton className="h-12 w-12 rounded-2xl" />
                     <div className="grid flex-1 gap-2">
@@ -202,7 +202,7 @@ export function DiscoverModsSection({
             </div>
           </div>
         ) : results.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-[#11161c] px-4 py-8 text-center text-sm text-textMuted">
+          <div className="rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-8 text-center text-sm text-textMuted">
             No mods matched the current filters.
           </div>
         ) : (
@@ -214,9 +214,9 @@ export function DiscoverModsSection({
           >
             <div className={compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"}>
               {results.map((project) => (
-                <article key={project.id} className="rounded-3xl border border-white/8 bg-[#11161c] p-4">
+                <article key={project.id} className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/8 bg-[#181d24]">
+                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/8 bg-[#0d0d0d]">
                       {project.iconUrl ? (
                         <img alt="" className="h-full w-full object-cover" loading="lazy" src={project.iconUrl} />
                       ) : (

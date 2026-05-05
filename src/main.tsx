@@ -4,6 +4,11 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "@/router";
 import "@/styles/globals.css";
 
+// Disable right-click context menu
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <RouterProvider router={router} />

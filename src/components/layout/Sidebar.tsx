@@ -65,7 +65,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         }
       }}
     >
-      <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-visible rounded-[28px] bg-[#101317]/95 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-visible rounded-[28px] bg-[#0a0a0a]/95 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
         <div className="flex items-center">
           <div className={cn("flex w-full", collapsed ? "justify-center" : "justify-end pr-1")}>
             {!collapsed || tooltipsEnabled ? (

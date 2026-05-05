@@ -48,6 +48,7 @@ type LauncherStore = {
   lastLaunchPreview: LaunchPreview | null;
   authRuntimeMessage: string | null;
   boot: () => Promise<void>;
+  shouldPromptLogin: () => boolean;
   refreshAuthStatus: () => Promise<void>;
   beginMicrosoftLogin: () => Promise<MicrosoftDeviceLoginStart>;
   pollMicrosoftLogin: (sessionId: string) => Promise<MicrosoftDeviceLoginPoll>;
@@ -214,6 +215,12 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
       } catch (error) {
         set({ status: "error", error: error instanceof Error ? error.message : String(error) });
       }
+    },
+
+    shouldPromptLogin() {
+      const profiles = get().data.profiles;
+      const isLoggedIn = profiles.some((p) => p.provider === "microsoft" && p.authState === "signed_in");
+      return !isLoggedIn;
     },
 
     async refreshAuthStatus() {

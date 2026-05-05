@@ -41,7 +41,7 @@ export function InstanceCard({ instance, lang, presetName, className }: Instance
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-white/8 bg-[#151a20] text-textMuted">
+        <div className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d] text-textMuted">
           <Package2 className="h-4 w-4" />
         </div>
 
@@ -87,7 +87,7 @@ export function InstanceCard({ instance, lang, presetName, className }: Instance
         </DropdownMenu>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-3xl border border-white/8 bg-[#11161c] p-4 text-sm">
+      <div className="mt-4 grid gap-3 rounded-3xl border border-white/8 bg-[#0d0d0d] p-4 text-sm">
         <InfoCell label={t(lang, "preset")} value={presetName ?? "None"} />
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoCell label={t(lang, "lastPlayed")} value={formatDateTime(instance.lastPlayedAt, lang)} />

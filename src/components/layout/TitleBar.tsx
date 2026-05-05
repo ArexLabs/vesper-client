@@ -9,19 +9,19 @@ const WINDOW_CONTROLS = [
     icon: "/assets/svg/minimize.svg",
     key: "minimize",
     label: "Minimize window",
-    textClassName: "text-[#f4c57f]",
+    textClassName: "text-white/40 hover:text-[#ffcea7]",
   },
   {
     icon: "/assets/svg/maximize.svg",
     key: "maximize",
     label: "Toggle maximize window",
-    textClassName: "text-[#78c8ff]",
+    textClassName: "text-white/40 hover:text-[#ffcea7]",
   },
   {
     icon: "/assets/svg/close.svg",
     key: "close",
     label: "Close window",
-    textClassName: "text-[#ff7388]",
+    textClassName: "text-white/40 hover:text-[#ff7388]",
   },
 ] as const;
 
@@ -68,7 +68,7 @@ export function TitleBar() {
 
   return (
     <header
-      className="flex h-14 items-center bg-[#0d0f12]/95 pl-4 pr-3 select-none"
+      className="flex h-14 items-center bg-[#0a0a0a]/95 pl-4 pr-3 select-none border-b border-white/[0.04]"
       data-tauri-drag-region
     >
       <div
@@ -101,13 +101,13 @@ export function TitleBar() {
               render={
                 <Button
                   aria-label={control.key === "maximize" ? (isMaximized ? "Restore window" : control.label) : control.label}
-                  className={`h-8 w-8 rounded-xl hover:bg-white/6 ${control.textClassName}`}
+                  className={`h-8 w-8 rounded-lg hover:bg-white/5 transition-colors ${control.textClassName}`}
                   onClick={() => void runWindowAction(control.key)}
                   size="icon-sm"
                   type="button"
                   variant="ghost"
                 >
-                  <AssetIcon className="h-[18px] w-[18px]" src={control.icon} />
+                  <AssetIcon className="h-4 w-4" src={control.icon} />
                 </Button>
               }
             />
