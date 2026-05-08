@@ -18,9 +18,10 @@ Use the `@/` alias for imports from `src` (configured in `tsconfig.json` and `vi
 - `npm run build`: build the frontend bundle
 - `npm run tauri:build`: build the desktop app package
 - `npm run lint`: run Biome checks
-- `npm run format`: format code with Biome
+- `npm run format`: format code with Biome (2-space indentation)
 - `npm run typecheck`: run TypeScript type checks
 - `npm run test` / `npm run test:run`: run Vitest (watch / single run)
+- `npm run codechecker`: run knip + cspell + lint + typecheck (full code quality pass)
 - `cargo check --manifest-path src-tauri/Cargo.toml`: validate Rust backend changes
 
 ## Coding Style & Naming Conventions
@@ -69,6 +70,8 @@ This checkout has no commit history yet, so use a consistent convention going fo
 * **Testing Library** – component testing utilities
 * **Biome** – linting and formatting
 * **TypeScript** – static typing
+* **knip** – dead code detection
+* **cspell** – spell checking
 
 ### Optional / Service Integrations
 
