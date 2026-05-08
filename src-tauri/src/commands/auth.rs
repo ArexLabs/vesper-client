@@ -1,6 +1,4 @@
-use crate::error::AppError;
 use reqwest::Client;
-use serde_json::json;
 use tauri::command;
 
 const MS_CLIENT_ID: &str = "00000000402b5328";
@@ -39,9 +37,8 @@ pub async fn microsoft_login() -> Result<String, String> {
 }
 
 async fn request_auth_code(auth_url: &str) -> Result<String, String> {
-    use tauri::Manager;
-
     let (tx, rx) = tokio::sync::oneshot::channel();
+    let auth_url = auth_url.to_string();
 
     tokio::spawn(async move {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
@@ -50,7 +47,7 @@ async fn request_auth_code(auth_url: &str) -> Result<String, String> {
 
         tracing::info!("Opening browser for Microsoft login");
 
-        if let Err(e) = open::that(auth_url) {
+        if let Err(e) = open::that(&auth_url) {
             tracing::error!("Failed to open browser: {}", e);
         }
 

@@ -11,8 +11,8 @@ pub struct SecureStorageStatus {
     pub key: Option<String>,
 }
 
-fn entry_for_key(key: &str) -> Result<keyring::Entry, String> {
-    keyring::Entry::new(KEYRING_SERVICE, key).map_err(|e| e.to_string())
+fn entry_for_key(key: &str) -> Result<keyring_core::Entry, String> {
+    keyring_core::Entry::new(KEYRING_SERVICE, key).map_err(|e| e.to_string())
 }
 
 pub fn write_secret(key: &str, value: &str) -> Result<(), String> {
@@ -24,34 +24,16 @@ pub fn write_secret(key: &str, value: &str) -> Result<(), String> {
 pub fn read_secret(key: &str) -> Result<Option<String>, String> {
     match entry_for_key(key)?.get_password() {
         Ok(value) => Ok(Some(value)),
-        Err(err) => {
-            let text = err.to_string().to_lowercase();
-            if text.contains("no entry")
-                || text.contains("not found")
-                || text.contains("element not found")
-            {
-                Ok(None)
-            } else {
-                Err(err.to_string())
-            }
-        }
+        Err(keyring_core::Error::NoEntry) => Ok(None),
+        Err(err) => Err(err.to_string()),
     }
 }
 
 pub fn delete_secret(key: &str) -> Result<(), String> {
-    match entry_for_key(key)?.delete_password() {
+    match entry_for_key(key)?.delete_credential() {
         Ok(()) => Ok(()),
-        Err(err) => {
-            let text = err.to_string().to_lowercase();
-            if text.contains("no entry")
-                || text.contains("not found")
-                || text.contains("element not found")
-            {
-                Ok(())
-            } else {
-                Err(err.to_string())
-            }
-        }
+        Err(keyring_core::Error::NoEntry) => Ok(()),
+        Err(err) => Err(err.to_string()),
     }
 }
 

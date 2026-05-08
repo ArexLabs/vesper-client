@@ -1,5 +1,4 @@
 import { useRouteError } from "react-router-dom";
-import { TitleBar } from "@/components/layout/TitleBar";
 
 export function ErrorLayout() {
   const error = useRouteError();
@@ -7,7 +6,6 @@ export function ErrorLayout() {
   return (
     <div className="h-screen overflow-hidden bg-[#0a0a0a] text-text">
       <div className="flex h-full flex-col">
-        <TitleBar />
         <div className="flex min-h-0 flex-1 items-center justify-center px-4">
           <div className="w-full max-w-[440px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-8 text-center">
             <div className="mb-4 text-5xl">⚠️</div>

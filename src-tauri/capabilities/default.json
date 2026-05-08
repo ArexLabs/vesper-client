@@ -3,10 +3,6 @@
   "description": "Default capability for Vesper Launcher",
   "windows": ["main"],
   "permissions": [
-    "core:default",
-    "core:window:allow-close",
-    "core:window:allow-minimize",
-    "core:window:allow-toggle-maximize",
-    "core:window:allow-start-dragging"
+    "core:default"
   ]
 }

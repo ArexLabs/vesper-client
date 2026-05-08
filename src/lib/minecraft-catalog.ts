@@ -1,3 +1,5 @@
+import { modrinthClient } from "@/lib/modrinth";
+
 export type MinecraftVersionItem = {
   id: string;
   type: "release" | "snapshot" | "old_beta" | "old_alpha";
@@ -46,13 +48,12 @@ export async function fetchMinecraftVersions(limit = 160): Promise<MinecraftVers
 export async function fetchLoaderOptions(): Promise<string[]> {
   if (cachedLoaders) return cachedLoaders;
   try {
-    const response = await fetch("https://api.modrinth.com/v2/tag/loader", { method: "GET" });
-    if (!response.ok) {
-      throw new Error(`Failed to load Modrinth loader tags (${response.status})`);
-    }
-    const data = (await response.json()) as string[];
+    const data = await modrinthClient.request<{ name: string }[]>("/tag/loader", {
+      api: "labrinth",
+      version: 2,
+    });
     const picked = data
-      .map((item) => item.trim().toLowerCase())
+      .map((item) => item.name.trim().toLowerCase())
       .filter((item) => SUPPORTED_LOADER_SET.has(item as (typeof DEFAULT_LOADERS)[number]));
     const unique = [...new Set(["vanilla", ...picked])];
     cachedLoaders = unique;

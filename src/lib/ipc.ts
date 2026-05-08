@@ -1,4 +1,6 @@
 import type { AppState, Instance } from "@/lib/schemas";
+import { modrinthClient } from "@/lib/modrinth";
+import type { Labrinth } from "@modrinth/api-client";
 
 const STORAGE_KEY = "vesper-launcher-state-v1";
 
@@ -198,22 +200,18 @@ function toModrinthFacets(input: DiscoverSearchInput) {
   return facets;
 }
 
-function mapModrinthHit(raw: unknown): DiscoverSearchResult | null {
-  if (!raw || typeof raw !== "object") return null;
-  const hit = raw as Record<string, unknown>;
-  const projectId = String(hit.project_id ?? hit.id ?? "");
+function mapModrinthHit(hit: Labrinth.Projects.v2.SearchResultHit): DiscoverSearchResult | null {
+  const projectId = hit.project_id;
   if (!projectId) return null;
-  const slug = typeof hit.slug === "string" ? hit.slug : "";
-  const downloads = typeof hit.downloads === "number" ? hit.downloads : 0;
   return {
     source: "modrinth",
     projectId,
-    title: String(hit.title ?? "Untitled"),
-    summary: String(hit.description ?? ""),
-    downloads: Number.isFinite(downloads) ? downloads : 0,
-    iconUrl: typeof hit.icon_url === "string" ? hit.icon_url : null,
-    url: slug ? `https://modrinth.com/mod/${slug}` : null,
-    author: typeof hit.author === "string" ? hit.author : null,
+    title: hit.title,
+    summary: hit.description,
+    downloads: hit.downloads,
+    iconUrl: hit.icon_url || null,
+    url: hit.slug ? `https://modrinth.com/mod/${hit.slug}` : null,
+    author: hit.author ?? null,
   };
 }
 
@@ -226,19 +224,13 @@ export async function discoverSearchModrinthNative(
     const q = input.query.trim();
     if (!q) return [];
     const facets = toModrinthFacets(input);
-    const url = new URL("https://api.modrinth.com/v2/search");
-    url.searchParams.set("query", q);
-    url.searchParams.set("index", "relevance");
-    url.searchParams.set("limit", String(Math.min(Math.max(input.limit ?? 20, 1), 60)));
-    url.searchParams.set("facets", JSON.stringify(facets));
-    const response = await fetch(url.toString(), { method: "GET" });
-    if (!response.ok) {
-      throw new Error(`Modrinth search failed (${response.status})`);
-    }
-    const body = (await response.json()) as { hits?: unknown[] };
-    return (body.hits ?? [])
-      .map(mapModrinthHit)
-      .filter((item): item is DiscoverSearchResult => Boolean(item));
+    const result = await modrinthClient.labrinth.projects_v2.search({
+      query: q,
+      index: "relevance",
+      facets,
+      limit: Math.min(Math.max(input.limit ?? 20, 1), 60),
+    });
+    return result.hits.map(mapModrinthHit).filter((item): item is DiscoverSearchResult => Boolean(item));
   }
 }
 

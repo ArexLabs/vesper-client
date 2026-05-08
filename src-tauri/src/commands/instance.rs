@@ -1,7 +1,5 @@
-use crate::error::AppError;
 use crate::services::downloader::Downloader;
 use crate::services::mod_resolver::resolve_sodium_version;
-use std::path::PathBuf;
 use tauri::command;
 
 #[command]

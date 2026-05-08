@@ -21,12 +21,8 @@ pub async fn resolve_sodium_version(
         .await?;
 
     if !response.status().is_success() {
-        let status = response.status();
-        let err_text = response.text().await.unwrap_or_default();
-        return Err(AppError::ModrinthApi(reqwest::Error::new(
-            reqwest::StatusCode::from_u16(status.as_u16()).unwrap(),
-            err_text,
-        )));
+        let err = response.error_for_status().unwrap_err();
+        return Err(AppError::ModrinthApi(err));
     }
 
     let versions: Vec<ModrinthVersion> = response.json().await?;

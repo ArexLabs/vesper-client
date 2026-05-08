@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import { Sidebar } from "@/components/layout/Sidebar";
-import { TitleBar } from "@/components/layout/TitleBar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -118,8 +117,6 @@ export function AppShell() {
     <TooltipProvider>
       <div className="h-screen overflow-hidden bg-[#0a0a0a] text-text">
         <div className="flex h-full flex-col">
-          <TitleBar />
-
           <div className="flex min-h-0 flex-1">
             {/* Animate width instead of grid-template-columns */}
             <div
