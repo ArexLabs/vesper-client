@@ -19,7 +19,7 @@
     "tauri:build": "node ./node_modules/@tauri-apps/cli/tauri.js build"
   },
   "dependencies": {
-    "@base-ui/react": "^1.2.0",
+    "@base-ui/react": "^1.4.1",
     "@modrinth/api-client": "^0.1.0",
     "@tauri-apps/api": "^2.10.1",
     "class-variance-authority": "^0.7.1",
