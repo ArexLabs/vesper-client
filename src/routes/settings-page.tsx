@@ -92,7 +92,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 motion-preset-fade motion-duration-500">
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <Card>
           <CardHeader>

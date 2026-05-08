@@ -36,7 +36,7 @@ export function InstanceCard({ instance, presetName, className }: InstanceCardPr
   return (
     <article
       className={cn(
-        "rounded-3xl border border-white/8 bg-white/[0.03] p-4 shadow-panel",
+        "rounded-3xl border border-white/8 bg-white/[0.03] p-4 shadow-panel motion-safe:transition-transform motion-safe:transition-shadow motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:shadow-soft motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01]",
         className,
       )}
     >

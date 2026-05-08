@@ -64,7 +64,7 @@ export function InstancesPage() {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 motion-preset-fade motion-duration-500">
       <Card>
         <CardHeader>
           <CardTitle>{t("instanceLibrary")}</CardTitle>

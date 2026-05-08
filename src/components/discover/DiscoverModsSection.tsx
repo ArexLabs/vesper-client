@@ -114,7 +114,15 @@ export function DiscoverModsSection({
                 className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                 id={compact ? "discover-sort-home" : "discover-sort-explore"}
               >
-                <SelectValue />
+                <SelectValue>
+                  {sort === "downloads"
+                    ? "Most downloaded"
+                    : sort === "follows"
+                      ? "Most followed"
+                      : sort === "updated"
+                        ? "Recently updated"
+                        : "Best match"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="downloads">Most downloaded</SelectItem>

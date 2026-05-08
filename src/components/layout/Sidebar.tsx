@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 type SidebarProps = {
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  onLoginRequest?: () => void;
 };
 
 const PRIMARY_ITEMS = [
@@ -20,7 +21,7 @@ const PRIMARY_ITEMS = [
 
 const FOOTER_ITEMS = [{ icon: Settings2, label: "Settings", to: "/settings" }] as const;
 
-export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
+export function Sidebar({ collapsed, onToggleCollapsed, onLoginRequest }: SidebarProps) {
   const [tooltipsEnabled, setTooltipsEnabled] = useState(collapsed);
   const previousCollapsedRef = useRef(collapsed);
 
@@ -78,7 +79,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         </div>
 
         <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <nav className="grid grid-cols-1 gap-2">
+          <nav className="grid grid-cols-1 gap-2 motion-preset-fade motion-duration-400">
             {PRIMARY_ITEMS.map((item) => (
               <SidebarNavLink
                 key={item.to}
@@ -93,7 +94,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         </div>
 
         <div className="mt-3 grid shrink-0 grid-cols-1 gap-3">
-          {FOOTER_ITEMS.map((item) => (
+            {FOOTER_ITEMS.map((item) => (
             <SidebarNavLink
               key={item.to}
               collapsed={collapsed}
@@ -104,7 +105,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
             />
           ))}
 
-          <PlayingAsCard collapsed={collapsed} />
+          <PlayingAsCard collapsed={collapsed} onLoginRequest={onLoginRequest} />
         </div>
       </div>
     </aside>

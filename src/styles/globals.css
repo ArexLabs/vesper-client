@@ -1,6 +1,61 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-motion";
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: oklch(var(--background));
+  --color-foreground: oklch(var(--foreground));
+  --color-card: oklch(var(--card));
+  --color-card-foreground: oklch(var(--card-foreground));
+  --color-popover: oklch(var(--popover));
+  --color-popover-foreground: oklch(var(--popover-foreground));
+  --color-primary: oklch(var(--primary));
+  --color-primary-foreground: oklch(var(--primary-foreground));
+  --color-secondary: oklch(var(--secondary));
+  --color-secondary-foreground: oklch(var(--secondary-foreground));
+  --color-muted: oklch(var(--muted));
+  --color-muted-foreground: oklch(var(--muted-foreground));
+  --color-accent: oklch(var(--accent));
+  --color-accent-foreground: oklch(var(--accent-foreground));
+  --color-destructive: oklch(var(--destructive));
+  --color-destructive-foreground: oklch(var(--destructive-foreground));
+  --color-input: oklch(var(--input));
+  --color-ring: oklch(var(--ring));
+  --color-sidebar: oklch(var(--sidebar));
+  --color-sidebar-foreground: oklch(var(--sidebar-foreground));
+  --color-sidebar-primary: oklch(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: oklch(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: oklch(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: oklch(var(--sidebar-accent-foreground));
+  --color-sidebar-border: oklch(var(--sidebar-border));
+  --color-sidebar-ring: oklch(var(--sidebar-ring));
+  --color-chart-1: oklch(var(--chart-1));
+  --color-chart-2: oklch(var(--chart-2));
+  --color-chart-3: oklch(var(--chart-3));
+  --color-chart-4: oklch(var(--chart-4));
+  --color-chart-5: oklch(var(--chart-5));
+  --color-bg: oklch(var(--bg));
+  --color-surface1: oklch(var(--surface-1));
+  --color-surface2: oklch(var(--surface-2));
+  --color-surface3: oklch(var(--surface-3));
+  --color-border: oklch(var(--border));
+  --color-borderSoft: oklch(var(--border));
+  --color-text: oklch(var(--text));
+  --color-textMuted: oklch(var(--text-muted));
+  --color-accentForeground: oklch(var(--accent-foreground));
+  --color-success: oklch(var(--success));
+  --color-warning: oklch(var(--warning));
+  --color-danger: oklch(var(--danger));
+  --font-family-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: var(--font-mono), ui-monospace, monospace;
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --shadow-panel: var(--shadow);
+  --shadow-lift: 0 18px 40px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
 
 @font-face {
   font-family: "Satoshi";
@@ -264,11 +319,11 @@
   }
 
   .field-mono {
-    @apply field font-mono text-[12px] leading-5;
+    @apply h-10 w-full rounded-[calc(var(--radius)-4px)] border px-3 text-sm text-text transition font-mono text-[12px] leading-5;
   }
 
   .select-field {
-    @apply field appearance-none bg-[linear-gradient(45deg,transparent_50%,rgba(255,255,255,0.55)_50%),linear-gradient(135deg,rgba(255,255,255,0.55)_50%,transparent_50%),linear-gradient(to_right,transparent,transparent)] bg-[position:calc(100%-16px)_16px,calc(100%-11px)_16px,100%_0] bg-[size:5px_5px,5px_5px,2.4rem_100%] bg-no-repeat pr-10;
+    @apply h-10 w-full rounded-[calc(var(--radius)-4px)] border px-3 text-sm text-text transition appearance-none bg-[linear-gradient(45deg,transparent_50%,rgba(255,255,255,0.55)_50%),linear-gradient(135deg,rgba(255,255,255,0.55)_50%,transparent_50%),linear-gradient(to_right,transparent,transparent)] bg-[position:calc(100%-16px)_16px,calc(100%-11px)_16px,100%_0] bg-[size:5px_5px,5px_5px,2.4rem_100%] bg-no-repeat pr-10;
   }
 
   .label {

@@ -107,7 +107,7 @@ export function ConfigStudioPage() {
   const hasErrors = !!validation.parseError || validation.zodErrors.length > 0;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 motion-preset-fade motion-duration-500">
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">

@@ -14,7 +14,7 @@ export function DiagnosticsPage() {
   const [secureProbe, setSecureProbe] = useState<string>("Not queried");
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 motion-preset-fade motion-duration-500">
       <Card>
         <CardHeader>
           <CardTitle>{t("diagnostics")}</CardTitle>

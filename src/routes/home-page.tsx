@@ -26,7 +26,7 @@ export function HomePage() {
   }, [instances]);
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-5 motion-preset-fade motion-duration-500">
       <section className="grid gap-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-text">Last played</h2>

@@ -79,7 +79,7 @@ export function InstancesPage() {
   }
 
   return (
-    <>
+    <div className="motion-preset-fade motion-duration-500">
       <div className="grid gap-4">
         <Card className="rounded-3xl border-white/8 bg-white/[0.03] shadow-panel">
           <CardHeader className="p-5">
@@ -132,7 +132,13 @@ export function InstancesPage() {
                       className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                       id="library-sort"
                     >
-                      <SelectValue placeholder={t("sortUpdated")} />
+                      <SelectValue>
+                        {sortMode === "updated"
+                          ? t("sortUpdated")
+                          : sortMode === "name"
+                            ? t("sortName")
+                            : t("sortVersion")}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="updated">{t("sortUpdated")}</SelectItem>
@@ -264,6 +270,6 @@ export function InstancesPage() {
         onOpenChange={setCreateOpen}
         open={createOpen}
       />
-    </>
+    </div>
   );
 }

@@ -125,7 +125,11 @@ export function AppShell() {
                 sidebarCollapsed ? "w-24" : "w-[248px]",
               )}
             >
-              <Sidebar collapsed={sidebarCollapsed} onToggleCollapsed={toggleSidebar} />
+              <Sidebar
+                collapsed={sidebarCollapsed}
+                onLoginRequest={() => setShowLoginPrompt(true)}
+                onToggleCollapsed={toggleSidebar}
+              />
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col bg-transparent">
@@ -133,7 +137,7 @@ export function AppShell() {
                 <div className="bg-danger/10 px-6 py-3 text-sm text-danger">{error}</div>
               ) : null}
 
-              <main className="min-h-0 flex-1 overflow-y-auto px-5 py-5 [scrollbar-gutter:stable_both-edges] md:px-6">
+              <main className="min-h-0 flex-1 overflow-y-auto px-5 py-5 [scrollbar-gutter:stable_both-edges] md:px-6 motion-preset-fade motion-duration-500">
                 {status === "loading" ? (
                   <LoadingShell />
                 ) : (
@@ -148,8 +152,8 @@ export function AppShell() {
       </div>
 
       {showLoginPrompt && !loginFlow ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[400px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 shadow-lift">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm motion-preset-fade motion-duration-200">
+          <div className="w-[400px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 shadow-lift motion-preset-slide-up motion-duration-300 motion-ease-spring-smooth">
             <h2 className="mb-2 text-lg font-semibold text-text">Welcome to Vesper</h2>
             <p className="mb-4 text-sm leading-5 text-textMuted">
               Sign in with your Microsoft account to access Minecraft and manage your profiles.
@@ -167,8 +171,8 @@ export function AppShell() {
       ) : null}
 
       {loginFlow ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[400px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 shadow-lift">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm motion-preset-fade motion-duration-200">
+          <div className="w-[400px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 shadow-lift motion-preset-slide-up motion-duration-300 motion-ease-spring-smooth">
             <h2 className="mb-2 text-lg font-semibold text-text">Microsoft Login</h2>
             <p className="mb-4 text-xs leading-5 text-textMuted">
               Enter this code at the Microsoft login page to complete sign in.

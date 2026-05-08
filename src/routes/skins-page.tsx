@@ -14,7 +14,7 @@ export function SkinsPage() {
     activeProfile?.offlineUsername?.trim() || activeProfile?.displayName?.trim() || "Player";
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 motion-preset-fade motion-duration-500">
       <Card className="rounded-3xl border-white/8 bg-white/[0.03] shadow-panel">
         <CardHeader className="p-5">
           <CardTitle className="text-xl font-semibold text-text">Skins</CardTitle>
