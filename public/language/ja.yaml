@@ -1,0 +1,51 @@
+productTagline: "設定ファーストなデスクトップランチャー"
+navInstances: インスタンス
+navDiscover: 見つける
+navConfigStudio: Config Studio
+navDiagnostics: 診断
+navSettings: 設定
+instances: インスタンス
+instanceLibrary: インスタンスライブラリ
+searchPlaceholder: "インスタンス、バージョン、ローダーを検索…"
+allLoaders: すべてのローダー
+sortUpdated: "並び替え: 更新日"
+sortName: "並び替え: 名前"
+sortVersion: "並び替え: バージョン"
+cards: カード
+table: テーブル
+createInstance: インスタンスを作成
+instanceName: インスタンス名
+mcVersion: MCバージョン
+modpackNameOptional: "Modpack名 (任意)"
+create: 作成
+noInstances: インスタンスが見つかりません
+noInstancesHint: "検索/フィルターを調整するか、上で新しいインスタンスを作成してください。"
+open: 開く
+preset: プリセット
+snapshots: スナップショット
+lastPlayed: 最終プレイ
+details: インスタンス詳細
+overview: 概要
+mods: Mods
+config: 設定
+runtime: ランタイム
+history: 履歴
+launchPlaceholder: 起動
+rollback: ロールバック
+settings: 設定
+globalDefaults: グローバルデフォルト
+presets: プリセット
+saveGlobalDefaults: グローバルデフォルトを保存
+savePresetPatch: プリセットパッチを保存
+export: エクスポート
+import: インポート
+discover: 見つける
+diagnostics: 診断
+language: 言語
+english: 英語
+german: ドイツ語
+configStudio: Config Studio
+saveSnapshot: スナップショットを保存
+validation: 検証
+workflowSafety: ワークフロー安全性
+sourceChain: ソースチェーン

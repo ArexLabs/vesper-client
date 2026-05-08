@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLauncherStore } from "@/store/launcher-store";
 
 export function HomePage() {
-  const lang = useLauncherStore((state) => state.data.ui.language);
   const instances = useLauncherStore((state) => state.data.instances);
   const presets = useLauncherStore((state) => state.data.presets);
 
@@ -52,7 +51,6 @@ export function HomePage() {
               <InstanceCard
                 key={instance.id}
                 instance={instance}
-                lang={lang}
                 presetName={
                   instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null
                 }

@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
 import { formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
@@ -32,7 +32,7 @@ type ViewMode = "cards" | "table";
 type SortMode = "updated" | "name" | "version";
 
 export function InstancesPage() {
-  const lang = useLauncherStore((state) => state.data.ui.language);
+  const { t, i18n } = useT();
   const instances = useLauncherStore((state) => state.data.instances);
   const presets = useLauncherStore((state) => state.data.presets);
   const createInstance = useLauncherStore((state) => state.createInstance);
@@ -91,7 +91,7 @@ export function InstancesPage() {
                     className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                     id="library-search"
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder={t(lang, "searchPlaceholder")}
+                    placeholder={t("searchPlaceholder")}
                     value={search}
                   />
                 </div>
@@ -109,10 +109,10 @@ export function InstancesPage() {
                       className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                       id="library-loader-filter"
                     >
-                      <SelectValue placeholder={t(lang, "allLoaders")} />
+                      <SelectValue placeholder={t("allLoaders")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{t(lang, "allLoaders")}</SelectItem>
+                      <SelectItem value="all">{t("allLoaders")}</SelectItem>
                       <SelectItem value="vanilla">Vanilla</SelectItem>
                       <SelectItem value="fabric">Fabric</SelectItem>
                       <SelectItem value="forge">Forge</SelectItem>
@@ -132,12 +132,12 @@ export function InstancesPage() {
                       className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
                       id="library-sort"
                     >
-                      <SelectValue placeholder={t(lang, "sortUpdated")} />
+                      <SelectValue placeholder={t("sortUpdated")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="updated">{t(lang, "sortUpdated")}</SelectItem>
-                      <SelectItem value="name">{t(lang, "sortName")}</SelectItem>
-                      <SelectItem value="version">{t(lang, "sortVersion")}</SelectItem>
+                      <SelectItem value="updated">{t("sortUpdated")}</SelectItem>
+                      <SelectItem value="name">{t("sortName")}</SelectItem>
+                      <SelectItem value="version">{t("sortVersion")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -152,7 +152,7 @@ export function InstancesPage() {
                     variant={viewMode === "cards" ? "default" : "outline"}
                   >
                     <LayoutGrid className="h-4 w-4" />
-                    {t(lang, "cards")}
+                    {t("cards")}
                   </Button>
                   <Button
                     onClick={() => setViewMode("table")}
@@ -161,7 +161,7 @@ export function InstancesPage() {
                     variant={viewMode === "table" ? "default" : "outline"}
                   >
                     <List className="h-4 w-4" />
-                    {t(lang, "table")}
+                    {t("table")}
                   </Button>
                 </ButtonGroup>
 
@@ -181,8 +181,8 @@ export function InstancesPage() {
         {rows.length === 0 ? (
           <Card className="rounded-3xl border-white/8 bg-white/[0.03] shadow-panel">
             <CardContent className="grid gap-2 p-8 text-center">
-              <div className="text-base font-semibold text-text">{t(lang, "noInstances")}</div>
-              <div className="text-sm text-textMuted">{t(lang, "noInstancesHint")}</div>
+              <div className="text-base font-semibold text-text">{t("noInstances")}</div>
+              <div className="text-sm text-textMuted">{t("noInstancesHint")}</div>
               <div>
                 <Button className="rounded-2xl" onClick={() => setCreateOpen(true)} type="button">
                   <Plus className="h-4 w-4" />
@@ -197,7 +197,6 @@ export function InstancesPage() {
               <InstanceCard
                 key={instance.id}
                 instance={instance}
-                lang={lang}
                 presetName={
                   instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null
                 }
@@ -213,8 +212,8 @@ export function InstancesPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Version</TableHead>
                     <TableHead>Loader</TableHead>
-                    <TableHead>{t(lang, "preset")}</TableHead>
-                    <TableHead>{t(lang, "lastPlayed")}</TableHead>
+                    <TableHead>{t("preset")}</TableHead>
+                    <TableHead>{t("lastPlayed")}</TableHead>
                     <TableHead>Updated</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -235,8 +234,8 @@ export function InstancesPage() {
                           ? (presetById[instance.presetId] ?? instance.presetId)
                           : "None"}
                       </TableCell>
-                      <TableCell>{formatDateTime(instance.lastPlayedAt, lang)}</TableCell>
-                      <TableCell>{formatDateTime(instance.updatedAt, lang)}</TableCell>
+                      <TableCell>{formatDateTime(instance.lastPlayedAt, i18n.language)}</TableCell>
+                      <TableCell>{formatDateTime(instance.updatedAt, i18n.language)}</TableCell>
                       <TableCell className="text-right">
                         <div className="inline-flex gap-2">
                           <Button
@@ -247,7 +246,7 @@ export function InstancesPage() {
                             Play
                           </Button>
                           <Button asChild size="sm" type="button" variant="outline">
-                            <Link to={`/instances/${instance.id}`}>{t(lang, "open")}</Link>
+                            <Link to={`/instances/${instance.id}`}>{t("open")}</Link>
                           </Button>
                         </div>
                       </TableCell>
@@ -261,7 +260,6 @@ export function InstancesPage() {
       </div>
 
       <CreateInstanceSheet
-        lang={lang}
         onCreate={handleCreate}
         onOpenChange={setCreateOpen}
         open={createOpen}

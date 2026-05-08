@@ -9,19 +9,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { t } from "@/lib/i18n";
-import type { Instance, Language } from "@/lib/schemas";
+import { useT } from "@/lib/i18n";
+import type { Instance } from "@/lib/schemas";
 import { cn, formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
 
 type InstanceCardProps = {
   instance: Instance;
-  lang: Language;
   presetName: string | null;
   className?: string;
 };
 
-export function InstanceCard({ instance, lang, presetName, className }: InstanceCardProps) {
+export function InstanceCard({ instance, presetName, className }: InstanceCardProps) {
+  const { t, i18n } = useT();
   const navigate = useNavigate();
   const deleteInstance = useLauncherStore((state) => state.deleteInstance);
   const duplicateInstance = useLauncherStore((state) => state.duplicateInstance);
@@ -94,13 +94,13 @@ export function InstanceCard({ instance, lang, presetName, className }: Instance
       </div>
 
       <div className="mt-4 grid gap-3 rounded-3xl border border-white/8 bg-[#0d0d0d] p-4 text-sm">
-        <InfoCell label={t(lang, "preset")} value={presetName ?? "None"} />
+        <InfoCell label={t("preset")} value={presetName ?? "None"} />
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoCell
-            label={t(lang, "lastPlayed")}
-            value={formatDateTime(instance.lastPlayedAt, lang)}
+            label={t("lastPlayed")}
+            value={formatDateTime(instance.lastPlayedAt, i18n.language)}
           />
-          <InfoCell label="Updated" value={formatDateTime(instance.updatedAt, lang)} />
+          <InfoCell label="Updated" value={formatDateTime(instance.updatedAt, i18n.language)} />
         </div>
       </div>
 
@@ -118,7 +118,7 @@ export function InstanceCard({ instance, lang, presetName, className }: Instance
           type="button"
           variant="outline"
         >
-          {t(lang, "open")}
+          {t("open")}
         </Button>
       </div>
     </article>

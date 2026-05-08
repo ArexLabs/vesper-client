@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
 import { formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
@@ -13,7 +13,7 @@ type ViewMode = "cards" | "table";
 type SortMode = "updated" | "name" | "version";
 
 export function InstancesPage() {
-  const lang = useLauncherStore((s) => s.data.ui.language);
+  const { t, i18n } = useT();
   const instances = useLauncherStore((s) => s.data.instances);
   const presets = useLauncherStore((s) => s.data.presets);
   const createInstance = useLauncherStore((s) => s.createInstance);
@@ -67,7 +67,7 @@ export function InstancesPage() {
     <div className="grid gap-4">
       <Card>
         <CardHeader>
-          <CardTitle>{t(lang, "instanceLibrary")}</CardTitle>
+          <CardTitle>{t("instanceLibrary")}</CardTitle>
           <CardDescription>Cards + Table toggle, sort, filter and search.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
@@ -76,7 +76,7 @@ export function InstancesPage() {
               <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-textMuted" />
               <input
                 className="field pl-9"
-                placeholder={t(lang, "searchPlaceholder")}
+                placeholder={t("searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -86,7 +86,7 @@ export function InstancesPage() {
               value={loaderFilter}
               onChange={(e) => setLoaderFilter(e.target.value)}
             >
-              <option value="all">{t(lang, "allLoaders")}</option>
+              <option value="all">{t("allLoaders")}</option>
               <option value="vanilla">Vanilla</option>
               <option value="fabric">Fabric</option>
               <option value="forge">Forge</option>
@@ -98,9 +98,9 @@ export function InstancesPage() {
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as SortMode)}
             >
-              <option value="updated">{t(lang, "sortUpdated")}</option>
-              <option value="name">{t(lang, "sortName")}</option>
-              <option value="version">{t(lang, "sortVersion")}</option>
+              <option value="updated">{t("sortUpdated")}</option>
+              <option value="name">{t("sortName")}</option>
+              <option value="version">{t("sortVersion")}</option>
             </select>
             <div className="flex gap-2">
               <Button
@@ -108,14 +108,14 @@ export function InstancesPage() {
                 variant={viewMode === "cards" ? "default" : "outline"}
                 onClick={() => setViewMode("cards")}
               >
-                {t(lang, "cards")}
+                {t("cards")}
               </Button>
               <Button
                 size="sm"
                 variant={viewMode === "table" ? "default" : "outline"}
                 onClick={() => setViewMode("table")}
               >
-                {t(lang, "table")}
+                {t("table")}
               </Button>
             </div>
             <div className="text-right text-xs text-textMuted">
@@ -127,7 +127,7 @@ export function InstancesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t(lang, "createInstance")}</CardTitle>
+          <CardTitle>{t("createInstance")}</CardTitle>
           <CardDescription>
             MVP creation flow with Tauri command seam and local fallback.
           </CardDescription>
@@ -135,13 +135,13 @@ export function InstancesPage() {
         <CardContent className="grid gap-3 lg:grid-cols-[1.2fr_0.7fr_0.7fr_1fr_auto]">
           <input
             className="field"
-            placeholder={t(lang, "instanceName")}
+            placeholder={t("instanceName")}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
           <input
             className="field"
-            placeholder={t(lang, "mcVersion")}
+            placeholder={t("mcVersion")}
             value={newVersion}
             onChange={(e) => setNewVersion(e.target.value)}
           />
@@ -158,12 +158,12 @@ export function InstancesPage() {
           </select>
           <input
             className="field"
-            placeholder={t(lang, "modpackNameOptional")}
+            placeholder={t("modpackNameOptional")}
             value={newModpackName}
             onChange={(e) => setNewModpackName(e.target.value)}
           />
           <Button onClick={() => void onCreate()} disabled={!newName.trim() || !newVersion.trim()}>
-            {t(lang, "create")}
+            {t("create")}
           </Button>
         </CardContent>
       </Card>
@@ -171,8 +171,8 @@ export function InstancesPage() {
       {rows.length === 0 ? (
         <Card>
           <CardContent className="p-6">
-            <div className="text-sm font-semibold">{t(lang, "noInstances")}</div>
-            <div className="muted">{t(lang, "noInstancesHint")}</div>
+            <div className="text-sm font-semibold">{t("noInstances")}</div>
+            <div className="muted">{t("noInstancesHint")}</div>
           </CardContent>
         </Card>
       ) : null}
@@ -195,7 +195,7 @@ export function InstancesPage() {
               <CardContent className="grid gap-3">
                 <div className="grid gap-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-textMuted">{t(lang, "preset")}</span>
+                    <span className="text-textMuted">{t("preset")}</span>
                     <span>
                       {instance.presetId
                         ? (presetById[instance.presetId] ?? instance.presetId)
@@ -203,12 +203,12 @@ export function InstancesPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-textMuted">{t(lang, "snapshots")}</span>
+                    <span className="text-textMuted">{t("snapshots")}</span>
                     <span>{instance.snapshots.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-textMuted">{t(lang, "lastPlayed")}</span>
-                    <span>{formatDateTime(instance.lastPlayedAt, lang)}</span>
+                    <span className="text-textMuted">{t("lastPlayed")}</span>
+                    <span>{formatDateTime(instance.lastPlayedAt, i18n.language)}</span>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -220,11 +220,11 @@ export function InstancesPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button asChild className="flex-1">
-                    <Link to={`/instances/${instance.id}`}>{t(lang, "open")}</Link>
+                    <Link to={`/instances/${instance.id}`}>{t("open")}</Link>
                   </Button>
                   <Button asChild variant="outline" className="flex-1">
                     <Link to={`/config-studio?instance=${instance.id}`}>
-                      {t(lang, "configStudio")}
+                      {t("configStudio")}
                     </Link>
                   </Button>
                 </div>
@@ -242,10 +242,10 @@ export function InstancesPage() {
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Version</th>
                     <th className="px-4 py-3">Loader</th>
-                    <th className="px-4 py-3">{t(lang, "preset")}</th>
-                    <th className="px-4 py-3">{t(lang, "snapshots")}</th>
+                    <th className="px-4 py-3">{t("preset")}</th>
+                    <th className="px-4 py-3">{t("snapshots")}</th>
                     <th className="px-4 py-3">Updated</th>
-                    <th className="px-4 py-3 text-right">{t(lang, "open")}</th>
+                    <th className="px-4 py-3 text-right">{t("open")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -265,10 +265,10 @@ export function InstancesPage() {
                           : "None"}
                       </td>
                       <td className="px-4 py-3">{instance.snapshots.length}</td>
-                      <td className="px-4 py-3">{formatDateTime(instance.updatedAt, lang)}</td>
+                      <td className="px-4 py-3">{formatDateTime(instance.updatedAt, i18n.language)}</td>
                       <td className="px-4 py-3 text-right">
                         <Button asChild size="sm" variant="outline">
-                          <Link to={`/instances/${instance.id}`}>{t(lang, "open")}</Link>
+                          <Link to={`/instances/${instance.id}`}>{t("open")}</Link>
                         </Button>
                       </td>
                     </tr>

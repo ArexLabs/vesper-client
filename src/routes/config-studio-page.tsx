@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Save } from "lucide-react";
 import { resolveInstanceConfig } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { formatZodIssues, launcherConfigSchema } from "@/lib/schemas";
 import { downloadJson, readTextFile } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export function ConfigStudioPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const data = useLauncherStore((s) => s.data);
-  const lang = data.ui.language;
+  const { t } = useT();
   const saveInstanceResolvedConfig = useLauncherStore((s) => s.saveInstanceResolvedConfig);
   const exportInstanceResolvedConfigJson = useLauncherStore(
     (s) => s.exportInstanceResolvedConfigJson,
@@ -92,12 +92,12 @@ export function ConfigStudioPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t(lang, "configStudio")}</CardTitle>
+          <CardTitle>{t("configStudio")}</CardTitle>
           <CardDescription>No instances available yet.</CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link to="/instances">{t(lang, "createInstance")}</Link>
+            <Link to="/instances">{t("createInstance")}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -112,7 +112,7 @@ export function ConfigStudioPage() {
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <CardTitle>{t(lang, "configStudio")}</CardTitle>
+              <CardTitle>{t("configStudio")}</CardTitle>
               <CardDescription>
                 Safe JSON editor with inline validation and snapshot writes.
               </CardDescription>
@@ -150,7 +150,7 @@ export function ConfigStudioPage() {
           <div className="flex gap-2">
             <Button onClick={() => void onSave()} disabled={!validation.parsed || hasErrors}>
               <Save className="h-4 w-4" />
-              {t(lang, "saveSnapshot")}
+              {t("saveSnapshot")}
             </Button>
             <Button
               variant="outline"
@@ -160,7 +160,7 @@ export function ConfigStudioPage() {
                 downloadJson(`${selectedInstance.name}-config.json`, JSON.parse(json));
               }}
             >
-              {t(lang, "export")}
+              {t("export")}
             </Button>
           </div>
         </CardContent>
@@ -191,7 +191,7 @@ export function ConfigStudioPage() {
         <div className="grid gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t(lang, "validation")}</CardTitle>
+              <CardTitle>{t("validation")}</CardTitle>
               <CardDescription>Zod-backed inline validation</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm">
@@ -230,7 +230,7 @@ export function ConfigStudioPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t(lang, "workflowSafety")}</CardTitle>
+              <CardTitle>{t("workflowSafety")}</CardTitle>
               <CardDescription>Snapshot-safe editing flow</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm text-textMuted">
@@ -240,14 +240,14 @@ export function ConfigStudioPage() {
               <div>4. Persist overrides (diff-only)</div>
               <div>5. Create snapshot</div>
               <Button asChild size="sm" variant="outline" className="mt-2">
-                <Link to={`/instances/${selectedInstance.id}`}>{t(lang, "history")}</Link>
+                <Link to={`/instances/${selectedInstance.id}`}>{t("history")}</Link>
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>{t(lang, "sourceChain")}</CardTitle>
+              <CardTitle>{t("sourceChain")}</CardTitle>
               <CardDescription>Effective config composition</CardDescription>
             </CardHeader>
             <CardContent>

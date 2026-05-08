@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      tauri:
+        patterns:
+          - "@tauri-apps/*"
+      i18n:
+        patterns:
+          - "i18next*"
+          - "react-i18next"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "cargo"
+    directory: "/src-tauri"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

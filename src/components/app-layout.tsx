@@ -2,7 +2,7 @@ import { Activity, Boxes, Compass, Settings2, SlidersHorizontal } from "lucide-r
 import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
 
@@ -12,7 +12,7 @@ export function AppLayout() {
   const error = useLauncherStore((s) => s.error);
   const instanceCount = useLauncherStore((s) => s.data.instances.length);
   const presetCount = useLauncherStore((s) => s.data.presets.length);
-  const lang = useLauncherStore((s) => s.data.ui.language);
+  const { t } = useT();
   const location = useLocation();
 
   useEffect(() => {
@@ -20,15 +20,15 @@ export function AppLayout() {
   }, [boot]);
 
   const navItems = [
-    { to: "/instances", label: t(lang, "navInstances"), icon: Boxes },
-    { to: "/discover", label: t(lang, "navDiscover"), icon: Compass },
-    { to: "/config-studio", label: t(lang, "navConfigStudio"), icon: SlidersHorizontal },
-    { to: "/diagnostics", label: t(lang, "navDiagnostics"), icon: Activity },
-    { to: "/settings", label: t(lang, "navSettings"), icon: Settings2 },
+    { to: "/instances", label: t("navInstances"), icon: Boxes },
+    { to: "/discover", label: t("navDiscover"), icon: Compass },
+    { to: "/config-studio", label: t("navConfigStudio"), icon: SlidersHorizontal },
+    { to: "/diagnostics", label: t("navDiagnostics"), icon: Activity },
+    { to: "/settings", label: t("navSettings"), icon: Settings2 },
   ];
 
   const pageTitle = (() => {
-    if (location.pathname.startsWith("/instances/")) return t(lang, "details");
+    if (location.pathname.startsWith("/instances/")) return t("details");
     const item = navItems.find((i) => location.pathname.startsWith(i.to));
     return item?.label ?? "Vesper";
   })();
@@ -47,7 +47,7 @@ export function AppLayout() {
                   <span className="text-accent">Vesper</span>
                   <span className="ml-1 text-text">Client</span>
                 </div>
-                <div className="text-xs text-textMuted">{t(lang, "productTagline")}</div>
+                <div className="text-xs text-textMuted">{t("productTagline")}</div>
               </div>
             </div>
           </div>
@@ -77,11 +77,11 @@ export function AppLayout() {
 
           <div className="mt-6 grid gap-2 rounded-lg border border-borderSoft bg-surface2/60 p-3 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-textMuted">{t(lang, "instances")}</span>
+              <span className="text-textMuted">{t("instances")}</span>
               <Badge variant="accent">{instanceCount}</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-textMuted">{t(lang, "presets")}</span>
+              <span className="text-textMuted">{t("presets")}</span>
               <Badge variant="muted">{presetCount}</Badge>
             </div>
             <div className="text-textMuted">Snapshots & rollback enabled</div>

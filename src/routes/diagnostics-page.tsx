@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { appStateSchema } from "@/lib/schemas";
 import { isTauriRuntime, listInstancesNative, secureStorageProbe } from "@/lib/ipc";
 import { useLauncherStore } from "@/store/launcher-store";
 
 export function DiagnosticsPage() {
   const data = useLauncherStore((s) => s.data);
-  const lang = data.ui.language;
+  const { t } = useT();
   const validation = appStateSchema.safeParse(data);
   const [nativeList, setNativeList] = useState<string>("Not queried");
   const [secureProbe, setSecureProbe] = useState<string>("Not queried");
@@ -17,7 +17,7 @@ export function DiagnosticsPage() {
     <div className="grid gap-4">
       <Card>
         <CardHeader>
-          <CardTitle>{t(lang, "diagnostics")}</CardTitle>
+          <CardTitle>{t("diagnostics")}</CardTitle>
           <CardDescription>Runtime checks, schema validation and backend probes.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 text-sm">

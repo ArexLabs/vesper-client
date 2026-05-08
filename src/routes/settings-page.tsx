@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { argsToMultiline, multilineToArgs } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { formatZodIssues, launcherConfigPatchSchema, type LauncherConfig } from "@/lib/schemas";
 import { downloadJson, formatDateTime, readTextFile } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export function SettingsPage() {
   const data = useLauncherStore((s) => s.data);
-  const lang = data.ui.language;
+  const { t, i18n } = useT();
   const updateGlobalDefaults = useLauncherStore((s) => s.updateGlobalDefaults);
   const savePresetPatch = useLauncherStore((s) => s.savePresetPatch);
   const rollbackSettingsSnapshot = useLauncherStore((s) => s.rollbackSettingsSnapshot);
@@ -96,7 +96,7 @@ export function SettingsPage() {
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <Card>
           <CardHeader>
-            <CardTitle>{t(lang, "globalDefaults")}</CardTitle>
+            <CardTitle>{t("globalDefaults")}</CardTitle>
             <CardDescription>
               Java, Memory, JVM Args, Renderer Flags, Window and Launch Args.
             </CardDescription>
@@ -225,7 +225,7 @@ export function SettingsPage() {
               </div>
             ) : null}
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => void saveGlobal()}>{t(lang, "saveGlobalDefaults")}</Button>
+              <Button onClick={() => void saveGlobal()}>{t("saveGlobalDefaults")}</Button>
               <Button
                 variant="outline"
                 onClick={() =>
@@ -235,7 +235,7 @@ export function SettingsPage() {
                   })
                 }
               >
-                {t(lang, "export")}
+                {t("export")}
               </Button>
             </div>
           </CardContent>
@@ -246,7 +246,7 @@ export function SettingsPage() {
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <CardTitle>{t(lang, "presets")}</CardTitle>
+                  <CardTitle>{t("presets")}</CardTitle>
                   <CardDescription>Apply/edit/export/import preset patches.</CardDescription>
                 </div>
                 <Badge variant="accent">{data.presets.length}</Badge>
@@ -312,7 +312,7 @@ export function SettingsPage() {
                     presetValidation.errors.length > 0
                   }
                 >
-                  {t(lang, "savePresetPatch")}
+                  {t("savePresetPatch")}
                 </Button>
                 <Button
                   variant="outline"
@@ -324,7 +324,7 @@ export function SettingsPage() {
                     downloadJson(`${selectedPreset.name}-preset.json`, JSON.parse(raw));
                   }}
                 >
-                  {t(lang, "export")}
+                  {t("export")}
                 </Button>
                 <input
                   type="file"
@@ -347,7 +347,7 @@ export function SettingsPage() {
             <CardContent className="grid gap-3 text-sm">
               <label className="flex items-center justify-between gap-4 rounded-md border border-borderSoft bg-surface1 p-3">
                 <div>
-                  <div className="font-semibold">{t(lang, "language")}</div>
+                  <div className="font-semibold">{t("language")}</div>
                   <div className="text-textMuted">English / Deutsch</div>
                 </div>
                 <select
@@ -355,8 +355,8 @@ export function SettingsPage() {
                   value={data.ui.language}
                   onChange={(e) => void setLanguage(e.target.value as "en" | "de")}
                 >
-                  <option value="en">{t(lang, "english")}</option>
-                  <option value="de">{t(lang, "german")}</option>
+                  <option value="en">{t("english")}</option>
+                  <option value="de">{t("german")}</option>
                 </select>
               </label>
             </CardContent>
@@ -383,7 +383,7 @@ export function SettingsPage() {
                         {snap.scope === "preset" ? `Preset ${snap.presetId}` : snap.scope}
                       </div>
                       <div className="text-xs text-textMuted">
-                        {snap.note} • {formatDateTime(snap.createdAt, lang)}
+                        {snap.note} • {formatDateTime(snap.createdAt, i18n.language)}
                       </div>
                     </div>
                     <Button
@@ -391,7 +391,7 @@ export function SettingsPage() {
                       variant="outline"
                       onClick={() => void rollbackSettingsSnapshot(snap.id)}
                     >
-                      {t(lang, "rollback")}
+                      {t("rollback")}
                     </Button>
                   </div>
                   <pre className="field-mono max-h-40 overflow-auto whitespace-pre-wrap">

@@ -6,9 +6,10 @@ import { useLauncherStore } from "@/store/launcher-store";
 
 type PlayingAsCardProps = {
   collapsed?: boolean;
+  onLoginRequest?: () => void;
 };
 
-export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
+export function PlayingAsCard({ collapsed = false, onLoginRequest }: PlayingAsCardProps) {
   const profiles = useLauncherStore((s) => s.data.profiles);
   const logoutMicrosoft = useLauncherStore((s) => s.logoutMicrosoft);
 
@@ -92,7 +93,20 @@ export function PlayingAsCard({ collapsed = false }: PlayingAsCardProps) {
 
   return (
     <div className={cn("relative", collapsed && "justify-self-center")}>
-      <div className={cardClassName}>
+      <div
+        className={cardClassName}
+        role={!isLoggedIn ? "button" : undefined}
+        tabIndex={!isLoggedIn ? 0 : undefined}
+        onClick={() => {
+          if (!isLoggedIn) onLoginRequest?.();
+        }}
+        onKeyDown={(e) => {
+          if (!isLoggedIn && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onLoginRequest?.();
+          }
+        }}
+      >
         {cardContent}
         {expandedAction}
       </div>

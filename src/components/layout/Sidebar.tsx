@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Compass, Home, LibraryBig, Settings2, Shirt } from "lucide-react";
+import { Compass, Home, LibraryBig, PanelLeftClose, Settings2, Shirt } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PlayingAsCard } from "@/components/account/PlayingAsCard";
-import { AssetIcon } from "@/components/layout/AssetIcon";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -46,12 +45,11 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
       type="button"
       variant="ghost"
     >
-      <AssetIcon
+      <PanelLeftClose
         className={cn(
           "h-4 w-4 transition-transform duration-200 ease-linear",
           collapsed ? "rotate-180" : "",
         )}
-        src="/assets/svg/sidebar-collapse.svg"
       />
     </Button>
   );

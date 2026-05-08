@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const languageSchema = z.enum(["en", "de"]);
+export const languageSchema = z.enum(["en", "de", "fr", "es", "ja", "zh-CN", "pt-BR"]);
 export const loaderSchema = z.enum(["vanilla", "fabric", "forge", "neoforge", "quilt"]);
 
 const launcherConfigBaseSchema = z.object({

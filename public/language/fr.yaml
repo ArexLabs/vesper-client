@@ -1,0 +1,51 @@
+productTagline: "Launcher desktop orienté configuration"
+navInstances: Instances
+navDiscover: Découvrir
+navConfigStudio: "Studio de config"
+navDiagnostics: Diagnostics
+navSettings: Paramètres
+instances: Instances
+instanceLibrary: "Bibliothèque d'instances"
+searchPlaceholder: "Rechercher instances, version, loader…"
+allLoaders: "Tous les loaders"
+sortUpdated: "Tri : Mis à jour"
+sortName: "Tri : Nom"
+sortVersion: "Tri : Version"
+cards: Cartes
+table: Tableau
+createInstance: "Créer une instance"
+instanceName: "Nom de l'instance"
+mcVersion: "Version MC"
+modpackNameOptional: "Nom du modpack (optionnel)"
+create: Créer
+noInstances: "Aucune instance trouvée"
+noInstancesHint: "Ajustez la recherche/le filtre ou créez une instance ci-dessus."
+open: Ouvrir
+preset: Préréglage
+snapshots: Instantanés
+lastPlayed: "Dernière lecture"
+details: "Détails de l'instance"
+overview: Aperçu
+mods: Mods
+config: Configuration
+runtime: Exécution
+history: Historique
+launchPlaceholder: Lancer
+rollback: Restaurer
+settings: Paramètres
+globalDefaults: "Paramètres globaux par défaut"
+presets: Préréglages
+saveGlobalDefaults: "Enregistrer les paramètres globaux"
+savePresetPatch: "Enregistrer le correctif de préréglage"
+export: Exporter
+import: Importer
+discover: Découvrir
+diagnostics: Diagnostics
+language: Langue
+english: Anglais
+german: Allemand
+configStudio: "Studio de config"
+saveSnapshot: "Enregistrer l'instantané"
+validation: Validation
+workflowSafety: "Sécurité du workflow"
+sourceChain: "Chaîne source"

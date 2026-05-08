@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Play, RotateCcw } from "lucide-react";
 import { argsToMultiline, multilineToArgs, resolveInstanceConfig } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { launcherConfigSchema, type LauncherConfig } from "@/lib/schemas";
 import { formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function InstanceDetailsPage() {
   const { instanceId } = useParams();
   const data = useLauncherStore((s) => s.data);
-  const lang = data.ui.language;
+  const { t, i18n } = useT();
   const applyPresetToInstance = useLauncherStore((s) => s.applyPresetToInstance);
   const saveInstanceResolvedConfig = useLauncherStore((s) => s.saveInstanceResolvedConfig);
   const rollbackInstanceSnapshot = useLauncherStore((s) => s.rollbackInstanceSnapshot);
@@ -31,7 +31,7 @@ export function InstanceDetailsPage() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link to="/instances">{t(lang, "instances")}</Link>
+            <Link to="/instances">{t("instances")}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -85,11 +85,11 @@ export function InstanceDetailsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="accent">{instance.loader}</Badge>
               <Badge variant="muted">
-                {instance.snapshots.length} {t(lang, "snapshots")}
+                {instance.snapshots.length} {t("snapshots")}
               </Badge>
               <Button size="sm" onClick={() => void launchInstance(instance.id)}>
                 <Play className="h-4 w-4" />
-                {t(lang, "launchPlaceholder")}
+                {t("launchPlaceholder")}
               </Button>
             </div>
           </div>
@@ -98,19 +98,19 @@ export function InstanceDetailsPage() {
           <div className="grid gap-2 text-sm">
             <div className="flex justify-between">
               <span className="text-textMuted">Created</span>
-              <span>{formatDateTime(instance.createdAt, lang)}</span>
+              <span>{formatDateTime(instance.createdAt, i18n.language)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-textMuted">Updated</span>
-              <span>{formatDateTime(instance.updatedAt, lang)}</span>
+              <span>{formatDateTime(instance.updatedAt, i18n.language)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-textMuted">{t(lang, "lastPlayed")}</span>
-              <span>{formatDateTime(instance.lastPlayedAt, lang)}</span>
+              <span className="text-textMuted">{t("lastPlayed")}</span>
+              <span>{formatDateTime(instance.lastPlayedAt, i18n.language)}</span>
             </div>
           </div>
           <div className="panel-soft p-3">
-            <label className="label mb-2 block">{t(lang, "preset")}</label>
+            <label className="label mb-2 block">{t("preset")}</label>
             <select
               className="field mb-3"
               value={instance.presetId ?? ""}
@@ -124,7 +124,7 @@ export function InstanceDetailsPage() {
               ))}
             </select>
             <Button asChild variant="outline" size="sm" className="w-full">
-              <Link to={`/config-studio?instance=${instance.id}`}>{t(lang, "configStudio")}</Link>
+              <Link to={`/config-studio?instance=${instance.id}`}>{t("configStudio")}</Link>
             </Button>
           </div>
         </CardContent>
@@ -132,11 +132,11 @@ export function InstanceDetailsPage() {
 
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">{t(lang, "overview")}</TabsTrigger>
-          <TabsTrigger value="mods">{t(lang, "mods")}</TabsTrigger>
-          <TabsTrigger value="config">{t(lang, "config")}</TabsTrigger>
-          <TabsTrigger value="runtime">{t(lang, "runtime")}</TabsTrigger>
-          <TabsTrigger value="history">{t(lang, "history")}</TabsTrigger>
+          <TabsTrigger value="overview">{t("overview")}</TabsTrigger>
+          <TabsTrigger value="mods">{t("mods")}</TabsTrigger>
+          <TabsTrigger value="config">{t("config")}</TabsTrigger>
+          <TabsTrigger value="runtime">{t("runtime")}</TabsTrigger>
+          <TabsTrigger value="history">{t("history")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -183,7 +183,7 @@ export function InstanceDetailsPage() {
         <TabsContent value="mods">
           <Card>
             <CardHeader>
-              <CardTitle>{t(lang, "mods")}</CardTitle>
+              <CardTitle>{t("mods")}</CardTitle>
               <CardDescription>MVP placeholder for future local scanner/catalog.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -313,7 +313,7 @@ export function InstanceDetailsPage() {
                   <Button onClick={() => void saveQuickConfig()}>Save Quick Config</Button>
                   <Button asChild variant="outline">
                     <Link to={`/config-studio?instance=${instance.id}`}>
-                      {t(lang, "configStudio")}
+                      {t("configStudio")}
                     </Link>
                   </Button>
                 </div>
@@ -336,7 +336,7 @@ export function InstanceDetailsPage() {
         <TabsContent value="runtime">
           <Card>
             <CardHeader>
-              <CardTitle>{t(lang, "runtime")}</CardTitle>
+              <CardTitle>{t("runtime")}</CardTitle>
               <CardDescription>
                 Whitelist-based launch seam only. No arbitrary exec.
               </CardDescription>
@@ -345,7 +345,7 @@ export function InstanceDetailsPage() {
               <pre className="field-mono whitespace-pre-wrap">{`${effective.javaPath}\n${effective.jvmArgs.join(" ")}\n-Xms${effective.memoryMbMin}M -Xmx${effective.memoryMbMax}M\n<game-jar> ${effective.launchArgs.join(" ")}`}</pre>
               <Button onClick={() => void launchInstance(instance.id)} className="w-fit">
                 <Play className="h-4 w-4" />
-                {t(lang, "launchPlaceholder")}
+                {t("launchPlaceholder")}
               </Button>
               {currentPreview ? (
                 <pre className="field-mono whitespace-pre-wrap">
@@ -372,7 +372,7 @@ export function InstanceDetailsPage() {
                     <div>
                       <div className="text-sm font-semibold">{snapshot.note}</div>
                       <div className="text-xs text-textMuted">
-                        {formatDateTime(snapshot.createdAt, lang)} • {snapshot.id}
+                        {formatDateTime(snapshot.createdAt, i18n.language)} • {snapshot.id}
                       </div>
                     </div>
                     <Button
@@ -381,7 +381,7 @@ export function InstanceDetailsPage() {
                       onClick={() => void rollbackInstanceSnapshot(instance.id, snapshot.id)}
                     >
                       <RotateCcw className="h-4 w-4" />
-                      {t(lang, "rollback")}
+                      {t("rollback")}
                     </Button>
                   </div>
                   <details>

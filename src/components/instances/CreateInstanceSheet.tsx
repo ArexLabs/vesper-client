@@ -10,10 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import type { CreateInstanceInput } from "@/lib/ipc";
 import { fetchLoaderOptions, fetchMinecraftVersions } from "@/lib/minecraft-catalog";
-import { loaderSchema, type Language } from "@/lib/schemas";
+import { loaderSchema } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
 const createInstanceFormSchema = z.object({
@@ -33,15 +33,14 @@ type CreateInstanceSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreate: (input: CreateInstanceInput) => Promise<void>;
-  lang: Language;
 };
 
 export function CreateInstanceSheet({
   open,
   onOpenChange,
   onCreate,
-  lang,
 }: CreateInstanceSheetProps) {
+  const { t } = useT();
   const [name, setName] = useState("");
   const [mcVersion, setMcVersion] = useState("1.20.1");
   const [loader, setLoader] = useState<z.infer<typeof loaderSchema>>("fabric");
@@ -204,7 +203,7 @@ export function CreateInstanceSheet({
                 New Instance
               </p>
               <h2 id="create-instance-title" className="mt-1 text-xl font-semibold text-text">
-                {t(lang, "createInstance")}
+                {t("createInstance")}
               </h2>
               <p className="mt-1 text-sm text-textMuted">
                 Create a local instance preset shell. Validation runs before dispatching to the
@@ -234,7 +233,7 @@ export function CreateInstanceSheet({
               <Field
                 error={showValidation || fieldTouched.name ? fieldErrors.name : undefined}
                 helper="Shown in the library and details routes. Keep it short and unique."
-                label={t(lang, "instanceName")}
+                label={t("instanceName")}
               >
                 <input
                   aria-invalid={invalidFor("name")}
@@ -252,7 +251,7 @@ export function CreateInstanceSheet({
                     showValidation || fieldTouched.mcVersion ? fieldErrors.mcVersion : undefined
                   }
                   helper="Live versions sourced from Mojang metadata."
-                  label={t(lang, "mcVersion")}
+                  label={t("mcVersion")}
                 >
                   <Select
                     value={mcVersion}
@@ -314,7 +313,7 @@ export function CreateInstanceSheet({
                   showValidation || fieldTouched.modpackName ? fieldErrors.modpackName : undefined
                 }
                 helper="Optional. Used as secondary metadata in cards and table rows."
-                label={t(lang, "modpackNameOptional")}
+                label={t("modpackNameOptional")}
               >
                 <input
                   aria-invalid={invalidFor("modpackName")}

@@ -35,53 +35,129 @@
 }
 
 :root {
-  color-scheme: dark;
-
   --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --bg: 0 0% 3.9%;
-  --surface-1: 0 0% 6.5%;
-  --surface-2: 0 0% 9%;
-  --surface-3: 0 0% 12%;
-  --border: 0 0% 100% / 0.06;
-  --muted: 0 0% 10%;
-  --text: 0 0% 95%;
-  --text-muted: 0 0% 60%;
-  --accent: 26.6 100% 70%;
-  --accent-foreground: 24 25% 10%;
-  --ring: 26.6 100% 70%;
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.02);
-  --radius: 12px;
 
-  --success: 147 62% 43%;
-  --warning: 26.6 100% 70%;
-  --danger: 0 72% 58%;
+  /* ==============================
+     shadcn v4 — Neutral base (light)
+     ============================== */
+  --background: 1 0 0;
+  --foreground: 0.145 0 0;
+  --card: 1 0 0;
+  --card-foreground: 0.145 0 0;
+  --popover: 1 0 0;
+  --popover-foreground: 0.145 0 0;
+  --muted: 0.97 0 0;
+  --muted-foreground: 0.556 0 0;
+  --accent: 0.97 0 0;
+  --accent-foreground: 0.205 0 0;
+  --destructive: 0.577 0.245 27.325;
+  --destructive-foreground: 0.985 0 0;
+  --border: 0.922 0 0;
+  --input: 0.922 0 0;
+  --ring: 0.708 0 0;
 
-  /* shadcn semantic tokens */
-  --background: var(--bg);
-  --foreground: var(--text);
-  --card: var(--surface-2);
-  --card-foreground: var(--text);
-  --popover: var(--surface-2);
-  --popover-foreground: var(--text);
-  --primary: var(--accent);
-  --primary-foreground: var(--accent-foreground);
-  --secondary: var(--surface-3);
-  --secondary-foreground: var(--text);
-  --muted-foreground: var(--text-muted);
-  --destructive: var(--danger);
-  --destructive-foreground: 0 0% 98%;
-  --input: var(--surface-3);
+  /* -- Amber theme overrides (light) -- */
+  --primary: 0.555 0.163 48.998;
+  --primary-foreground: 0.987 0.022 95.277;
+  --secondary: 0.967 0.001 286.375;
+  --secondary-foreground: 0.21 0.006 285.885;
 
-  --sidebar: var(--surface-1);
-  --sidebar-foreground: var(--text);
-  --sidebar-primary: var(--accent);
-  --sidebar-primary-foreground: var(--accent-foreground);
-  --sidebar-accent: var(--surface-3);
-  --sidebar-accent-foreground: var(--text);
-  --sidebar-border: 0 0% 100% / 0.06;
-  --sidebar-ring: var(--ring);
+  /* -- Chart colors (amber, light) -- */
+  --chart-1: 0.879 0.169 91.605;
+  --chart-2: 0.769 0.188 70.08;
+  --chart-3: 0.666 0.179 58.318;
+  --chart-4: 0.555 0.163 48.998;
+  --chart-5: 0.473 0.137 46.201;
+
+  /* -- Sidebar (neutral base light + amber overrides) -- */
+  --sidebar: 0.985 0 0;
+  --sidebar-foreground: 0.145 0 0;
+  --sidebar-primary: 0.666 0.179 58.318;
+  --sidebar-primary-foreground: 0.987 0.022 95.277;
+  --sidebar-accent: 0.97 0 0;
+  --sidebar-accent-foreground: 0.205 0 0;
+  --sidebar-border: 0.922 0 0;
+  --sidebar-ring: 0.708 0 0;
+
+  /* ==============================
+     Custom (legacy) tokens — light
+     ============================== */
+  --bg: var(--background);
+  --surface-1: 0.985 0 0;
+  --surface-2: 0.977 0 0;
+  --surface-3: 0.97 0 0;
+  --text: var(--foreground);
+  --text-muted: var(--muted-foreground);
+  --success: 0.723 0.219 149.579;
+  --warning: 0.555 0.163 48.998;
+  --danger: 0.577 0.245 27.325;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* ==============================
+     shadcn v4 — Neutral base (dark)
+     ============================== */
+  --background: 0.145 0 0;
+  --foreground: 0.985 0 0;
+  --card: 0.205 0 0;
+  --card-foreground: 0.985 0 0;
+  --popover: 0.205 0 0;
+  --popover-foreground: 0.985 0 0;
+  --muted: 0.269 0 0;
+  --muted-foreground: 0.708 0 0;
+  --accent: 0.269 0 0;
+  --accent-foreground: 0.985 0 0;
+  --destructive: 0.704 0.191 22.216;
+  --destructive-foreground: 0.985 0 0;
+  --border: 1 0 0 / 10%;
+  --input: 1 0 0 / 15%;
+  --ring: 0.556 0 0;
+
+  /* -- Amber theme overrides (dark) -- */
+  --primary: 0.473 0.137 46.201;
+  --primary-foreground: 0.987 0.022 95.277;
+  --secondary: 0.274 0.006 286.033;
+  --secondary-foreground: 0.985 0 0;
+
+  /* -- Chart colors (amber, dark) -- */
+  --chart-1: 0.879 0.169 91.605;
+  --chart-2: 0.769 0.188 70.08;
+  --chart-3: 0.666 0.179 58.318;
+  --chart-4: 0.555 0.163 48.998;
+  --chart-5: 0.473 0.137 46.201;
+
+  /* -- Sidebar (neutral base dark + amber overrides) -- */
+  --sidebar: 0.205 0 0;
+  --sidebar-foreground: 0.985 0 0;
+  --sidebar-primary: 0.769 0.188 70.08;
+  --sidebar-primary-foreground: 0.279 0.077 45.635;
+  --sidebar-accent: 0.269 0 0;
+  --sidebar-accent-foreground: 0.985 0 0;
+  --sidebar-border: 1 0 0 / 10%;
+  --sidebar-ring: 0.556 0 0;
+
+  /* ==============================
+     Custom (legacy) tokens — dark
+     ============================== */
+  --bg: var(--background);
+  --surface-1: 0.205 0 0;
+  --surface-2: 0.237 0 0;
+  --surface-3: 0.269 0 0;
+  --text: var(--foreground);
+  --text-muted: var(--muted-foreground);
+  --success: 0.627 0.194 149.214;
+  --warning: 0.473 0.137 46.201;
+  --danger: 0.704 0.191 22.216;
 }
 
 @layer base {
@@ -147,48 +223,24 @@
 @layer components {
   .panel {
     @apply rounded-[var(--radius)] border shadow-panel;
-    background-color: hsl(var(--surface-2) / 0.8);
+    background-color: oklch(var(--surface-2) / 0.8);
   }
 
   .panel-soft {
     @apply rounded-[calc(var(--radius)-2px)] border;
-    background-color: hsl(var(--surface-1) / 0.6);
-  }
-
-  .section-shell {
-    @apply rounded-[calc(var(--radius)+2px)] border shadow-panel;
-    background-color: hsl(var(--surface-1) / 0.5);
-  }
-
-  .field {
-    @apply h-10 w-full rounded-[calc(var(--radius)-4px)] border px-3 text-sm text-text transition;
-    background-color: hsl(var(--surface-1) / 0.7);
-  }
-
-  .field:hover {
-    @apply border-white/10 bg-surface1;
-  }
-
-  .field:focus-visible {
-    @apply border-white/15 ring-2;
-    --tw-ring-color: hsl(var(--ring) / 0.2);
-  }
-
-  .panel-soft {
-    @apply rounded-[calc(var(--radius)-2px)] border;
-    background-color: hsl(var(--surface-1) / 0.85);
+    background-color: oklch(var(--surface-1) / 0.85);
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0));
   }
 
   .section-shell {
     @apply rounded-[calc(var(--radius)+2px)] border shadow-panel;
-    background-color: hsl(var(--surface-1) / 0.7);
+    background-color: oklch(var(--surface-1) / 0.7);
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0));
   }
 
   .field {
     @apply h-10 w-full rounded-[calc(var(--radius)-4px)] border px-3 text-sm text-text transition;
-    background-color: hsl(var(--surface-1) / 0.9);
+    background-color: oklch(var(--surface-1) / 0.9);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
   }
 
@@ -202,13 +254,13 @@
 
   .field:focus-visible {
     @apply border-white/15 ring-2;
-    --tw-ring-color: hsl(var(--ring) / 0.25);
+    --tw-ring-color: oklch(var(--ring) / 0.25);
   }
 
   .field-invalid {
     @apply ring-2;
-    border-color: hsl(var(--danger) / 0.45);
-    --tw-ring-color: hsl(var(--danger) / 0.15);
+    border-color: oklch(var(--danger) / 0.45);
+    --tw-ring-color: oklch(var(--danger) / 0.15);
   }
 
   .field-mono {
@@ -233,7 +285,7 @@
 
   .kbd {
     @apply inline-flex h-6 items-center rounded-md border px-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-textMuted;
-    background-color: hsl(var(--muted) / 0.55);
+    background-color: oklch(var(--muted) / 0.55);
   }
 
   .skeleton {
@@ -245,7 +297,7 @@
   }
 
   .focus-ring:focus-visible {
-    --tw-ring-color: hsl(var(--ring) / 0.3);
+    --tw-ring-color: oklch(var(--ring) / 0.3);
   }
 }
 

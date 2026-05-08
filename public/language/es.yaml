@@ -1,0 +1,51 @@
+productTagline: "Launcher de escritorio centrado en configuración"
+navInstances: Instancias
+navDiscover: Descubrir
+navConfigStudio: Config Studio
+navDiagnostics: Diagnósticos
+navSettings: Ajustes
+instances: Instancias
+instanceLibrary: "Biblioteca de instancias"
+searchPlaceholder: "Buscar instancias, versión, loader…"
+allLoaders: "Todos los loaders"
+sortUpdated: "Ordenar: Actualizado"
+sortName: "Ordenar: Nombre"
+sortVersion: "Ordenar: Versión"
+cards: Tarjetas
+table: Tabla
+createInstance: Crear instancia
+instanceName: "Nombre de la instancia"
+mcVersion: "Versión de MC"
+modpackNameOptional: "Nombre del modpack (opcional)"
+create: Crear
+noInstances: "No se encontraron instancias"
+noInstancesHint: "Ajusta la búsqueda/filtro o crea una nueva instancia arriba."
+open: Abrir
+preset: Preajuste
+snapshots: Instantáneas
+lastPlayed: "Última jugada"
+details: "Detalles de la instancia"
+overview: Resumen
+mods: Mods
+config: Config
+runtime: "Tiempo de ejecución"
+history: Historial
+launchPlaceholder: Iniciar
+rollback: Revertir
+settings: Ajustes
+globalDefaults: "Valores predeterminados globales"
+presets: Preajustes
+saveGlobalDefaults: "Guardar valores globales"
+savePresetPatch: "Guardar parche de preajuste"
+export: Exportar
+import: Importar
+discover: Descubrir
+diagnostics: Diagnósticos
+language: Idioma
+english: Inglés
+german: Alemán
+configStudio: Config Studio
+saveSnapshot: "Guardar instantánea"
+validation: Validación
+workflowSafety: "Seguridad del flujo de trabajo"
+sourceChain: "Cadena de origen"
