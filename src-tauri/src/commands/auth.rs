@@ -71,8 +71,22 @@ struct TokenErrorResponse {
 }
 
 #[tauri::command]
-pub async fn auth_get_status(
+pub async fn microsoft_login(
   state: State<'_, AuthState>,
+) -> Result<DeviceLoginStart, String> {
+  let start = auth_begin_microsoft_device_login(state).await?;
+  // Open browser to the verification URL
+  let url = start
+    .verification_uri_complete
+    .as_deref()
+    .unwrap_or(&start.verification_uri);
+  let _ = open::that(url);
+  Ok(start)
+}
+
+#[tauri::command]
+pub async fn auth_get_status(
+  _state: State<'_, AuthState>,
 ) -> Result<AuthStatus, String> {
   let profile_json = serde_json::json!({
     "id": "microsoft-profile",
@@ -109,9 +123,10 @@ pub async fn auth_begin_microsoft_device_login(
     .await
     .map_err(|e| format!("Device code request failed: {}", e))?;
 
-  if !response.status().is_success() {
+  let response_status = response.status();
+  if !response_status.is_success() {
     let text = response.text().await.unwrap_or_default();
-    return Err(format!("Device code endpoint returned {}: {}", response.status(), text));
+    return Err(format!("Device code endpoint returned {}: {}", response_status, text));
   }
 
   let device: DeviceCodeResponse = response
@@ -210,7 +225,7 @@ pub async fn auth_poll_microsoft_device_login(
     });
   }
 
-  let status_code = response.status();
+  let _status_code = response.status();
   let error_body: TokenErrorResponse = response.json().await.unwrap_or(TokenErrorResponse {
     error: "unknown".to_string(),
     error_description: None,
@@ -273,7 +288,7 @@ async fn fetch_display_name(client: &reqwest::Client, access_token: &str) -> Str
 
 #[tauri::command]
 pub async fn auth_logout_microsoft(
-  state: State<'_, AuthState>,
+  _state: State<'_, AuthState>,
 ) -> Result<AuthStatus, String> {
   let profile_json = serde_json::json!({
     "id": "microsoft-profile",
