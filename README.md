@@ -1,6 +1,7 @@
 # Vesper Launcher
 
 A desktop Minecraft launcher built with Tauri v2, React, and TypeScript.
+We state that the launcher was written using AI, but because of this, it does not mean, that it is bad.
 
 ## Documentation
 
