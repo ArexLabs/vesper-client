@@ -18,15 +18,32 @@ export type LaunchPreview = {
   note: string;
 };
 
-export type RuntimeAuthStatus = {
-  profile: unknown | null;
-  loginAvailable: boolean;
-  secureStorageAvailable: boolean;
-  microsoftClientConfigured: boolean;
-  message: string | null;
-};
+// ---------------------------------------------------------------------------
+// Auth Types (mirrors Rust `entra_config` and `commands::auth`)
+// ---------------------------------------------------------------------------
 
-export type MicrosoftDeviceLoginStart = {
+export interface MicrosoftProfile {
+  id: string;
+  displayName: string;
+  email: string | null;
+  tenantId: string | null;
+}
+
+export interface TokenInfo {
+  expiresAt: number;
+  scopes: string;
+  isExpired: boolean;
+}
+
+export interface AuthStatus {
+  isLoggedIn: boolean;
+  profile: MicrosoftProfile | null;
+  tokenInfo: TokenInfo | null;
+  secureStorageAvailable: boolean;
+  message: string | null;
+}
+
+export interface DeviceLoginStart {
   sessionId: string;
   userCode: string;
   verificationUri: string;
@@ -34,14 +51,14 @@ export type MicrosoftDeviceLoginStart = {
   expiresInSeconds: number;
   intervalSeconds: number;
   message: string;
-};
+}
 
-export type MicrosoftDeviceLoginPoll = {
+export interface DeviceLoginPoll {
   status: "pending" | "complete" | "error";
-  profile: unknown | null;
+  profile: MicrosoftProfile | null;
   retryAfterSeconds: number | null;
   message: string | null;
-};
+}
 
 export type DiscoverSearchInput = {
   query: string;
@@ -150,7 +167,7 @@ export async function launchInstanceNative(instanceId: string): Promise<LaunchPr
   }
 }
 
-export async function secureStorageProbe(key = "ms-auth-refresh-token-placeholder") {
+export async function secureStorageProbe(key = "ms-refresh-token") {
   try {
     return await invokeOrThrow("secure_store_read_placeholder", { key });
   } catch {
@@ -167,25 +184,37 @@ export function isTauriRuntime() {
   return hasTauriRuntime();
 }
 
-export async function getAuthStatusNative(): Promise<RuntimeAuthStatus> {
-  return await invokeOrThrow<RuntimeAuthStatus>("auth_get_status");
+// ---------------------------------------------------------------------------
+// Auth IPC
+// ---------------------------------------------------------------------------
+
+export async function getAuthStatusNative(): Promise<AuthStatus> {
+  return await invokeOrThrow<AuthStatus>("auth_get_status");
 }
 
-export async function beginMicrosoftDeviceLoginNative(): Promise<MicrosoftDeviceLoginStart> {
-  return await invokeOrThrow<MicrosoftDeviceLoginStart>("auth_begin_microsoft_device_login");
+export async function beginMicrosoftDeviceLoginNative(): Promise<DeviceLoginStart> {
+  return await invokeOrThrow<DeviceLoginStart>("auth_begin_microsoft_device_login");
 }
 
 export async function pollMicrosoftDeviceLoginNative(
   sessionId: string,
-): Promise<MicrosoftDeviceLoginPoll> {
-  return await invokeOrThrow<MicrosoftDeviceLoginPoll>("auth_poll_microsoft_device_login", {
+): Promise<DeviceLoginPoll> {
+  return await invokeOrThrow<DeviceLoginPoll>("auth_poll_microsoft_device_login", {
     sessionId,
   });
 }
 
-export async function logoutMicrosoftNative(): Promise<RuntimeAuthStatus> {
-  return await invokeOrThrow<RuntimeAuthStatus>("auth_logout_microsoft");
+export async function refreshMicrosoftTokenNative(): Promise<AuthStatus> {
+  return await invokeOrThrow<AuthStatus>("auth_refresh_token");
 }
+
+export async function logoutMicrosoftNative(): Promise<AuthStatus> {
+  return await invokeOrThrow<AuthStatus>("auth_logout_microsoft");
+}
+
+// ---------------------------------------------------------------------------
+// Modrinth search / discovery
+// ---------------------------------------------------------------------------
 
 function toModrinthFacets(input: DiscoverSearchInput) {
   const facets: string[][] = [["project_type:mod"]];

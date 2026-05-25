@@ -2,10 +2,15 @@ import { AccountCard } from "@/components/AccountCard";
 import { useAuthStore } from "@/store/auth";
 
 export function SettingsPage() {
-  const { isLoggedIn, username, setLoggedIn, setLoggedOut } = useAuthStore();
+  const status = useAuthStore((s) => s.status);
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const error = useAuthStore((s) => s.error);
+
+  const isLoggedIn = status?.is_logged_in ?? false;
+  const username = status?.profile?.display_name ?? null;
 
   const handleLogin = () => {
-    setLoggedIn("Player");
+    // No-op: auth flow starts from the launcher store using device code flow
   };
 
   return (

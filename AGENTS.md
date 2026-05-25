@@ -48,6 +48,76 @@ This checkout has no commit history yet, so use a consistent convention going fo
 - Do not commit secrets, tokens, or local machine paths.
 - Treat launcher/command execution changes as high risk; keep Tauri command surfaces explicit and minimal.
 
+## Microsoft Authentication (Entra ID / OAuth 2.0)
+
+### Architecture Decision
+This app uses **OAuth 2.0 Device Code Flow** (Device Authorization Grant) for Microsoft login.
+- Best for desktop apps: no redirect URI, no embedded browser, user authenticates in their default browser.
+- All token exchange happens in Rust via `reqwest` — no OAuth secrets exposed in the webview.
+- MSAL cannot be used in Tauri: MSAL Browser needs a web context, MSAL Node needs Node.js runtime.
+- Custom OAuth 2.0 in Rust is the correct approach for Tauri v2.
+
+### Azure Portal App Registration
+1. Go to https://portal.azure.com -> Microsoft Entra ID -> App registrations -> New registration
+2. **Name**: "Vesper Launcher"
+3. **Supported account types**: "Accounts in any organizational directory (Any Microsoft Entra ID tenant - Multitenant) and personal Microsoft accounts (e.g. Skype, Xbox)"
+4. **Redirect URI**: Leave empty (Device Code Flow does not use redirect URIs)
+5. Register, copy the **Application (client) ID** to your config.
+6. Under **Authentication** -> **Advanced settings**: Set "Allow public client flows" to **Yes**
+7. Under **API permissions**: No additional permissions needed for `XboxLive.signin`, but if you need Graph API, add `User.Read` (delegated).
+
+### How to Set the Client ID
+**Production**: Set env var when building:
+```bash
+VESPER_AZURE_CLIENT_ID="your-client-id-here" npm run tauri:build
+```
+
+**Development**: The code falls back to a placeholder — set the env var:
+```bash
+VESPER_AZURE_CLIENT_ID="your-client-id-here" npm run tauri:dev
+```
+
+### Code Architecture
+| Layer | File | Role |
+|-------|------|------|
+| **Rust config** | `src-tauri/src/entra_config.rs` | Client ID, authority URL, scopes |
+| **Rust auth commands** | `src-tauri/src/commands/auth.rs` | Device code, token poll, refresh, logout |
+| **Rust secure storage** | `src-tauri/src/secure_storage.rs` | OS keyring (Credential Manager / Keychain / libsecret) |
+| **Frontend IPC** | `src/lib/ipc.ts` | Typed Tauri invoke wrappers |
+| **Frontend store** | `src/store/auth.ts` | React state for auth flow |
+| **Frontend launcher store** | `src/store/launcher-store.ts` | Higher-level auth orchestration |
+
+### Endpoints Used
+- **Authority**: `https://login.microsoftonline.com/common` (routes to MSA or org tenant)
+- **Device Code**: `{authority}/oauth2/v2.0/devicecode`
+- **Token**: `{authority}/oauth2/v2.0/token`
+- **Revoke**: `{authority}/oauth2/v2.0/revoke`
+- **Graph**: `https://graph.microsoft.com/v1.0/me`
+- **Scopes**: `XboxLive.signin offline_access openid profile email`
+
+### Token Lifecycle
+1. **Device Code Flow**: User sees a code, enters it at `https://microsoft.com/link`
+2. **Polling**: Rust polls token endpoint every 5s (slows down to 10s+ on `slow_down`)
+3. **Token storage**: Access + refresh tokens stored in OS keyring via `keyring` crate
+4. **Refresh**: `auth_refresh_token` Tauri command renews access token before expiry
+5. **Logout**: Clears keyring, best-effort token revocation
+6. **Token expiry**: Refresh tokens for native/public clients have a 90-day rolling window; if unused for 90 days, they expire.
+
+### Common Pitfalls
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `AADSTS700016` | App not found in tenant | Register your own app; don't use legacy IDs |
+| `unauthorized_client` | Public client flow disabled | Enable "Allow public client flows" in Azure Portal |
+| `invalid_grant` | Refresh token expired | User must re-authenticate |
+| 400 on `/devicecode` | Wrong tenant / client ID | Use `/common` not `/consumers` or `/organizations` |
+| `AADSTS50020` | User account doesn't exist in tenant | Use `/common` (routes to correct tenant) |
+
+### Legacy ID `00000000402b5328`
+This was Microsoft's own client ID for old Xbox Live / Minecraft Bedrock auth.
+- It was never intended for use by third-party applications.
+- Microsoft has decommissioned it from the v2.0 endpoint.
+- You MUST register your own app in Azure Portal.
+
 ## Tech Stack Overview
 
 ### Frontend

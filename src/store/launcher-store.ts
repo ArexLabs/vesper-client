@@ -19,15 +19,16 @@ import {
 import {
   beginMicrosoftDeviceLoginNative,
   type CreateInstanceInput,
+  type DeviceLoginPoll,
+  type DeviceLoginStart,
   type LaunchPreview,
-  type MicrosoftDeviceLoginPoll,
-  type MicrosoftDeviceLoginStart,
   createInstanceNative,
   getAuthStatusNative,
   launchInstanceNative,
   loadAppStateFromRuntime,
   logoutMicrosoftNative,
   pollMicrosoftDeviceLoginNative,
+  refreshMicrosoftTokenNative,
   saveAppStateToRuntime,
 } from "@/lib/ipc";
 import { safeRandomId } from "@/lib/utils";
@@ -50,8 +51,9 @@ type LauncherStore = {
   boot: () => Promise<void>;
   shouldPromptLogin: () => boolean;
   refreshAuthStatus: () => Promise<void>;
-  beginMicrosoftLogin: () => Promise<MicrosoftDeviceLoginStart>;
-  pollMicrosoftLogin: (sessionId: string) => Promise<MicrosoftDeviceLoginPoll>;
+  refreshMicrosoftToken: () => Promise<void>;
+  beginMicrosoftLogin: () => Promise<DeviceLoginStart>;
+  pollMicrosoftLogin: (sessionId: string) => Promise<DeviceLoginPoll>;
   logoutMicrosoft: () => Promise<void>;
   createInstance: (input: CreateInstanceInput) => Promise<void>;
   updateGlobalDefaults: (config: LauncherConfig) => Promise<SaveResult>;
@@ -166,11 +168,28 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
     return parsed.success ? parsed.data : null;
   }
 
-  function syncMicrosoftProfile(profile: Profile | null) {
+  function mapMicrosoftProfile(raw: unknown): Profile | null {
+    if (!raw || typeof raw !== "object") return null;
+    const r = raw as Record<string, unknown>;
+    if (!r.id || !r.displayName) return null;
+    return {
+      id: String(r.id),
+      provider: "microsoft",
+      displayName: String(r.displayName),
+      offlineUsername: null,
+      authState: "signed_in",
+    };
+  }
+
+  function syncMicrosoftProfile(rawProfile: unknown) {
+    const profile = mapMicrosoftProfile(rawProfile);
     commit((draft) => {
       const index = draft.profiles.findIndex((p) => p.provider === "microsoft");
       if (!profile) {
-        if (index >= 0) draft.profiles[index].authState = "signed_out";
+        if (index >= 0) {
+          const p = draft.profiles[index];
+          if (p) p.authState = "signed_out";
+        }
         return;
       }
       if (index >= 0) {
@@ -234,11 +253,20 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
     async refreshAuthStatus() {
       try {
         const status = await getAuthStatusNative();
-        const profile = parseRuntimeProfile(status.profile);
-        syncMicrosoftProfile(profile);
+        syncMicrosoftProfile(status.profile);
         set({ authRuntimeMessage: status.message ?? null });
       } catch {
         // Auth commands are unavailable in web mode.
+      }
+    },
+
+    async refreshMicrosoftToken() {
+      try {
+        const status = await refreshMicrosoftTokenNative();
+        syncMicrosoftProfile(status.profile);
+        set({ authRuntimeMessage: status.message ?? null });
+      } catch {
+        // Refresh unavailable (web mode or no stored token)
       }
     },
 
@@ -251,7 +279,7 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
     async pollMicrosoftLogin(sessionId) {
       const result = await pollMicrosoftDeviceLoginNative(sessionId);
       if (result.status === "complete") {
-        syncMicrosoftProfile(parseRuntimeProfile(result.profile));
+        syncMicrosoftProfile(result.profile);
       }
       if (result.message) {
         set({ authRuntimeMessage: result.message });
@@ -261,7 +289,7 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
 
     async logoutMicrosoft() {
       const status = await logoutMicrosoftNative();
-      syncMicrosoftProfile(parseRuntimeProfile(status.profile));
+      syncMicrosoftProfile(status.profile);
       set({ authRuntimeMessage: status.message ?? null });
     },
 
@@ -502,12 +530,14 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
         commit((draft) => {
           const idx = draft.presets.findIndex((p) => p.id === parsed.data.id);
           if (idx >= 0) {
+            const existing = draft.presets[idx];
+            if (!existing) return;
             draft.settingsSnapshots.unshift(
               createSettingsSnapshot({
                 scope: "preset",
                 note: "Preset imported (replace)",
                 presetId: parsed.data.id,
-                presetPatch: draft.presets[idx].configPatch,
+                presetPatch: existing.configPatch,
               }),
             );
             draft.presets[idx] = parsed.data;
