@@ -7,6 +7,7 @@ import { useLauncherStore } from "@/store/launcher-store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AccountSettings } from "@/pages/settings-page";
 
 export function SettingsPage() {
   const data = useLauncherStore((s) => s.data);
@@ -93,6 +94,8 @@ export function SettingsPage() {
 
   return (
     <div className="grid gap-4 motion-preset-fade motion-duration-500">
+      <AccountSettings />
+
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <Card>
           <CardHeader>

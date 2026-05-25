@@ -27,6 +27,7 @@ export interface MicrosoftProfile {
   displayName: string;
   email: string | null;
   tenantId: string | null;
+  minecraftUsername: string | null;
 }
 
 export interface TokenInfo {
@@ -210,6 +211,10 @@ export async function refreshMicrosoftTokenNative(): Promise<AuthStatus> {
 
 export async function logoutMicrosoftNative(): Promise<AuthStatus> {
   return await invokeOrThrow<AuthStatus>("auth_logout_microsoft");
+}
+
+export async function cancelDeviceLoginNative(sessionId: string): Promise<void> {
+  return await invokeOrThrow<void>("auth_cancel_device_login", { sessionId });
 }
 
 // ---------------------------------------------------------------------------

@@ -50,10 +50,13 @@ impl EntraConfig {
     }
   }
 
-  /// Default scopes for Minecraft/Xbox Live authentication.
+  /// Default scopes for Microsoft authentication.
+  /// Note: XboxLive.signin is NOT a valid scope for custom app registrations.
+  /// It only works with Microsoft's own Xbox client IDs. The access token from
+  /// these scopes is exchanged for Xbox Live tokens at a separate API call
+  /// (https://user.auth.xboxlive.com/user/authenticate).
   pub fn scopes() -> &'static [&'static str] {
     &[
-      "XboxLive.signin",
       "offline_access",
       "openid",
       "profile",

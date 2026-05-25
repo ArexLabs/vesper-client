@@ -100,6 +100,7 @@ export const profileSchema = z.object({
   displayName: z.string(),
   offlineUsername: z.string().nullable(),
   authState: z.enum(["signed_out", "signed_in", "expired"]),
+  minecraftUsername: z.string().nullable().optional(),
 });
 
 export const uiSettingsSchema = z.object({

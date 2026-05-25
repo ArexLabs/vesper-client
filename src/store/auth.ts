@@ -5,6 +5,7 @@ export interface MicrosoftProfile {
   display_name: string;
   email: string | null;
   tenant_id: string | null;
+  minecraft_username: string | null;
 }
 
 export interface AuthStatus {

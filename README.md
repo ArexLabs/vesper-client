@@ -54,7 +54,7 @@ Vesper uses Microsoft account sign-in via OAuth 2.0 Device Code Flow. You **must
 
 4. Go to **Authentication** → **Advanced settings** → Set **"Allow public client flows"** to **Yes** → **Save**. (This is required for Device Code Flow.)
 
-5. (Optional) Go to **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated permissions** → Add `User.Read` if you want the app to fetch your display name. The core Xbox Live scopes (`XboxLive.signin`, `offline_access`) are requested at runtime and don't need to be pre-configured.
+5. (Optional) Go to **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated permissions** → Add `User.Read` if you want the app to fetch your display name. The core scopes (`offline_access`, `openid`, `profile`, `email`) are requested at runtime and don't need to be pre-configured.
 
 ### Set the Key
 

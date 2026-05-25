@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tauri::State;
 
 use crate::entra_config::EntraConfig;
@@ -37,6 +38,8 @@ pub struct MicrosoftProfile {
   pub email: Option<String>,
   #[serde(rename = "tenantId")]
   pub tenant_id: Option<String>,
+  #[serde(rename = "minecraftUsername")]
+  pub minecraft_username: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -474,6 +477,17 @@ pub async fn auth_logout_microsoft(
   })
 }
 
+/// Cancel an active device login session. Cleans up the in-memory session.
+#[tauri::command]
+pub async fn auth_cancel_device_login(
+  session_id: String,
+  state: State<'_, AuthState>,
+) -> Result<(), String> {
+  let mut sessions = state.sessions.lock().map_err(|e| e.to_string())?;
+  sessions.remove(&session_id);
+  Ok(())
+}
+
 /// Return the stored access token for internal use (e.g. Xbox Live auth).
 /// This is NOT a Tauri command — called from other Rust modules.
 pub fn get_stored_access_token() -> Option<String> {
@@ -523,28 +537,74 @@ async fn fetch_microsoft_profile(
   client: &reqwest::Client,
   access_token: &str,
 ) -> Option<MicrosoftProfile> {
+  // Default fields
+  let mut profile_id = simple_hash(access_token);
+  let mut display_name = "Microsoft Account".to_string();
+  let mut email: Option<String> = None;
+  let mut minecraft_username: Option<String> = None;
+
+  // Try Microsoft Graph API (requires User.Read permission on the app registration)
   let resp = client
     .get(GRAPH_ME_URL)
     .bearer_auth(access_token)
     .send()
-    .await
-    .ok()?;
+    .await;
 
-  if !resp.status().is_success() {
-    return None;
+  if let Ok(response) = resp {
+    if response.status().is_success() {
+      if let Ok(user) = response.json::<GraphUserResponse>().await {
+        profile_id = user.id;
+        display_name = user.display_name;
+        email = user.mail.or(user.user_principal_name);
+      }
+    }
   }
 
-  let user: GraphUserResponse = resp.json().await.ok()?;
+  // Try Xbox Live to get the Minecraft gamertag
+  let xbox_resp = client
+    .post("https://user.auth.xboxlive.com/user/authenticate")
+    .json(&serde_json::json!({
+      "Properties": {
+        "AuthMethod": "RPS",
+        "SiteName": "user.auth.xboxlive.com",
+        "RpsTicket": format!("d={}", access_token)
+      },
+      "RelyingParty": "http://auth.xboxlive.com",
+      "TokenType": "JWT"
+    }))
+    .send()
+    .await;
 
-  // Extract tenant ID from the id_token if available, or from the access token
-  let tenant_id = None;
+  if let Ok(response) = xbox_resp {
+    if response.status().is_success() {
+      if let Ok(xbox_body) = response.json::<Value>().await {
+        if let Some(xui) = xbox_body["DisplayClaims"]["xui"].as_array() {
+          if let Some(user) = xui.first() {
+            if let Some(gtg) = user["gtg"].as_str() {
+              minecraft_username = Some(gtg.to_string());
+            }
+          }
+        }
+      }
+    }
+  }
 
   Some(MicrosoftProfile {
-    id: user.id,
-    display_name: user.display_name,
-    email: user.mail.or(user.user_principal_name),
-    tenant_id,
+    id: profile_id,
+    display_name,
+    email,
+    tenant_id: None,
+    minecraft_username,
   })
+}
+
+/// Simple hash function to create a stable identifier from an access token
+/// without exposing the token itself.
+fn simple_hash(input: &str) -> String {
+  use std::hash::{Hash, Hasher};
+  let mut hasher = std::collections::hash_map::DefaultHasher::new();
+  input.hash(&mut hasher);
+  format!("ms-{:x}", hasher.finish())
 }
 
 // ---------------------------------------------------------------------------

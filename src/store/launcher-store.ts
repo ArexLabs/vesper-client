@@ -18,6 +18,7 @@ import {
 } from "@/lib/schemas";
 import {
   beginMicrosoftDeviceLoginNative,
+  cancelDeviceLoginNative,
   type CreateInstanceInput,
   type DeviceLoginPoll,
   type DeviceLoginStart,
@@ -54,6 +55,7 @@ type LauncherStore = {
   refreshMicrosoftToken: () => Promise<void>;
   beginMicrosoftLogin: () => Promise<DeviceLoginStart>;
   pollMicrosoftLogin: (sessionId: string) => Promise<DeviceLoginPoll>;
+  cancelMicrosoftLogin: (sessionId: string) => Promise<void>;
   logoutMicrosoft: () => Promise<void>;
   createInstance: (input: CreateInstanceInput) => Promise<void>;
   updateGlobalDefaults: (config: LauncherConfig) => Promise<SaveResult>;
@@ -178,6 +180,7 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
       displayName: String(r.displayName),
       offlineUsername: null,
       authState: "signed_in",
+      minecraftUsername: r.minecraftUsername ? String(r.minecraftUsername) : null,
     };
   }
 
@@ -285,6 +288,10 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
         set({ authRuntimeMessage: result.message });
       }
       return result;
+    },
+
+    async cancelMicrosoftLogin(sessionId) {
+      await cancelDeviceLoginNative(sessionId);
     },
 
     async logoutMicrosoft() {

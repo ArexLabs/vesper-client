@@ -9,8 +9,9 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 
 use commands::auth::{
-  auth_begin_microsoft_device_login, auth_get_status, auth_logout_microsoft,
-  auth_poll_microsoft_device_login, auth_refresh_token, microsoft_login, AuthState,
+  auth_begin_microsoft_device_login, auth_cancel_device_login, auth_get_status,
+  auth_logout_microsoft, auth_poll_microsoft_device_login, auth_refresh_token, microsoft_login,
+  AuthState,
 };
 use commands::instance::create_instance;
 use entra_config::EntraConfig;
@@ -32,6 +33,7 @@ pub fn run() {
       auth_get_status,
       auth_begin_microsoft_device_login,
       auth_poll_microsoft_device_login,
+      auth_cancel_device_login,
       auth_refresh_token,
       auth_logout_microsoft,
     ])

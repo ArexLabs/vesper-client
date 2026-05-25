@@ -93,7 +93,7 @@ VESPER_AZURE_CLIENT_ID="your-client-id-here" npm run tauri:dev
 - **Token**: `{authority}/oauth2/v2.0/token`
 - **Revoke**: `{authority}/oauth2/v2.0/revoke`
 - **Graph**: `https://graph.microsoft.com/v1.0/me`
-- **Scopes**: `XboxLive.signin offline_access openid profile email`
+- **Scopes**: `offline_access openid profile email`
 
 ### Token Lifecycle
 1. **Device Code Flow**: User sees a code, enters it at `https://microsoft.com/link`

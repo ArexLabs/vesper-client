@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -24,6 +24,7 @@ export function AppShell() {
   const shouldPromptLogin = useLauncherStore((state) => state.shouldPromptLogin);
   const beginMicrosoftLogin = useLauncherStore((state) => state.beginMicrosoftLogin);
   const pollMicrosoftLogin = useLauncherStore((state) => state.pollMicrosoftLogin);
+  const cancelMicrosoftLogin = useLauncherStore((state) => state.cancelMicrosoftLogin);
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginFlow, setLoginFlow] = useState<{
@@ -34,6 +35,8 @@ export function AppShell() {
     expiresAtMs: number;
     nextPollDelayMs: number;
   } | null>(null);
+
+  const pollingRef = useRef(false);
 
   useEffect(() => {
     void boot();
@@ -52,35 +55,43 @@ export function AppShell() {
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      void (async () => {
-        try {
-          const result = await pollMicrosoftLogin(loginFlow.sessionId);
-          if (result.status === "pending") {
-            setLoginFlow((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    nextPollDelayMs: Math.max(1000, (result.retryAfterSeconds ?? 5) * 1000),
-                  }
-                : prev,
-            );
-            return;
-          }
-          if (result.status === "complete") {
-            setLoginFlow(null);
-            setShowLoginPrompt(false);
-            return;
-          }
-          setLoginFlow(null);
-        } catch {
-          setLoginFlow(null);
+    const timer = window.setTimeout(async () => {
+      if (pollingRef.current) return;
+      pollingRef.current = true;
+      try {
+        const result = await pollMicrosoftLogin(loginFlow.sessionId);
+        if (result.status === "pending") {
+          setLoginFlow((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  nextPollDelayMs: Math.max(1000, (result.retryAfterSeconds ?? 5) * 1000),
+                }
+              : prev,
+          );
+          return;
         }
-      })();
+        if (result.status === "complete") {
+          setLoginFlow(null);
+          setShowLoginPrompt(false);
+          return;
+        }
+        setLoginFlow(null);
+      } catch {
+        setLoginFlow(null);
+      } finally {
+        pollingRef.current = false;
+      }
     }, loginFlow.nextPollDelayMs);
 
     return () => window.clearTimeout(timer);
   }, [loginFlow, pollMicrosoftLogin]);
+
+  const handleCancel = useCallback(async () => {
+    if (!loginFlow) return;
+    await cancelMicrosoftLogin(loginFlow.sessionId);
+    setLoginFlow(null);
+  }, [loginFlow, cancelMicrosoftLogin]);
 
   async function startLogin() {
     try {
@@ -93,11 +104,8 @@ export function AppShell() {
         expiresAtMs: Date.now() + start.expiresInSeconds * 1000,
         nextPollDelayMs: Math.max(1000, start.intervalSeconds * 1000),
       });
-      const url = start.verificationUriComplete ?? start.verificationUri;
-      window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("Microsoft login failed:", error);
-      alert("Microsoft login failed: " + (error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -118,7 +126,6 @@ export function AppShell() {
       <div className="h-screen overflow-hidden bg-[#0a0a0a] text-text">
         <div className="flex h-full flex-col">
           <div className="flex min-h-0 flex-1">
-            {/* Animate width instead of grid-template-columns */}
             <div
               className={cn(
                 "shrink-0 transition-[width] duration-200 ease-linear",
@@ -202,6 +209,16 @@ export function AppShell() {
                 onClick={() => navigator.clipboard.writeText(loginFlow.userCode)}
               >
                 Copy Code
+              </Button>
+            </div>
+            <div className="mt-4 border-t border-white/10 pt-3">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="w-full text-textMuted hover:text-danger"
+                onClick={handleCancel}
+              >
+                Cancel
               </Button>
             </div>
           </div>
