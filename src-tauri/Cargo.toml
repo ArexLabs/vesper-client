@@ -18,7 +18,7 @@ thiserror = "2.0"
 dirs = "6.0"
 tracing = "0.1"
 urlencoding = "2.1"
-open = "5.0"
+open = "5.3"
 keyring = "4.0.0"
 keyring-core = "1.0.0"
 uuid = { version = "1.0", features = ["v4"] }
