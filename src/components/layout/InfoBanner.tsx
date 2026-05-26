@@ -1,6 +1,6 @@
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { X } from "lucide-react";
 
 type InfoBannerProps = {
   visible: boolean;

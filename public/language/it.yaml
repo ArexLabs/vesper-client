@@ -1,0 +1,51 @@
+productTagline: "Launcher desktop focalizzato sulla configurazione"
+navInstances: Istanze
+navDiscover: Scopri
+navConfigStudio: Config Studio
+navDiagnostics: Diagnostica
+navSettings: Impostazioni
+instances: Istanze
+instanceLibrary: Libreria Istanze
+searchPlaceholder: "Cerca istanze, versioni, loader…"
+allLoaders: Tutti i loader
+sortUpdated: "Ordina: Aggiornato"
+sortName: "Ordina: Nome"
+sortVersion: "Ordina: Versione"
+cards: Schede
+table: Tabella
+createInstance: Crea Istanza
+instanceName: Nome istanza
+mcVersion: Versione MC
+modpackNameOptional: "Nome modpack (opzionale)"
+create: Crea
+noInstances: Nessuna istanza trovata
+noInstancesHint: "Modifica la ricerca/filtro o crea una nuova istanza sopra."
+open: Apri
+preset: Preset
+snapshots: Snapshot
+lastPlayed: Ultima partita
+details: Dettagli Istanza
+overview: Panoramica
+mods: Mod
+config: Configurazione
+runtime: Runtime
+history: Cronologia
+launchPlaceholder: Avvia
+rollback: Ripristina
+settings: Impostazioni
+globalDefaults: Impostazioni Globali
+presets: Preset
+saveGlobalDefaults: Salva Impostazioni Globali
+savePresetPatch: Salva Patch Preset
+export: Esporta
+import: Importa
+discover: Scopri
+diagnostics: Diagnostica
+language: Lingua
+english: Inglese
+german: Tedesco
+configStudio: Config Studio
+saveSnapshot: Salva Snapshot
+validation: Validazione
+workflowSafety: Sicurezza Workflow
+sourceChain: Catena Sorgente

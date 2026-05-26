@@ -1,6 +1,3 @@
-import { LayoutGrid, List, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { CreateInstanceSheet } from "@/components/instances/CreateInstanceSheet";
 import { InstanceCard } from "@/components/instances/InstanceCard";
 import { Button } from "@/components/ui/button";
@@ -27,6 +24,9 @@ import { useT } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
 import { formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
+import { LayoutGrid, List, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 type ViewMode = "cards" | "table";
 type SortMode = "updated" | "name" | "version";
@@ -265,11 +265,7 @@ export function InstancesPage() {
         )}
       </div>
 
-      <CreateInstanceSheet
-        onCreate={handleCreate}
-        onOpenChange={setCreateOpen}
-        open={createOpen}
-      />
+      <CreateInstanceSheet onCreate={handleCreate} onOpenChange={setCreateOpen} open={createOpen} />
     </div>
   );
 }

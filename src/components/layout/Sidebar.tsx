@@ -1,21 +1,45 @@
-import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { useLauncherStore } from "@/store/launcher-store";
 import {
-  ChevronLeft,
   Compass,
   Home,
   LibraryBig,
   LogOut,
   Settings2,
   Shirt,
+  User,
+  ChevronRight,
+  Sparkles,
+  Command,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import { useLauncherStore } from "@/store/launcher-store";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { NavLink, Link } from "react-router-dom";
+import {
+  Sidebar as SidebarPrimitive,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarTrigger,
+  useSidebar,
+  SidebarSeparator,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type SidebarProps = {
-  collapsed: boolean;
-  onToggleCollapsed: () => void;
   onLoginRequest?: () => void;
 };
 
@@ -26,300 +50,214 @@ const PRIMARY_ITEMS = [
   { icon: Shirt, label: "Skins", to: "/skins" },
 ] as const;
 
-const FOOTER_ITEMS = [{ icon: Settings2, label: "Settings", to: "/settings" }] as const;
-
-const navItemVariants = {
-  expanded: {
-    width: "100%",
-    paddingLeft: 16,
-    paddingRight: 16,
-  },
-  collapsed: {
-    width: 48,
-    paddingLeft: 0,
-    paddingRight: 0,
-  },
-};
-
-const labelVariants = {
-  expanded: {
-    opacity: 1,
-    maxWidth: 200,
-    marginLeft: 12,
-  },
-  collapsed: {
-    opacity: 0,
-    maxWidth: 0,
-    marginLeft: 0,
-  },
-};
-
-const spring = { type: "spring" as const, stiffness: 400, damping: 28 };
-const labelSpring = { type: "spring" as const, stiffness: 300, damping: 26, mass: 0.8 };
-
-export function Sidebar({ collapsed, onToggleCollapsed, onLoginRequest }: SidebarProps) {
+export function Sidebar({ onLoginRequest }: SidebarProps) {
   const profiles = useLauncherStore((s) => s.data.profiles);
   const logoutMicrosoft = useLauncherStore((s) => s.logoutMicrosoft);
+  const { state } = useSidebar();
 
   const activeProfile =
-    profiles.find((p) => p.provider === "microsoft" && p.authState === "signed_in") ??
+    profiles.find(
+      (p) => p.provider === "microsoft" && p.authState === "signed_in",
+    ) ??
     profiles.find((p) => p.authState === "signed_in") ??
     null;
+
   const isLoggedIn = Boolean(activeProfile);
-  const displayName = isLoggedIn ? activeProfile?.displayName?.trim() || "Player" : null;
+  const displayName = isLoggedIn
+    ? activeProfile?.displayName?.trim() || "Player"
+    : null;
   const minecraftUsername = isLoggedIn
-    ? (activeProfile as { minecraftUsername?: string | null })?.minecraftUsername ?? null
+    ? ((activeProfile as { minecraftUsername?: string | null })
+        ?.minecraftUsername ?? null)
     : null;
 
+  const primaryName = minecraftUsername || displayName || "Player";
+  const subtitleName = minecraftUsername ? displayName || "Authenticated" : "Authenticated";
+
   return (
-    <aside className="flex h-full w-full px-3 py-4 select-none">
-      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-white/[0.04] bg-gradient-to-b from-[#121212] to-[#0e0e0e] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-        {/* Logo + collapse toggle */}
-        <div className="flex shrink-0 items-center justify-between px-4 pt-4 pb-3">
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ type: "spring", stiffness: 350, damping: 26 }}
-                className="text-sm font-bold tracking-tight text-white/90"
-              >
-                Vesper
-              </motion.span>
-            )}
-          </AnimatePresence>
-
-          <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/70"
-            onClick={onToggleCollapsed}
-            type="button"
-          >
-            <motion.span
-              animate={{ rotate: collapsed ? 180 : 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </motion.span>
-          </motion.button>
-        </div>
-
-        {/* Navigation */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <nav className="flex flex-col gap-1.5">
-            {PRIMARY_ITEMS.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                collapsed={collapsed}
-                icon={item.icon}
-                label={item.label}
-                to={item.to}
-              />
-            ))}
-          </nav>
-        </div>
-
-        {/* Footer: settings + account */}
-        <div className="mt-2 shrink-0 border-t border-white/[0.04] px-3 pt-3 pb-4">
-          <div className="flex flex-col gap-1.5">
-            {FOOTER_ITEMS.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                collapsed={collapsed}
-                icon={item.icon}
-                label={item.label}
-                to={item.to}
-              />
-            ))}
+    <SidebarPrimitive
+      collapsible="icon"
+      className="border-r-0 bg-[#0a0a0a] transition-all duration-300"
+    >
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-3 px-2 py-3 transition-all">
+          <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-primary shadow-glow group-data-[collapsible=icon]:size-8 transition-all">
+            <Command className="size-5 text-black group-data-[collapsible=icon]:size-4" />
           </div>
+          <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden motion-preset-fade">
+            <span className="text-sm font-black uppercase tracking-widest text-white">
+              Vesper
+            </span>
+            <span className="text-[10px] font-bold text-primary/70">
+              ALPHA v0.4.2
+            </span>
+          </div>
+        </div>
+      </SidebarHeader>
 
-          {/* Playing As / Login card */}
-          <div className="mt-3">
-            <motion.div
-              layout
-              transition={{ type: "spring", stiffness: 400, damping: 28 }}
-              className={cn(
-                "relative overflow-hidden rounded-2xl border transition-colors",
-                isLoggedIn
-                  ? "border-white/[0.06] bg-white/[0.02]"
-                  : "border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08] hover:bg-white/[0.03]",
-              )}
-            >
-              {isLoggedIn ? (
-                <div className="flex items-center gap-2.5 px-2.5 py-2.5">
-                  <MinecraftAvatar name={minecraftUsername ?? displayName} />
-                  <AnimatePresence>
-                    {!collapsed && (
-                      <motion.div
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ type: "spring", stiffness: 350, damping: 26 }}
-                        className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden"
+      <SidebarContent className="px-3">
+        <SidebarGroup>
+          <SidebarGroupLabel className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-textMuted/40 group-data-[collapsible=icon]:hidden">
+            Navigation
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-2 pt-2">
+              {PRIMARY_ITEMS.map((item) => (
+                <SidebarMenuItem key={item.to}>
+                  <SidebarMenuButton
+                    render={
+                      <NavLink
+                        to={item.to}
+                        end={item.to === "/"}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex items-center gap-3 transition-colors",
+                            isActive
+                              ? "bg-primary/10 text-primary"
+                              : "text-textMuted group-hover:text-white",
+                          )
+                        }
                       >
-                        <span className="truncate text-[13px] font-semibold leading-4 text-white/85">
-                          {displayName}
+                        <item.icon className="size-5" />
+                        <span className="font-bold tracking-tight">
+                          {item.label}
                         </span>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => void logoutMicrosoft()}
-                          className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white/25 transition-colors hover:bg-white/[0.06] hover:text-white/60"
-                          aria-label="Sign out"
-                          type="button"
-                        >
-                          <LogOut className="h-3.5 w-3.5" />
-                        </motion.button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => onLoginRequest?.()}
-                  className="flex w-full items-center gap-2.5 px-2.5 py-2.5"
-                  type="button"
+                      </NavLink>
+                    }
+                    tooltip={item.label}
+                    className="h-11 rounded-xl transition-all hover:bg-white/5 active:scale-95"
+                  />
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator className="bg-white/5 mx-4 my-2" />
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-textMuted/40 group-data-[collapsible=icon]:hidden">
+            Management
+          </SidebarGroupLabel>
+          <SidebarMenu className="gap-2 pt-2">
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                render={
+                  <NavLink
+                    to="/settings"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 transition-colors",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-textMuted group-hover:text-white",
+                      )
+                    }
+                  >
+                    <Settings2 className="size-5" />
+                    <span className="font-bold tracking-tight">Settings</span>
+                  </NavLink>
+                }
+                tooltip="Settings"
+                className="h-11 rounded-xl hover:bg-white/5"
+              />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="p-4 mt-auto">
+        {isLoggedIn ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <SidebarMenuButton
+                  size="lg"
+                  className="h-14 rounded-2xl bg-white/5 border border-white/5 p-2 transition-all hover:bg-white/10 data-[state=open]:bg-white/10"
                 >
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.04]">
-                    <svg
-                      className="h-4 w-4 text-white/30"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-                    </svg>
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar className="size-10 rounded-xl border border-white/10">
+                        <AvatarImage
+                          src={`https://minotar.net/avatar/${encodeURIComponent(minecraftUsername ?? displayName ?? "Steve")}/100`}
+                          className="image-pixelated"
+                        />
+                        <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                          {(primaryName ?? "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 size-3.5 rounded-full border-2 border-[#0a0a0a] bg-green-500 shadow-glow-sm" />
+                    </div>
+                    <div className="flex flex-col items-start gap-0.5 group-data-[collapsible=icon]:hidden overflow-hidden">
+                      <span className="truncate text-xs font-black uppercase tracking-wide text-white">
+                        {primaryName}
+                      </span>
+                      <span className="text-[10px] font-bold text-textMuted uppercase opacity-50">
+                        {subtitleName}
+                      </span>
+                    </div>
+                    <ChevronRight className="ml-auto size-4 text-textMuted group-data-[collapsible=icon]:hidden opacity-50" />
                   </div>
-                  <AnimatePresence>
-                    {!collapsed && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ type: "spring", stiffness: 350, damping: 26 }}
-                        className="overflow-hidden truncate text-[13px] font-medium text-white/40"
-                      >
-                        Sign in
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-              )}
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Minecraft Avatar
-// ---------------------------------------------------------------------------
-
-type MinecraftAvatarProps = {
-  name: string | null;
-};
-
-function MinecraftAvatar({ name }: MinecraftAvatarProps) {
-  const [loaded, setLoaded] = useState(false);
-  const [errored, setErrored] = useState(false);
-  const initial = (name ?? "?")[0]?.toUpperCase() ?? "?";
-
-  const skinUrl = name
-    ? `https://minotar.net/avatar/${encodeURIComponent(name)}/100`
-    : null;
-
-  return (
-    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03]">
-      {/* Loading skeleton */}
-      {!loaded && !errored && (
-        <div className="absolute inset-0 animate-pulse bg-white/[0.04]" />
-      )}
-
-      {/* Skin image */}
-      {skinUrl && !errored && (
-        <img
-          src={skinUrl}
-          alt=""
-          className="h-full w-full object-cover"
-          style={{ imageRendering: "pixelated" }}
-          onLoad={() => setLoaded(true)}
-          onError={() => setErrored(true)}
-        />
-      )}
-
-      {/* Fallback initial */}
-      {errored || !skinUrl ? (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#ffcea7]/20 to-[#ffcea7]/5 text-xs font-bold text-[#ffcea7]">
-          {initial}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Nav item
-// ---------------------------------------------------------------------------
-
-type SidebarNavItemProps = {
-  collapsed: boolean;
-  icon: typeof Home;
-  label: string;
-  to: string;
-};
-
-function SidebarNavItem({ collapsed, icon: Icon, label, to }: SidebarNavItemProps) {
-  return (
-    <NavLink to={to} end={to === "/"}>
-      {({ isActive }) => (
-        <motion.div
-          layout
-          variants={navItemVariants}
-          animate={collapsed ? "collapsed" : "expanded"}
-          transition={spring}
-          className={cn(
-            "relative flex h-11 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border text-sm font-semibold transition-colors",
-            isActive
-              ? "border-[#ffcea7]/15 bg-[#f8d4b5]/8 text-white"
-              : "border-transparent text-white/35 hover:border-white/[0.06] hover:bg-white/[0.03] hover:text-white/70",
-          )}
-        >
-          {/* Active glow */}
-          {isActive && (
-            <motion.span
-              layoutId="nav-active-glow"
-              className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#ffcea7]/5 to-transparent"
-              transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                </SidebarMenuButton>
+              }
             />
-          )}
-
-          <span className="relative z-10 grid h-5 w-5 shrink-0 place-items-center">
-            <Icon className="h-[18px] w-[18px]" />
-          </span>
-
-          <AnimatePresence mode="wait">
-            {!collapsed && (
-              <motion.span
-                key="label"
-                variants={labelVariants}
-                initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
-                transition={labelSpring}
-                className="relative z-10 overflow-hidden whitespace-nowrap"
+            <DropdownMenuContent
+              side="right"
+              align="end"
+              sideOffset={8}
+              className="w-56 rounded-2xl border-border bg-surface2 shadow-lift motion-preset-slide-right motion-duration-200"
+            >
+              <DropdownMenuLabel className="flex flex-col gap-1 p-3">
+                <p className="text-xs font-black uppercase tracking-widest text-white">
+                  {primaryName}
+                </p>
+                {minecraftUsername && displayName && minecraftUsername !== displayName ? (
+                  <p className="text-[10px] font-bold text-textMuted">
+                    {displayName}
+                  </p>
+                ) : null}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/5" />
+              <DropdownMenuItem className="rounded-lg m-1 gap-2 focus:bg-white/5">
+                <User className="size-4 text-primary" />
+                <span className="font-bold text-xs">Profile Details</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="rounded-lg m-1 gap-2 focus:bg-white/5">
+                <Sparkles className="size-4 text-secondary" />
+                <span className="font-bold text-xs">Manage Skins</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/5" />
+              <DropdownMenuItem
+                onClick={() => void logoutMicrosoft()}
+                className="rounded-lg m-1 gap-2 text-danger focus:bg-danger/10 focus:text-danger"
               >
-                <span className="block truncate">{label}</span>
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      )}
-    </NavLink>
+                <LogOut className="size-4" />
+                <span className="font-bold text-xs">Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <SidebarMenuButton
+            size="lg"
+            onClick={() => onLoginRequest?.()}
+            className="h-14 rounded-2xl bg-primary/10 border border-primary/20 p-2 transition-all hover:bg-primary/20 hover:border-primary/40 group-data-[collapsible=icon]:p-0!"
+          >
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-xl bg-primary shadow-glow group-data-[collapsible=icon]:size-8">
+                <User className="size-5 text-black group-data-[collapsible=icon]:size-4" />
+              </div>
+              <div className="flex flex-col items-start gap-0.5 group-data-[collapsible=icon]:hidden">
+                <span className="text-xs font-black uppercase tracking-wide text-primary">
+                  Anonymous
+                </span>
+                <span className="text-[10px] font-bold text-primary/70">
+                  Tap to Sign In
+                </span>
+              </div>
+            </div>
+          </SidebarMenuButton>
+        )}
+      </SidebarFooter>
+    </SidebarPrimitive>
   );
 }

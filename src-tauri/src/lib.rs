@@ -13,7 +13,7 @@ use commands::auth::{
   auth_logout_microsoft, auth_poll_microsoft_device_login, auth_refresh_token, microsoft_login,
   AuthState,
 };
-use commands::instance::create_instance;
+use commands::instance::{create_instance, launch_instance};
 use entra_config::EntraConfig;
 
 pub fn run() {
@@ -29,6 +29,7 @@ pub fn run() {
     .manage(entra_config)
     .invoke_handler(tauri::generate_handler![
       create_instance,
+      launch_instance,
       microsoft_login,
       auth_get_status,
       auth_begin_microsoft_device_login,

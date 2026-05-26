@@ -25,28 +25,32 @@ export const launcherConfigSchema = launcherConfigBaseSchema.refine(
   },
 );
 
-export const launcherConfigPatchSchema = z.object({
-  javaPath: z.string().min(1).max(2048).optional(),
-  memoryMbMin: z.number().int().min(256).max(65536).optional(),
-  memoryMbMax: z.number().int().min(512).max(131072).optional(),
-  jvmArgs: z.array(z.string().min(1)).max(128).optional(),
-  rendererFlags: z.array(z.string()).max(64).optional(),
-  launchArgs: z.array(z.string()).max(128).optional(),
-  window: z.object({
-    width: z.number().int().min(640).max(7680).optional(),
-    height: z.number().int().min(360).max(4320).optional(),
-    fullscreen: z.boolean().optional(),
-  }).optional(),
-}).refine(
-  (cfg) => {
-    if (cfg.memoryMbMin === undefined || cfg.memoryMbMax === undefined) return true;
-    return cfg.memoryMbMax >= cfg.memoryMbMin;
-  },
-  {
-    path: ["memoryMbMax"],
-    message: "Patch memoryMbMax must be >= memoryMbMin when both are set",
-  },
-);
+export const launcherConfigPatchSchema = z
+  .object({
+    javaPath: z.string().min(1).max(2048).optional(),
+    memoryMbMin: z.number().int().min(256).max(65536).optional(),
+    memoryMbMax: z.number().int().min(512).max(131072).optional(),
+    jvmArgs: z.array(z.string().min(1)).max(128).optional(),
+    rendererFlags: z.array(z.string()).max(64).optional(),
+    launchArgs: z.array(z.string()).max(128).optional(),
+    window: z
+      .object({
+        width: z.number().int().min(640).max(7680).optional(),
+        height: z.number().int().min(360).max(4320).optional(),
+        fullscreen: z.boolean().optional(),
+      })
+      .optional(),
+  })
+  .refine(
+    (cfg) => {
+      if (cfg.memoryMbMin === undefined || cfg.memoryMbMax === undefined) return true;
+      return cfg.memoryMbMax >= cfg.memoryMbMin;
+    },
+    {
+      path: ["memoryMbMax"],
+      message: "Patch memoryMbMax must be >= memoryMbMin when both are set",
+    },
+  );
 
 export const presetSchema = z.object({
   id: z.string().min(1),

@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useT } from "@/lib/i18n";
-import { appStateSchema } from "@/lib/schemas";
 import { isTauriRuntime, listInstancesNative, secureStorageProbe } from "@/lib/ipc";
+import { appStateSchema } from "@/lib/schemas";
 import { useLauncherStore } from "@/store/launcher-store";
+import { useState } from "react";
 
 export function DiagnosticsPage() {
   const data = useLauncherStore((s) => s.data);

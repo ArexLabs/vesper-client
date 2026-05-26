@@ -1,4 +1,3 @@
-import { createHashRouter } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorLayout } from "@/components/layout/ErrorLayout";
 import { ConfigStudioPage } from "@/routes/config-studio-page";
@@ -9,6 +8,7 @@ import { InstanceDetailsPage } from "@/routes/instance-details-page";
 import { InstancesPage } from "@/routes/instances/InstancesPage";
 import { SettingsPage } from "@/routes/settings-page";
 import { SkinsPage } from "@/routes/skins-page";
+import { createHashRouter } from "react-router-dom";
 
 export const router = createHashRouter([
   {

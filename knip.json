@@ -2,7 +2,13 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": ["src/main.tsx"],
   "project": ["src/**/*.{ts,tsx}"],
-  "ignoreDependencies": ["@rolldown/plugin-babel", "tailwindcss", "autoprefixer", "postcss", "pnpm"],
+  "ignoreDependencies": [
+    "@rolldown/plugin-babel",
+    "tailwindcss",
+    "autoprefixer",
+    "postcss",
+    "pnpm"
+  ],
   "compilerOptions": {
     "paths": {
       "@/*": ["src/*"]

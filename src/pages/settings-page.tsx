@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLauncherStore } from "@/store/launcher-store";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function AccountSettings() {
   const profiles = useLauncherStore((s) => s.data.profiles);
@@ -109,11 +109,7 @@ export function AccountSettings() {
           ) : (
             <div className="flex items-center justify-between">
               <p className="text-sm text-textMuted">Not signed in.</p>
-              <Button
-                size="sm"
-                onClick={startLogin}
-                disabled={!!flow}
-              >
+              <Button size="sm" onClick={startLogin} disabled={!!flow}>
                 {flow ? "Waiting..." : "Sign In"}
               </Button>
             </div>

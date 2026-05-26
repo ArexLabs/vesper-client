@@ -1,10 +1,10 @@
-import { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { DiscoverModsSection } from "@/components/discover/DiscoverModsSection";
 import { InstanceCard } from "@/components/instances/InstanceCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLauncherStore } from "@/store/launcher-store";
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
 
 export function HomePage() {
   const instances = useLauncherStore((state) => state.data.instances);

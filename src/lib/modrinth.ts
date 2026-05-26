@@ -4,11 +4,7 @@ export const modrinthClient = new GenericModrinthClient({
   userAgent: "vesper-client/1.0.0-alpha",
 });
 
-export type ModrinthSearchSort =
-  | "relevance"
-  | "downloads"
-  | "follows"
-  | "updated";
+export type ModrinthSearchSort = "relevance" | "downloads" | "follows" | "updated";
 
 export type ModrinthProject = {
   id: string;

@@ -1,8 +1,8 @@
-import { LogOut } from "lucide-react";
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
+import { LogOut } from "lucide-react";
+import { useRef } from "react";
 
 type PlayingAsCardProps = {
   collapsed?: boolean;
@@ -92,7 +92,12 @@ export function PlayingAsCard({ collapsed = false, onLoginRequest }: PlayingAsCa
   ) : null;
 
   return (
-    <div className={cn("relative motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:scale-[1.02]", collapsed && "justify-self-center")}>
+    <div
+      className={cn(
+        "relative motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:scale-[1.02]",
+        collapsed && "justify-self-center",
+      )}
+    >
       <div
         className={cardClassName}
         role={!isLoggedIn ? "button" : undefined}

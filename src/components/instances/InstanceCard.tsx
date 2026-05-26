@@ -1,5 +1,3 @@
-import { MoreHorizontal, Package2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,11 +6,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useT } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
 import { cn, formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
+import {
+  MoreHorizontal,
+  Package2,
+  Play,
+  FolderOpen,
+  Copy,
+  Trash2,
+  Clock,
+  Layers,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type InstanceCardProps = {
   instance: Instance;
@@ -20,123 +34,166 @@ type InstanceCardProps = {
   className?: string;
 };
 
-export function InstanceCard({ instance, presetName, className }: InstanceCardProps) {
+const DELETE_CONFIRM_TIMEOUT_MS = 3000;
+
+export function InstanceCard({
+  instance,
+  presetName,
+  className,
+}: InstanceCardProps) {
   const { t, i18n } = useT();
   const navigate = useNavigate();
   const deleteInstance = useLauncherStore((state) => state.deleteInstance);
-  const duplicateInstance = useLauncherStore((state) => state.duplicateInstance);
+  const duplicateInstance = useLauncherStore(
+    (state) => state.duplicateInstance,
+  );
   const launchInstance = useLauncherStore((state) => state.launchInstance);
 
-  async function handleDelete() {
-    const confirmed = window.confirm(`Delete "${instance.name}"?`);
-    if (!confirmed) return;
-    await deleteInstance(instance.id);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+    };
+  }, []);
+
+  function handleDeleteClick() {
+    if (confirmingDelete) {
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+      setConfirmingDelete(false);
+      void deleteInstance(instance.id);
+      return;
+    }
+    setConfirmingDelete(true);
+    deleteTimerRef.current = setTimeout(
+      () => setConfirmingDelete(false),
+      DELETE_CONFIRM_TIMEOUT_MS,
+    );
   }
 
   return (
     <article
       className={cn(
-        "rounded-3xl border border-white/8 bg-white/[0.03] p-4 shadow-panel motion-safe:transition-transform motion-safe:transition-shadow motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:shadow-soft motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01]",
+        "group relative flex flex-col overflow-hidden rounded-[32px] border border-white/5 bg-surface1/40 p-5 shadow-panel transition-all hover:border-primary/20 hover:bg-surface2/40 hover:shadow-glow-sm",
         className,
       )}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d] text-textMuted">
-          <Package2 className="h-4 w-4" />
-        </div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-glow-sm transition-transform group-hover:scale-105">
+            <Package2 className="h-6 w-6" />
+          </div>
 
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-text">{instance.name}</h3>
-          <p className="truncate text-sm text-textMuted">
-            {instance.mcVersion} · {instance.loader}
-            {instance.modpackName ? ` · ${instance.modpackName}` : ""}
-          </p>
+          <div className="min-w-0">
+            <h3 className="truncate text-lg font-bold tracking-tight text-white">
+              {instance.name}
+            </h3>
+            <div className="mt-0.5 flex items-center gap-2">
+              <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">
+                {instance.loader}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-border" />
+              <span className="text-xs font-medium text-textMuted">
+                {instance.mcVersion}
+              </span>
+            </div>
+          </div>
         </div>
 
         <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <DropdownMenuTrigger
-                  render={
-                    <Button
-                      aria-label={`More actions for ${instance.name}`}
-                      className="text-textMuted hover:bg-white/5 hover:text-text"
-                      size="icon-sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  }
-                />
-              }
-            />
-            <TooltipContent>More actions</TooltipContent>
-          </Tooltip>
-
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={() => navigate(`/instances/${instance.id}`)}>
-              Open
+          <DropdownMenuTrigger
+            render={
+              <Button
+                className="h-9 w-9 rounded-xl border-white/5 bg-white/5 text-textMuted hover:bg-white/10 hover:text-text"
+                size="icon"
+                variant="ghost"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent
+            align="end"
+            className="w-48 rounded-2xl border-border bg-surface2 shadow-lift"
+          >
+            <DropdownMenuItem
+              className="rounded-xl"
+              onClick={() => navigate(`/instances/${instance.id}`)}
+            >
+              <FolderOpen className="mr-2 h-4 w-4" />
+              Open Instance
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate(`/config-studio?instance=${instance.id}`)}>
-              Edit
+            <DropdownMenuItem
+              className="rounded-xl"
+              onClick={() => navigate(`/config-studio?instance=${instance.id}`)}
+            >
+              <Layers className="mr-2 h-4 w-4" />
+              Config Studio
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => void duplicateInstance(instance.id)}>
+            <DropdownMenuSeparator className="bg-border/50" />
+            <DropdownMenuItem
+              className="rounded-xl"
+              onClick={() => void duplicateInstance(instance.id)}
+            >
+              <Copy className="mr-2 h-4 w-4" />
               Duplicate
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => void handleDelete()} variant="destructive">
-              Delete
+            <DropdownMenuItem
+              className={cn(
+                "rounded-xl",
+                confirmingDelete
+                  ? "bg-danger text-white hover:bg-danger/90"
+                  : "text-danger hover:bg-danger/10 hover:text-danger",
+              )}
+              onClick={handleDeleteClick}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {confirmingDelete ? "Click again to confirm" : "Delete Instance"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-3xl border border-white/8 bg-[#0d0d0d] p-4 text-sm">
-        <InfoCell label={t("preset")} value={presetName ?? "None"} />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <InfoCell
-            label={t("lastPlayed")}
-            value={formatDateTime(instance.lastPlayedAt, i18n.language)}
-          />
-          <InfoCell label="Updated" value={formatDateTime(instance.updatedAt, i18n.language)} />
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-white/5 bg-black/20 p-3">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-textMuted">
+            <Layers className="h-3 w-3" />
+            Preset
+          </div>
+          <div className="mt-1 truncate text-[13px] font-semibold text-text">
+            {presetName ?? "Normal"}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-white/5 bg-black/20 p-3">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-textMuted">
+            <Clock className="h-3 w-3" />
+            Last played
+          </div>
+          <div className="mt-1 truncate text-[13px] font-semibold text-text">
+            {formatDateTime(instance.lastPlayedAt, i18n.language) === "Never"
+              ? "Never"
+              : formatDateTime(instance.lastPlayedAt, i18n.language)}
+          </div>
         </div>
       </div>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-6 flex items-center gap-3">
         <Button
-          className="flex-1 rounded-2xl"
+          className="h-11 flex-1 rounded-2xl bg-primary text-black font-bold shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-transform"
           onClick={() => void launchInstance(instance.id)}
-          type="button"
         >
+          <Play className="mr-2 h-4 w-4 fill-current" />
           Play
         </Button>
         <Button
-          className="rounded-2xl"
-          onClick={() => navigate(`/instances/${instance.id}`)}
-          type="button"
           variant="outline"
+          className="h-11 rounded-2xl border-white/5 bg-white/5 font-semibold text-white hover:bg-white/10"
+          onClick={() => navigate(`/instances/${instance.id}`)}
         >
-          {t("open")}
+          Open
         </Button>
       </div>
     </article>
-  );
-}
-
-type InfoCellProps = {
-  label: string;
-  value: string;
-};
-
-function InfoCell({ label, value }: InfoCellProps) {
-  return (
-    <div className="min-w-0 space-y-1">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-textMuted">
-        {label}
-      </div>
-      <div className="truncate text-sm text-text">{value}</div>
-    </div>
   );
 }

@@ -1,5 +1,5 @@
-import { useEffect, type ReactNode } from "react";
 import { useLauncherStore } from "@/store/launcher-store";
+import { type ReactNode, useEffect } from "react";
 import i18next from "./setup";
 
 export function I18nProvider({ children }: { children: ReactNode }) {

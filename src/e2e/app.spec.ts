@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("App shell", () => {
   test("renders the sidebar with navigation items", async ({ page }) => {

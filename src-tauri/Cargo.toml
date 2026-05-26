@@ -23,6 +23,7 @@ keyring = "4.0.0"
 keyring-core = "1.0.0"
 uuid = { version = "1.0", features = ["v4"] }
 dotenvy = "0.15"
+zip = { version = "8.6", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
 tauri-build = { version = "2.6.1", features = [] }

@@ -15,12 +15,12 @@
     "types": ["vite/client", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["src/*"]
     },
     "noFallthroughCasesInSwitch": true,
     "allowUnreachableCode": false,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src", "vite.config.ts"],
-  "exclude": ["src/e2e"],
+  "exclude": ["src/e2e"]
 }

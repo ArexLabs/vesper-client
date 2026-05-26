@@ -1,10 +1,10 @@
 import i18next from "i18next";
-import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
-import { initReactI18next } from "react-i18next";
+import Backend from "i18next-http-backend";
 import yaml from "js-yaml";
+import { initReactI18next } from "react-i18next";
 
-export const LANGUAGES = ["en", "de", "fr", "es", "ja", "zh-CN", "pt-BR"] as const;
+export const LANGUAGES = ["en", "de", "fr", "es", "ja", "zh-CN", "pt-BR", "it"] as const;
 export type Locale = (typeof LANGUAGES)[number];
 
 export const LANGUAGE_LABELS: Record<Locale, string> = {
@@ -15,6 +15,7 @@ export const LANGUAGE_LABELS: Record<Locale, string> = {
   ja: "日本語",
   "zh-CN": "简体中文",
   "pt-BR": "Português (Brasil)",
+  it: "Italiano",
 };
 
 i18next

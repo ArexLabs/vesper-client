@@ -1,6 +1,3 @@
-import { Loader2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,6 +12,9 @@ import type { CreateInstanceInput } from "@/lib/ipc";
 import { fetchLoaderOptions, fetchMinecraftVersions } from "@/lib/minecraft-catalog";
 import { loaderSchema } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
+import { Loader2, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 
 const createInstanceFormSchema = z.object({
   name: z.string().trim().min(1, "Instance name is required"),
@@ -35,11 +35,7 @@ type CreateInstanceSheetProps = {
   onCreate: (input: CreateInstanceInput) => Promise<void>;
 };
 
-export function CreateInstanceSheet({
-  open,
-  onOpenChange,
-  onCreate,
-}: CreateInstanceSheetProps) {
+export function CreateInstanceSheet({ open, onOpenChange, onCreate }: CreateInstanceSheetProps) {
   const { t } = useT();
   const [name, setName] = useState("");
   const [mcVersion, setMcVersion] = useState("1.20.1");

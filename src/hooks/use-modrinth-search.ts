@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
 import { discoverDownloadModrinthNative } from "@/lib/ipc";
 import {
   type ModrinthProject,
   type ModrinthSearchSort,
   searchModrinthProjects,
 } from "@/lib/modrinth";
+import { useEffect, useState } from "react";
 
 type UseModrinthSearchOptions = {
   query: string;

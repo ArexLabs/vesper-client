@@ -1,28 +1,13 @@
-import { create } from "zustand";
 import { buildInstanceSnapshot, diffLauncherConfig, resolveInstanceConfig } from "@/lib/config";
 import { makeDefaultState } from "@/lib/dummy";
 import {
-  type AppState,
-  appStateSchema,
-  formatZodIssues,
-  type Instance,
-  instanceSchema,
-  type Language,
-  type LauncherConfig,
-  type Profile,
-  launcherConfigPatchSchema,
-  launcherConfigSchema,
-  profileSchema,
-  presetSchema,
-  type SettingsSnapshot,
-} from "@/lib/schemas";
-import {
-  beginMicrosoftDeviceLoginNative,
-  cancelDeviceLoginNative,
   type CreateInstanceInput,
   type DeviceLoginPoll,
   type DeviceLoginStart,
+  type LaunchInstanceInput,
   type LaunchPreview,
+  beginMicrosoftDeviceLoginNative,
+  cancelDeviceLoginNative,
   createInstanceNative,
   getAuthStatusNative,
   launchInstanceNative,
@@ -32,7 +17,23 @@ import {
   refreshMicrosoftTokenNative,
   saveAppStateToRuntime,
 } from "@/lib/ipc";
+import {
+  type AppState,
+  type Instance,
+  type Language,
+  type LauncherConfig,
+  type Profile,
+  type SettingsSnapshot,
+  appStateSchema,
+  formatZodIssues,
+  instanceSchema,
+  launcherConfigPatchSchema,
+  launcherConfigSchema,
+  presetSchema,
+  profileSchema,
+} from "@/lib/schemas";
 import { safeRandomId } from "@/lib/utils";
+import { create } from "zustand";
 
 type SaveResult = { ok: true } | { ok: false; error: string; issues?: string[] };
 type StoreStatus = "idle" | "loading" | "ready" | "error";
@@ -239,7 +240,16 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
         if (sanitized !== parsed.data) {
           await saveAppStateToRuntime(sanitized);
         }
-        await get().refreshAuthStatus();
+
+        // Proactive auth check
+        const activeMs = sanitized.profiles.find(
+          (p) => p.provider === "microsoft" && p.authState === "signed_in",
+        );
+        if (activeMs) {
+          await get().refreshMicrosoftToken();
+        } else {
+          await get().refreshAuthStatus();
+        }
       } catch (error) {
         set({ status: "error", error: error instanceof Error ? error.message : String(error) });
       }
@@ -600,13 +610,33 @@ export const useLauncherStore = create<LauncherStore>((set, get) => {
 
     async launchInstance(instanceId) {
       try {
-        const preview = await launchInstanceNative(instanceId);
-        commit((draft) => {
-          const instance = draft.instances.find((item) => item.id === instanceId);
-          if (!instance) return;
+        const draft = get().data;
+        const instance = draft.instances.find((item) => item.id === instanceId);
+        if (!instance) {
+          set({ error: "Instance not found" });
+          return null;
+        }
+        const resolved = resolveInstanceConfig(draft, instance);
+        const launchInput: LaunchInstanceInput = {
+          instanceId: instance.id,
+          name: instance.name,
+          mcVersion: instance.mcVersion,
+          loader: instance.loader,
+          javaPath: resolved.javaPath,
+          memoryMbMin: resolved.memoryMbMin,
+          memoryMbMax: resolved.memoryMbMax,
+          jvmArgs: resolved.jvmArgs,
+          windowWidth: resolved.window.width,
+          windowHeight: resolved.window.height,
+          fullscreen: resolved.window.fullscreen,
+        };
+        const preview = await launchInstanceNative(instanceId, launchInput);
+        commit((dft) => {
+          const inst = dft.instances.find((item) => item.id === instanceId);
+          if (!inst) return;
           const now = nowIso();
-          instance.lastPlayedAt = now;
-          instance.updatedAt = now;
+          inst.lastPlayedAt = now;
+          inst.updatedAt = now;
         });
         set({ lastLaunchPreview: preview });
         return preview;

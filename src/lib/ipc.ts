@@ -1,5 +1,5 @@
-import type { AppState, Instance } from "@/lib/schemas";
 import { modrinthClient } from "@/lib/modrinth";
+import type { AppState, Instance } from "@/lib/schemas";
 import type { Labrinth } from "@modrinth/api-client";
 
 const STORAGE_KEY = "vesper-launcher-state-v1";
@@ -16,6 +16,20 @@ export type LaunchPreview = {
   instanceId: string;
   commandPreview: string[];
   note: string;
+};
+
+export type LaunchInstanceInput = {
+  instanceId: string;
+  name: string;
+  mcVersion: string;
+  loader: string;
+  javaPath: string;
+  memoryMbMin: number;
+  memoryMbMax: number;
+  jvmArgs: string[];
+  windowWidth: number;
+  windowHeight: number;
+  fullscreen: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -155,9 +169,12 @@ export async function createInstanceNative(input: CreateInstanceInput): Promise<
   }
 }
 
-export async function launchInstanceNative(instanceId: string): Promise<LaunchPreview> {
+export async function launchInstanceNative(
+  instanceId: string,
+  input: LaunchInstanceInput,
+): Promise<LaunchPreview> {
   try {
-    return await invokeOrThrow<LaunchPreview>("launch_instance", { instanceId });
+    return await invokeOrThrow<LaunchPreview>("launch_instance", { instanceId, input });
   } catch {
     return {
       status: "local-fallback",
@@ -197,9 +214,7 @@ export async function beginMicrosoftDeviceLoginNative(): Promise<DeviceLoginStar
   return await invokeOrThrow<DeviceLoginStart>("auth_begin_microsoft_device_login");
 }
 
-export async function pollMicrosoftDeviceLoginNative(
-  sessionId: string,
-): Promise<DeviceLoginPoll> {
+export async function pollMicrosoftDeviceLoginNative(sessionId: string): Promise<DeviceLoginPoll> {
   return await invokeOrThrow<DeviceLoginPoll>("auth_poll_microsoft_device_login", {
     sessionId,
   });
@@ -264,7 +279,9 @@ export async function discoverSearchModrinthNative(
       facets,
       limit: Math.min(Math.max(input.limit ?? 20, 1), 60),
     });
-    return result.hits.map(mapModrinthHit).filter((item): item is DiscoverSearchResult => Boolean(item));
+    return result.hits
+      .map(mapModrinthHit)
+      .filter((item): item is DiscoverSearchResult => Boolean(item));
   }
 }
 
@@ -272,11 +289,25 @@ export async function discoverDownloadModrinthNative(
   projectId: string,
   options?: { loader?: string | null; gameVersion?: string | null },
 ): Promise<DiscoverDownloadResult> {
-  return await invokeOrThrow<DiscoverDownloadResult>("discover_download_modrinth", {
-    input: {
+  try {
+    return await invokeOrThrow<DiscoverDownloadResult>("discover_download_modrinth", {
+      input: {
+        projectId,
+        loader: options?.loader ?? null,
+        gameVersion: options?.gameVersion ?? null,
+      },
+    });
+  } catch {
+    // Web fallback: Fetch project info and mock the download
+    const project = await modrinthClient.labrinth.projects_v2.get(projectId);
+    return {
+      source: "modrinth",
       projectId,
-      loader: options?.loader ?? null,
-      gameVersion: options?.gameVersion ?? null,
-    },
-  });
+      fileName: `${project.slug}.jar`,
+      filePath: `/virtual/mods/${project.slug}.jar`,
+      sizeBytes: 0,
+      url: `https://modrinth.com/mod/${project.slug}`,
+      message: `[WEB MODE] Mocked download of ${project.title}`,
+    };
+  }
 }

@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveInstanceConfig } from "@/lib/config";
 import { useT } from "@/lib/i18n";
 import { formatZodIssues, launcherConfigSchema } from "@/lib/schemas";
 import { downloadJson, readTextFile } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Save } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 export function ConfigStudioPage() {
   const [searchParams, setSearchParams] = useSearchParams();

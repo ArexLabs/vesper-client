@@ -1,7 +1,3 @@
-import { ExternalLink, Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useModrinthSearch } from "@/hooks/use-modrinth-search";
-import { fetchLoaderOptions, fetchMinecraftVersions } from "@/lib/minecraft-catalog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,21 +10,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useModrinthSearch } from "@/hooks/use-modrinth-search";
+import {
+  fetchLoaderOptions,
+  fetchMinecraftVersions,
+} from "@/lib/minecraft-catalog";
 import { cn } from "@/lib/utils";
+import { ExternalLink, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type DiscoverModsSectionProps = {
   compact?: boolean;
   initialQuery?: string;
+  initialLoader?: string;
+  initialGameVersion?: string;
 };
 
 export function DiscoverModsSection({
   compact = false,
   initialQuery = "",
+  initialLoader = "all",
+  initialGameVersion = "all",
 }: DiscoverModsSectionProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [sort, setSort] = useState<"relevance" | "downloads" | "follows" | "updated">("downloads");
-  const [loader, setLoader] = useState("all");
-  const [gameVersion, setGameVersion] = useState("all");
+  const [sort, setSort] = useState<
+    "relevance" | "downloads" | "follows" | "updated"
+  >("downloads");
+  const [loader, setLoader] = useState(initialLoader);
+  const [gameVersion, setGameVersion] = useState(initialGameVersion);
   const [loaderOptions, setLoaderOptions] = useState<string[]>([
     "all",
     "vanilla",
@@ -67,7 +76,10 @@ export function DiscoverModsSection({
       if (!active) return;
 
       if (availableLoaders.status === "fulfilled") {
-        setLoaderOptions(["all", ...availableLoaders.value.filter((value) => value !== "all")]);
+        setLoaderOptions([
+          "all",
+          ...availableLoaders.value.filter((value) => value !== "all"),
+        ]);
       }
 
       if (availableVersions.status === "fulfilled") {
@@ -84,7 +96,9 @@ export function DiscoverModsSection({
     <Card className="overflow-hidden rounded-3xl border-white/8 bg-white/[0.03] shadow-panel">
       <CardHeader className="space-y-4 p-5">
         <div className="space-y-1">
-          <CardTitle className="text-xl font-semibold text-text">Discover Mods</CardTitle>
+          <CardTitle className="text-xl font-semibold text-text">
+            Discover Mods
+          </CardTitle>
           <p className="text-sm text-textMuted">
             Search Modrinth and install directly into the client download cache.
           </p>
@@ -92,14 +106,24 @@ export function DiscoverModsSection({
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_180px_180px_180px]">
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}>
+            <Label
+              htmlFor={
+                compact
+                  ? "discover-mod-search-home"
+                  : "discover-mod-search-explore"
+              }
+            >
               Search
             </Label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-textMuted" />
               <Input
-                id={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}
-                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d] pl-9"
+                id={
+                  compact
+                    ? "discover-mod-search-home"
+                    : "discover-mod-search-explore"
+                }
+                className="h-10 rounded-2xl border-border bg-surface2 pl-9"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search Modrinth mods"
                 value={query}
@@ -108,10 +132,17 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-sort-home" : "discover-sort-explore"}>Sort</Label>
-            <Select value={sort} onValueChange={(value) => setSort(value as typeof sort)}>
+            <Label
+              htmlFor={compact ? "discover-sort-home" : "discover-sort-explore"}
+            >
+              Sort
+            </Label>
+            <Select
+              value={sort}
+              onValueChange={(value) => setSort(value as typeof sort)}
+            >
               <SelectTrigger
-                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
+                className="h-10 rounded-2xl border-border bg-surface2"
                 id={compact ? "discover-sort-home" : "discover-sort-explore"}
               >
                 <SelectValue>
@@ -134,7 +165,11 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-loader-home" : "discover-loader-explore"}>
+            <Label
+              htmlFor={
+                compact ? "discover-loader-home" : "discover-loader-explore"
+              }
+            >
               Loader
             </Label>
             <Select
@@ -145,8 +180,10 @@ export function DiscoverModsSection({
               }}
             >
               <SelectTrigger
-                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
-                id={compact ? "discover-loader-home" : "discover-loader-explore"}
+                className="h-10 rounded-2xl border-border bg-surface2"
+                id={
+                  compact ? "discover-loader-home" : "discover-loader-explore"
+                }
               >
                 <SelectValue />
               </SelectTrigger>
@@ -161,7 +198,11 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={compact ? "discover-version-home" : "discover-version-explore"}>
+            <Label
+              htmlFor={
+                compact ? "discover-version-home" : "discover-version-explore"
+              }
+            >
               Minecraft
             </Label>
             <Select
@@ -172,8 +213,10 @@ export function DiscoverModsSection({
               }}
             >
               <SelectTrigger
-                className="h-10 rounded-2xl border-white/10 bg-[#0d0d0d]"
-                id={compact ? "discover-version-home" : "discover-version-explore"}
+                className="h-10 rounded-2xl border-border bg-surface2"
+                id={
+                  compact ? "discover-version-home" : "discover-version-explore"
+                }
               >
                 <SelectValue />
               </SelectTrigger>
@@ -194,7 +237,12 @@ export function DiscoverModsSection({
         {installMessage ? (
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
             <span>{installMessage}</span>
-            <Button onClick={clearInstallMessage} size="sm" type="button" variant="ghost">
+            <Button
+              onClick={clearInstallMessage}
+              size="sm"
+              type="button"
+              variant="ghost"
+            >
               Dismiss
             </Button>
           </div>
@@ -210,16 +258,21 @@ export function DiscoverModsSection({
           <div
             className={cn(
               "overflow-y-auto pr-1 [scrollbar-gutter:stable]",
-              compact ? "max-h-[30rem]" : "max-h-[calc(100vh-19rem)]",
+              compact ? "max-h-120" : "max-h-[calc(100vh-19rem)]",
             )}
           >
             <div
               className={
-                compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+                compact
+                  ? "grid gap-3 md:grid-cols-2"
+                  : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
               }
             >
-              {Array.from({ length: compact ? 4 : 6 }).map((_, index) => (
-                <div key={index} className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4">
+              {Array.from({ length: compact ? 4 : 6 }).map((_, i) => (
+                <div
+                  key={`skeleton-${compact ? "compact" : "full"}-${i}`}
+                  className="rounded-3xl border border-border bg-surface1 p-4"
+                >
                   <div className="flex gap-3">
                     <Skeleton className="h-12 w-12 rounded-2xl" />
                     <div className="grid flex-1 gap-2">
@@ -237,28 +290,30 @@ export function DiscoverModsSection({
             </div>
           </div>
         ) : results.length === 0 ? (
-          <div className="rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-8 text-center text-sm text-textMuted">
+          <div className="rounded-2xl border border-border bg-surface1 px-4 py-8 text-center text-sm text-textMuted">
             No mods matched the current filters.
           </div>
         ) : (
           <div
             className={cn(
               "overflow-y-auto pr-1 [scrollbar-gutter:stable]",
-              compact ? "max-h-[30rem]" : "max-h-[calc(100vh-19rem)]",
+              compact ? "max-h-120" : "max-h-[calc(100vh-19rem)]",
             )}
           >
             <div
               className={
-                compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+                compact
+                  ? "grid gap-3 md:grid-cols-2"
+                  : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
               }
             >
               {results.map((project) => (
                 <article
                   key={project.id}
-                  className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4"
+                  className="rounded-3xl border border-border bg-surface1 p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/8 bg-[#0d0d0d]">
+                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-border bg-surface2">
                       {project.iconUrl ? (
                         <img
                           alt=""
@@ -267,12 +322,16 @@ export function DiscoverModsSection({
                           src={project.iconUrl}
                         />
                       ) : (
-                        <span className="text-xs font-semibold text-textMuted">MOD</span>
+                        <span className="text-xs font-semibold text-textMuted">
+                          MOD
+                        </span>
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-semibold text-text">{project.title}</h3>
+                      <h3 className="truncate text-sm font-semibold text-text">
+                        {project.title}
+                      </h3>
                       <p className="truncate text-xs text-textMuted">
                         {project.author ?? "Unknown author"}
                       </p>
@@ -296,14 +355,20 @@ export function DiscoverModsSection({
                       onClick={() => void installProject(project)}
                       type="button"
                     >
-                      {installingId === project.id ? "Installing..." : "Install"}
+                      {installingId === project.id
+                        ? "Installing..."
+                        : "Install"}
                     </Button>
                     <Button
                       className="rounded-2xl"
                       disabled={!project.url}
                       onClick={() => {
                         if (!project.url) return;
-                        window.open(project.url, "_blank", "noopener,noreferrer");
+                        window.open(
+                          project.url,
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
                       }}
                       type="button"
                       variant="outline"
