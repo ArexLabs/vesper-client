@@ -26,7 +26,7 @@ dotenvy = "0.15"
 zip = { version = "8.6", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
-tauri-build = { version = "2.6.1", features = [] }
+tauri-build = { version = "2.6.2", features = [] }
 
 [features]
 default = ["custom-protocol"]
