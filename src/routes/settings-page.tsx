@@ -1,16 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -18,47 +10,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { argsToMultiline, multilineToArgs } from "@/lib/config";
 import { useT } from "@/lib/i18n";
-import {
-  type LauncherConfig,
-  formatZodIssues,
-  launcherConfigPatchSchema,
-} from "@/lib/schemas";
+import { type LauncherConfig, formatZodIssues, launcherConfigPatchSchema } from "@/lib/schemas";
 import { downloadJson, formatDateTime, readTextFile } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
 import {
-  Settings2,
-  User,
   Cpu,
-  Layers,
-  FileJson,
   Download,
-  Upload,
-  RotateCcw,
-  Languages,
-  Monitor,
+  FileJson,
   HardDrive,
+  Languages,
+  Layers,
+  Monitor,
+  RotateCcw,
+  Settings2,
+  Upload,
+  User,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
 
 export function SettingsPage() {
   const data = useLauncherStore((s) => s.data);
   const { t, i18n } = useT();
   const updateGlobalDefaults = useLauncherStore((s) => s.updateGlobalDefaults);
   const savePresetPatch = useLauncherStore((s) => s.savePresetPatch);
-  const rollbackSettingsSnapshot = useLauncherStore(
-    (s) => s.rollbackSettingsSnapshot,
-  );
+  const rollbackSettingsSnapshot = useLauncherStore((s) => s.rollbackSettingsSnapshot);
   const setLanguage = useLauncherStore((s) => s.setLanguage);
   const exportPresetJson = useLauncherStore((s) => s.exportPresetJson);
   const importPresetJson = useLauncherStore((s) => s.importPresetJson);
 
   // --- Global Defaults State ---
-  const [globalDraft, setGlobalDraft] = useState<LauncherConfig>(
-    data.globalDefaults,
-  );
+  const [globalDraft, setGlobalDraft] = useState<LauncherConfig>(data.globalDefaults);
   const [globalMsg, setGlobalMsg] = useState<string | null>(null);
   const [globalErr, setGlobalErr] = useState<string | null>(null);
 
@@ -80,13 +66,9 @@ export function SettingsPage() {
   }
 
   // --- Presets State ---
-  const [selectedPresetId, setSelectedPresetId] = useState<string>(
-    data.presets[0]?.id ?? "",
-  );
+  const [selectedPresetId, setSelectedPresetId] = useState<string>(data.presets[0]?.id ?? "");
   const selectedPreset =
-    data.presets.find((p) => p.id === selectedPresetId) ??
-    data.presets[0] ??
-    null;
+    data.presets.find((p) => p.id === selectedPresetId) ?? data.presets[0] ?? null;
   const [presetJson, setPresetJson] = useState("{}");
   const [presetMsg, setPresetMsg] = useState<string | null>(null);
   const [presetErr, setPresetErr] = useState<string | null>(null);
@@ -199,8 +181,7 @@ export function SettingsPage() {
       setFlow({
         sessionId: start.sessionId,
         userCode: start.userCode,
-        verificationUriComplete:
-          start.verificationUriComplete ?? start.verificationUri,
+        verificationUriComplete: start.verificationUriComplete ?? start.verificationUri,
         expiresAtMs: Date.now() + start.expiresInSeconds * 1000,
         intervalMs: Math.max(1000, start.intervalSeconds * 1000),
       });
@@ -218,9 +199,7 @@ export function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 motion-preset-fade motion-duration-500">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          {t("settings")}
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">{t("settings")}</h1>
         <p className="text-sm text-textMuted">
           Configure your launcher, java, presets and account.
         </p>
@@ -278,9 +257,7 @@ export function SettingsPage() {
                   </div>
                   <div>
                     <CardTitle>Microsoft Account</CardTitle>
-                    <CardDescription>
-                      Manage your authentication and profile.
-                    </CardDescription>
+                    <CardDescription>Manage your authentication and profile.</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -289,8 +266,7 @@ export function SettingsPage() {
                   <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-lg font-bold text-primary shadow-glow-sm">
-                        {(microsoftProfile?.displayName ??
-                          "?")[0]?.toUpperCase() ?? "?"}
+                        {(microsoftProfile?.displayName ?? "?")[0]?.toUpperCase() ?? "?"}
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-base font-semibold text-white">
@@ -314,21 +290,16 @@ export function SettingsPage() {
                     <div className="mb-4 grid h-16 w-16 place-items-center rounded-3xl bg-surface2 text-textMuted">
                       <User className="h-8 w-8" />
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold text-white">
-                      Not Signed In
-                    </h3>
+                    <h3 className="mb-2 text-lg font-semibold text-white">Not Signed In</h3>
                     <p className="mb-6 max-w-xs text-sm text-textMuted">
-                      Sign in with your Microsoft account to sync profiles and
-                      play Minecraft.
+                      Sign in with your Microsoft account to sync profiles and play Minecraft.
                     </p>
                     <Button
                       onClick={() => void startLogin()}
                       disabled={!!flow}
                       className="rounded-xl px-8 py-5 text-base font-bold shadow-glow"
                     >
-                      {flow
-                        ? "Waiting for login..."
-                        : "Connect Microsoft Account"}
+                      {flow ? "Waiting for login..." : "Connect Microsoft Account"}
                     </Button>
                   </div>
                 )}
@@ -357,8 +328,7 @@ export function SettingsPage() {
                         >
                           microsoft.com/link
                         </a>{" "}
-                        and enter the activation code below to complete the
-                        sign-in process.
+                        and enter the activation code below to complete the sign-in process.
                       </p>
                       <div className="my-2 rounded-2xl border border-primary/30 bg-surface1 px-6 py-4 shadow-inner">
                         <div className="mb-1 text-[10px] uppercase tracking-widest text-textMuted text-center">
@@ -372,9 +342,7 @@ export function SettingsPage() {
                         <Button
                           variant="outline"
                           className="flex-1 rounded-xl"
-                          onClick={() =>
-                            navigator.clipboard.writeText(flow.userCode)
-                          }
+                          onClick={() => navigator.clipboard.writeText(flow.userCode)}
                         >
                           Copy Code
                         </Button>
@@ -413,8 +381,7 @@ export function SettingsPage() {
                   <div>
                     <CardTitle>Global Defaults</CardTitle>
                     <CardDescription>
-                      Base configurations applied to all instances unless
-                      overridden.
+                      Base configurations applied to all instances unless overridden.
                     </CardDescription>
                   </div>
                 </div>
@@ -437,8 +404,7 @@ export function SettingsPage() {
                       placeholder="/usr/bin/java"
                     />
                     <p className="text-[11px] text-textMuted">
-                      Path to your Java executable. Leave empty to use system
-                      default.
+                      Path to your Java executable. Leave empty to use system default.
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -523,9 +489,7 @@ export function SettingsPage() {
                           })
                         }
                       />
-                      <div className="grid place-items-center text-textMuted">
-                        ×
-                      </div>
+                      <div className="grid place-items-center text-textMuted">×</div>
                       <Input
                         type="number"
                         className="rounded-xl border-border bg-surface2 focus:border-primary/50"
@@ -661,18 +625,14 @@ export function SettingsPage() {
                       </Label>
                       <Select
                         value={selectedPreset?.id ?? ""}
-                        onValueChange={(val) => setSelectedPresetId(val)}
+                        onValueChange={(val) => setSelectedPresetId(val ?? "")}
                       >
                         <SelectTrigger className="h-12 rounded-2xl border-border bg-surface2">
                           <SelectValue placeholder="Choose a preset..." />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-border bg-surface2">
                           {data.presets.map((preset) => (
-                            <SelectItem
-                              key={preset.id}
-                              value={preset.id}
-                              className="rounded-xl"
-                            >
+                            <SelectItem key={preset.id} value={preset.id} className="rounded-xl">
                               {preset.name}
                             </SelectItem>
                           ))}
@@ -682,19 +642,13 @@ export function SettingsPage() {
 
                     {selectedPreset && (
                       <div className="rounded-2xl border border-border bg-surface2/30 p-5">
-                        <h4 className="text-sm font-bold text-white">
-                          {selectedPreset.name}
-                        </h4>
+                        <h4 className="text-sm font-bold text-white">{selectedPreset.name}</h4>
                         <p className="mt-1 text-xs leading-relaxed text-textMuted">
                           {selectedPreset.description}
                         </p>
                         <div className="mt-4 flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-textMuted/50">
                           <RotateCcw className="h-3 w-3" />
-                          Last updated{" "}
-                          {formatDateTime(
-                            selectedPreset.updatedAt,
-                            i18n.language,
-                          )}
+                          Last updated {formatDateTime(selectedPreset.updatedAt, i18n.language)}
                         </div>
                       </div>
                     )}
@@ -797,10 +751,7 @@ export function SettingsPage() {
                       if (!selectedPreset) return;
                       const raw = exportPresetJson(selectedPreset.id);
                       if (!raw) return;
-                      downloadJson(
-                        `${selectedPreset.name}-preset.json`,
-                        JSON.parse(raw),
-                      );
+                      downloadJson(`${selectedPreset.name}-preset.json`, JSON.parse(raw));
                     }}
                   >
                     <Download className="mr-2 h-4 w-4" />
@@ -823,9 +774,7 @@ export function SettingsPage() {
                   </div>
                   <div>
                     <CardTitle>Interface & Localization</CardTitle>
-                    <CardDescription>
-                      Personalize your launcher experience.
-                    </CardDescription>
+                    <CardDescription>Personalize your launcher experience.</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -836,19 +785,13 @@ export function SettingsPage() {
                       <Languages className="h-5 w-5" />
                     </div>
                     <div>
-                      <Label className="text-base font-semibold text-white">
-                        {t("language")}
-                      </Label>
-                      <p className="text-xs text-textMuted">
-                        Choose your preferred UI language.
-                      </p>
+                      <Label className="text-base font-semibold text-white">{t("language")}</Label>
+                      <p className="text-xs text-textMuted">Choose your preferred UI language.</p>
                     </div>
                   </div>
                   <Select
                     value={data.ui.language}
-                    onValueChange={(val) =>
-                      void setLanguage(val as "en" | "de")
-                    }
+                    onValueChange={(val) => void setLanguage(val as "en" | "de")}
                   >
                     <SelectTrigger className="w-full h-10 rounded-xl border-border bg-surface1 sm:w-48">
                       <SelectValue />
@@ -870,18 +813,11 @@ export function SettingsPage() {
                       <Monitor className="h-5 w-5" />
                     </div>
                     <div>
-                      <Label className="text-base font-semibold text-white">
-                        Animations
-                      </Label>
-                      <p className="text-xs text-textMuted">
-                        Toggle UI transitions and effects.
-                      </p>
+                      <Label className="text-base font-semibold text-white">Animations</Label>
+                      <p className="text-xs text-textMuted">Toggle UI transitions and effects.</p>
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="rounded-md border-success/30 text-success"
-                  >
+                  <Badge variant="outline" className="rounded-md border-success/30 text-success">
                     ENABLED
                   </Badge>
                 </div>
@@ -911,9 +847,7 @@ export function SettingsPage() {
                 {data.settingsSnapshots.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <RotateCcw className="h-10 w-10 text-textMuted opacity-20" />
-                    <p className="mt-4 text-sm text-textMuted">
-                      No snapshots found yet.
-                    </p>
+                    <p className="mt-4 text-sm text-textMuted">No snapshots found yet.</p>
                   </div>
                 ) : (
                   <div className="grid gap-3">
@@ -949,9 +883,7 @@ export function SettingsPage() {
                             size="sm"
                             variant="outline"
                             className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() =>
-                              void rollbackSettingsSnapshot(snap.id)
-                            }
+                            onClick={() => void rollbackSettingsSnapshot(snap.id)}
                           >
                             Rollback
                           </Button>

@@ -43,8 +43,9 @@ export function useModrinthSearch(options: UseModrinthSearchOptions) {
         setResults([]);
         setError(searchError instanceof Error ? searchError.message : "Modrinth search failed.");
       } finally {
-        if (!active) return;
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     })();
 

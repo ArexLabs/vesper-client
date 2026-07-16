@@ -8,28 +8,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
 
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export function AppShell() {
   const boot = useLauncherStore((state) => state.boot);
   const status = useLauncherStore((state) => state.status);
   const error = useLauncherStore((state) => state.error);
-  const shouldPromptLogin = useLauncherStore(
-    (state) => state.shouldPromptLogin,
-  );
-  const beginMicrosoftLogin = useLauncherStore(
-    (state) => state.beginMicrosoftLogin,
-  );
-  const pollMicrosoftLogin = useLauncherStore(
-    (state) => state.pollMicrosoftLogin,
-  );
-  const cancelMicrosoftLogin = useLauncherStore(
-    (state) => state.cancelMicrosoftLogin,
-  );
+  const shouldPromptLogin = useLauncherStore((state) => state.shouldPromptLogin);
+  const beginMicrosoftLogin = useLauncherStore((state) => state.beginMicrosoftLogin);
+  const pollMicrosoftLogin = useLauncherStore((state) => state.pollMicrosoftLogin);
+  const cancelMicrosoftLogin = useLauncherStore((state) => state.cancelMicrosoftLogin);
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginFlow, setLoginFlow] = useState<{
@@ -70,10 +58,7 @@ export function AppShell() {
             prev
               ? {
                   ...prev,
-                  nextPollDelayMs: Math.max(
-                    1000,
-                    (result.retryAfterSeconds ?? 5) * 1000,
-                  ),
+                  nextPollDelayMs: Math.max(1000, (result.retryAfterSeconds ?? 5) * 1000),
                 }
               : prev,
           );
@@ -135,9 +120,7 @@ export function AppShell() {
             </header>
 
             {error ? (
-              <div className="bg-danger/10 px-6 py-3 text-sm text-danger">
-                {error}
-              </div>
+              <div className="bg-danger/10 px-6 py-3 text-sm text-danger">{error}</div>
             ) : null}
 
             <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 [scrollbar-gutter:stable_both-edges] md:px-6 motion-preset-fade motion-duration-500">
@@ -155,26 +138,15 @@ export function AppShell() {
         {showLoginPrompt && !loginFlow ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm motion-preset-fade motion-duration-200">
             <div className="w-[400px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 shadow-lift motion-preset-slide-up motion-duration-300 motion-ease-spring-smooth">
-              <h2 className="mb-2 text-lg font-semibold text-white">
-                Welcome to Vesper
-              </h2>
+              <h2 className="mb-2 text-lg font-semibold text-white">Welcome to Vesper</h2>
               <p className="mb-4 text-sm leading-5 text-textMuted">
-                Sign in with your Microsoft account to access Minecraft and
-                manage your profiles.
+                Sign in with your Microsoft account to access Minecraft and manage your profiles.
               </p>
               <div className="flex gap-3">
-                <Button
-                  size="sm"
-                  onClick={() => void startLogin()}
-                  className="flex-1"
-                >
+                <Button size="sm" onClick={() => void startLogin()} className="flex-1">
                   Sign in with Microsoft
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowLoginPrompt(false)}
-                >
+                <Button size="sm" variant="outline" onClick={() => setShowLoginPrompt(false)}>
                   Skip for now
                 </Button>
               </div>
@@ -185,9 +157,7 @@ export function AppShell() {
         {loginFlow ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm motion-preset-fade motion-duration-200">
             <div className="w-[400px] rounded-3xl border border-white/10 bg-[#0d0d0d] p-6 shadow-lift motion-preset-slide-up motion-duration-300 motion-ease-spring-smooth">
-              <h2 className="mb-2 text-lg font-semibold text-white">
-                Microsoft Login
-              </h2>
+              <h2 className="mb-2 text-lg font-semibold text-white">Microsoft Login</h2>
               <p className="mb-4 text-xs leading-5 text-textMuted">
                 Enter this code at the Microsoft login page to complete sign in.
               </p>
@@ -204,8 +174,7 @@ export function AppShell() {
                   size="sm"
                   onClick={() =>
                     window.open(
-                      loginFlow.verificationUriComplete ??
-                        loginFlow.verificationUri,
+                      loginFlow.verificationUriComplete ?? loginFlow.verificationUri,
                       "_blank",
                       "noopener,noreferrer",
                     )
@@ -216,9 +185,7 @@ export function AppShell() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() =>
-                    navigator.clipboard.writeText(loginFlow.userCode)
-                  }
+                  onClick={() => navigator.clipboard.writeText(loginFlow.userCode)}
                 >
                   Copy Code
                 </Button>
