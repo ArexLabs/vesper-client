@@ -20,5 +20,14 @@
       "quoteStyle": "double",
       "trailingCommas": "all"
     }
+  },
+  "files": {
+    "ignore": [
+      "dist/**",
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
+      "src-tauri/target/**"
+    ]
   }
 }

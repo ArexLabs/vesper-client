@@ -1,34 +1,4 @@
-import { cn } from "@/lib/utils";
-import { useLauncherStore } from "@/store/launcher-store";
-import {
-  Compass,
-  Home,
-  LibraryBig,
-  LogOut,
-  Settings2,
-  Shirt,
-  User,
-  ChevronRight,
-  Sparkles,
-  Command,
-} from "lucide-react";
-import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
-import {
-  Sidebar as SidebarPrimitive,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarTrigger,
-  useSidebar,
-  SidebarSeparator,
-} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +7,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  Sidebar as SidebarPrimitive,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { useLauncherStore } from "@/store/launcher-store";
+import {
+  ChevronRight,
+  Command,
+  Compass,
+  Home,
+  LibraryBig,
+  LogOut,
+  Settings2,
+  Shirt,
+  Sparkles,
+  User,
+} from "lucide-react";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 
 type SidebarProps = {
   onLoginRequest?: () => void;
@@ -56,19 +56,14 @@ export function Sidebar({ onLoginRequest }: SidebarProps) {
   const { state } = useSidebar();
 
   const activeProfile =
-    profiles.find(
-      (p) => p.provider === "microsoft" && p.authState === "signed_in",
-    ) ??
+    profiles.find((p) => p.provider === "microsoft" && p.authState === "signed_in") ??
     profiles.find((p) => p.authState === "signed_in") ??
     null;
 
   const isLoggedIn = Boolean(activeProfile);
-  const displayName = isLoggedIn
-    ? activeProfile?.displayName?.trim() || "Player"
-    : null;
+  const displayName = isLoggedIn ? activeProfile?.displayName?.trim() || "Player" : null;
   const minecraftUsername = isLoggedIn
-    ? ((activeProfile as { minecraftUsername?: string | null })
-        ?.minecraftUsername ?? null)
+    ? ((activeProfile as { minecraftUsername?: string | null })?.minecraftUsername ?? null)
     : null;
 
   const primaryName = minecraftUsername || displayName || "Player";
@@ -85,12 +80,8 @@ export function Sidebar({ onLoginRequest }: SidebarProps) {
             <Command className="size-5 text-black group-data-[collapsible=icon]:size-4" />
           </div>
           <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden motion-preset-fade">
-            <span className="text-sm font-black uppercase tracking-widest text-white">
-              Vesper
-            </span>
-            <span className="text-[10px] font-bold text-primary/70">
-              ALPHA v0.4.2
-            </span>
+            <span className="text-sm font-black uppercase tracking-widest text-white">Vesper</span>
+            <span className="text-[10px] font-bold text-primary/70">ALPHA v0.4.2</span>
           </div>
         </div>
       </SidebarHeader>
@@ -119,9 +110,7 @@ export function Sidebar({ onLoginRequest }: SidebarProps) {
                         }
                       >
                         <item.icon className="size-5" />
-                        <span className="font-bold tracking-tight">
-                          {item.label}
-                        </span>
+                        <span className="font-bold tracking-tight">{item.label}</span>
                       </NavLink>
                     }
                     tooltip={item.label}
@@ -212,9 +201,7 @@ export function Sidebar({ onLoginRequest }: SidebarProps) {
                   {primaryName}
                 </p>
                 {minecraftUsername && displayName && minecraftUsername !== displayName ? (
-                  <p className="text-[10px] font-bold text-textMuted">
-                    {displayName}
-                  </p>
+                  <p className="text-[10px] font-bold text-textMuted">{displayName}</p>
                 ) : null}
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/5" />
@@ -250,9 +237,7 @@ export function Sidebar({ onLoginRequest }: SidebarProps) {
                 <span className="text-xs font-black uppercase tracking-wide text-primary">
                   Anonymous
                 </span>
-                <span className="text-[10px] font-bold text-primary/70">
-                  Tap to Sign In
-                </span>
+                <span className="text-[10px] font-bold text-primary/70">Tap to Sign In</span>
               </div>
             </div>
           </SidebarMenuButton>

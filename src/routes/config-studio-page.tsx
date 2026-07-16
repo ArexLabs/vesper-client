@@ -37,7 +37,7 @@ export function ConfigStudioPage() {
     setDraftJson(JSON.stringify(resolved, null, 2));
     setMsg(null);
     setErr(null);
-  }, [selectedInstance?.id, JSON.stringify(resolved)]);
+  }, [resolved, selectedInstance]);
 
   const validation = useMemo(() => {
     if (!draftJson.trim())

@@ -117,7 +117,7 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate }: CreateInst
     return () => {
       mounted = false;
     };
-  }, [open]);
+  }, [loader, mcVersion, open]);
 
   const values = useMemo(
     () => ({
@@ -186,11 +186,10 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate }: CreateInst
         type="button"
       />
 
-      <aside
+      <dialog
         aria-labelledby="create-instance-title"
-        aria-modal="true"
-        className="relative h-full w-full max-w-xl border-l border-border bg-bg/95 p-4 shadow-lift backdrop-blur md:p-6"
-        role="dialog"
+        className="relative m-0 h-full w-full max-w-xl border-l border-border bg-bg/95 p-4 shadow-lift backdrop-blur md:p-6"
+        open
       >
         <div className="flex h-full flex-col">
           <div className="mb-5 flex items-start justify-between gap-4">
@@ -350,7 +349,7 @@ export function CreateInstanceSheet({ open, onOpenChange, onCreate }: CreateInst
             </div>
           </form>
         </div>
-      </aside>
+      </dialog>
     </div>
   );
 }
@@ -364,10 +363,10 @@ type FieldProps = {
 
 function Field({ label, helper, error, children }: FieldProps) {
   return (
-    <label className="grid gap-1.5">
+    <div className="grid gap-1.5">
       <span className="label">{label}</span>
       {children}
       <span className={cn("helper", error && "text-danger")}>{error ?? helper}</span>
-    </label>
+    </div>
   );
 }

@@ -1,12 +1,16 @@
+import { InstanceCard } from "@/components/instances/InstanceCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -17,30 +21,20 @@ import {
 } from "@/components/ui/select";
 import { useT } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
+import { cn } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
 import {
-  Search,
-  Plus,
+  Filter,
   LayoutGrid,
   List,
-  SortAsc,
-  Filter,
   PackagePlus,
+  Plus,
+  Search,
+  SortAsc,
   Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { InstanceCard } from "@/components/instances/InstanceCard";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 type ViewMode = "cards" | "table";
 type SortMode = "updated" | "name" | "version";
@@ -172,23 +166,18 @@ export function InstancesPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-textMuted">
+                    <span className="text-xs font-bold uppercase tracking-widest text-textMuted">
                       Loader
-                    </label>
+                    </span>
                     <Select
                       value={newLoader}
-                      onValueChange={(val) =>
-                        setNewLoader(val as Instance["loader"])
-                      }
+                      onValueChange={(val) => setNewLoader(val as Instance["loader"])}
                     >
                       <SelectTrigger className="h-12 rounded-2xl border-border bg-surface2 px-4">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl border-border bg-surface2">
-                        <SelectItem
-                          value="fabric"
-                          className="rounded-xl italic"
-                        >
+                        <SelectItem value="fabric" className="rounded-xl italic">
                           Fabric
                         </SelectItem>
                         <SelectItem value="forge" className="rounded-xl">
@@ -251,10 +240,7 @@ export function InstancesPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border/50 bg-surface1/50 p-1 min-w-[280px]">
-            <Select
-              value={loaderFilter}
-              onValueChange={(val) => setLoaderFilter(val ?? "all")}
-            >
+            <Select value={loaderFilter} onValueChange={(val) => setLoaderFilter(val ?? "all")}>
               <SelectTrigger className="h-10 flex-1 border-none bg-transparent focus:ring-0">
                 <Filter className="mr-2 h-3.5 w-3.5 text-textMuted" />
                 <SelectValue placeholder="Loader" />
@@ -340,12 +326,8 @@ export function InstancesPage() {
           <div className="mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-surface2 text-textMuted/20">
             <Sparkles className="h-10 w-10" />
           </div>
-          <h3 className="mb-2 text-xl font-bold text-white">
-            {t("noInstances")}
-          </h3>
-          <p className="max-w-xs text-sm text-textMuted">
-            {t("noInstancesHint")}
-          </p>
+          <h3 className="mb-2 text-xl font-bold text-white">{t("noInstances")}</h3>
+          <p className="max-w-xs text-sm text-textMuted">{t("noInstancesHint")}</p>
           <Button
             variant="outline"
             className="mt-8 rounded-xl border-primary/20 text-primary hover:bg-primary/10"
@@ -361,9 +343,7 @@ export function InstancesPage() {
               key={instance.id}
               instance={instance}
               presetName={
-                instance.presetId
-                  ? (presetById[instance.presetId] ?? instance.presetId)
-                  : null
+                instance.presetId ? (presetById[instance.presetId] ?? instance.presetId) : null
               }
               className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4"
             />
@@ -395,10 +375,7 @@ export function InstancesPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {rows.map((instance) => (
-                    <tr
-                      key={instance.id}
-                      className="group transition-colors hover:bg-white/2"
-                    >
+                    <tr key={instance.id} className="group transition-colors hover:bg-white/2">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface2 text-primary">
@@ -414,9 +391,7 @@ export function InstancesPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-medium text-text">
-                        {instance.mcVersion}
-                      </td>
+                      <td className="px-6 py-4 font-medium text-text">{instance.mcVersion}</td>
                       <td className="px-6 py-4">
                         <Badge
                           variant="ghost"
@@ -430,14 +405,11 @@ export function InstancesPage() {
                           <div className="flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-glow-sm" />
                             <span className="text-xs font-semibold text-textMuted">
-                              {presetById[instance.presetId] ??
-                                instance.presetId}
+                              {presetById[instance.presetId] ?? instance.presetId}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-textMuted opacity-50">
-                            Default
-                          </span>
+                          <span className="text-xs text-textMuted opacity-50">Default</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">

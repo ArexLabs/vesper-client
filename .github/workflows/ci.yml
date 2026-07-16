@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main", "develop"]
+    branches: ["master", "main", "develop"]
   pull_request:
 
 concurrency:
@@ -34,7 +34,7 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - name: Install Playwright browsers
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
       - name: Run Playwright tests
         run: npm run test:e2e
       - uses: actions/upload-artifact@v7
@@ -49,6 +49,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install Linux Tauri dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
       - name: Cache Cargo dependencies
         uses: actions/cache@v5
         with:
