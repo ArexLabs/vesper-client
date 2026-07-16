@@ -6,24 +6,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useT } from "@/lib/i18n";
 import type { Instance } from "@/lib/schemas";
 import { cn, formatDateTime } from "@/lib/utils";
 import { useLauncherStore } from "@/store/launcher-store";
 import {
+  Clock,
+  Copy,
+  FolderOpen,
+  Layers,
   MoreHorizontal,
   Package2,
   Play,
-  FolderOpen,
-  Copy,
   Trash2,
-  Clock,
-  Layers,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,17 +32,11 @@ type InstanceCardProps = {
 
 const DELETE_CONFIRM_TIMEOUT_MS = 3000;
 
-export function InstanceCard({
-  instance,
-  presetName,
-  className,
-}: InstanceCardProps) {
+export function InstanceCard({ instance, presetName, className }: InstanceCardProps) {
   const { t, i18n } = useT();
   const navigate = useNavigate();
   const deleteInstance = useLauncherStore((state) => state.deleteInstance);
-  const duplicateInstance = useLauncherStore(
-    (state) => state.duplicateInstance,
-  );
+  const duplicateInstance = useLauncherStore((state) => state.duplicateInstance);
   const launchInstance = useLauncherStore((state) => state.launchInstance);
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -94,9 +84,7 @@ export function InstanceCard({
                 {instance.loader}
               </span>
               <span className="h-1 w-1 rounded-full bg-border" />
-              <span className="text-xs font-medium text-textMuted">
-                {instance.mcVersion}
-              </span>
+              <span className="text-xs font-medium text-textMuted">{instance.mcVersion}</span>
             </div>
           </div>
         </div>

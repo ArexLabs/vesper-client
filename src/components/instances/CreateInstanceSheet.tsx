@@ -364,6 +364,7 @@ type FieldProps = {
 
 function Field({ label, helper, error, children }: FieldProps) {
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: the control is provided via children and wrapped by this label (implicit association)
     <label className="grid gap-1.5">
       <span className="label">{label}</span>
       {children}

@@ -11,10 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useModrinthSearch } from "@/hooks/use-modrinth-search";
-import {
-  fetchLoaderOptions,
-  fetchMinecraftVersions,
-} from "@/lib/minecraft-catalog";
+import { fetchLoaderOptions, fetchMinecraftVersions } from "@/lib/minecraft-catalog";
 import { cn } from "@/lib/utils";
 import { ExternalLink, Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,9 +30,7 @@ export function DiscoverModsSection({
   initialGameVersion = "all",
 }: DiscoverModsSectionProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [sort, setSort] = useState<
-    "relevance" | "downloads" | "follows" | "updated"
-  >("downloads");
+  const [sort, setSort] = useState<"relevance" | "downloads" | "follows" | "updated">("downloads");
   const [loader, setLoader] = useState(initialLoader);
   const [gameVersion, setGameVersion] = useState(initialGameVersion);
   const [loaderOptions, setLoaderOptions] = useState<string[]>([
@@ -76,10 +71,7 @@ export function DiscoverModsSection({
       if (!active) return;
 
       if (availableLoaders.status === "fulfilled") {
-        setLoaderOptions([
-          "all",
-          ...availableLoaders.value.filter((value) => value !== "all"),
-        ]);
+        setLoaderOptions(["all", ...availableLoaders.value.filter((value) => value !== "all")]);
       }
 
       if (availableVersions.status === "fulfilled") {
@@ -96,9 +88,7 @@ export function DiscoverModsSection({
     <Card className="overflow-hidden rounded-3xl border-white/8 bg-white/[0.03] shadow-panel">
       <CardHeader className="space-y-4 p-5">
         <div className="space-y-1">
-          <CardTitle className="text-xl font-semibold text-text">
-            Discover Mods
-          </CardTitle>
+          <CardTitle className="text-xl font-semibold text-text">Discover Mods</CardTitle>
           <p className="text-sm text-textMuted">
             Search Modrinth and install directly into the client download cache.
           </p>
@@ -106,23 +96,13 @@ export function DiscoverModsSection({
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_180px_180px_180px]">
           <div className="space-y-2">
-            <Label
-              htmlFor={
-                compact
-                  ? "discover-mod-search-home"
-                  : "discover-mod-search-explore"
-              }
-            >
+            <Label htmlFor={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}>
               Search
             </Label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-textMuted" />
               <Input
-                id={
-                  compact
-                    ? "discover-mod-search-home"
-                    : "discover-mod-search-explore"
-                }
+                id={compact ? "discover-mod-search-home" : "discover-mod-search-explore"}
                 className="h-10 rounded-2xl border-border bg-surface2 pl-9"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search Modrinth mods"
@@ -132,15 +112,8 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor={compact ? "discover-sort-home" : "discover-sort-explore"}
-            >
-              Sort
-            </Label>
-            <Select
-              value={sort}
-              onValueChange={(value) => setSort(value as typeof sort)}
-            >
+            <Label htmlFor={compact ? "discover-sort-home" : "discover-sort-explore"}>Sort</Label>
+            <Select value={sort} onValueChange={(value) => setSort(value as typeof sort)}>
               <SelectTrigger
                 className="h-10 rounded-2xl border-border bg-surface2"
                 id={compact ? "discover-sort-home" : "discover-sort-explore"}
@@ -165,11 +138,7 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor={
-                compact ? "discover-loader-home" : "discover-loader-explore"
-              }
-            >
+            <Label htmlFor={compact ? "discover-loader-home" : "discover-loader-explore"}>
               Loader
             </Label>
             <Select
@@ -181,9 +150,7 @@ export function DiscoverModsSection({
             >
               <SelectTrigger
                 className="h-10 rounded-2xl border-border bg-surface2"
-                id={
-                  compact ? "discover-loader-home" : "discover-loader-explore"
-                }
+                id={compact ? "discover-loader-home" : "discover-loader-explore"}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -198,11 +165,7 @@ export function DiscoverModsSection({
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor={
-                compact ? "discover-version-home" : "discover-version-explore"
-              }
-            >
+            <Label htmlFor={compact ? "discover-version-home" : "discover-version-explore"}>
               Minecraft
             </Label>
             <Select
@@ -214,9 +177,7 @@ export function DiscoverModsSection({
             >
               <SelectTrigger
                 className="h-10 rounded-2xl border-border bg-surface2"
-                id={
-                  compact ? "discover-version-home" : "discover-version-explore"
-                }
+                id={compact ? "discover-version-home" : "discover-version-explore"}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -237,12 +198,7 @@ export function DiscoverModsSection({
         {installMessage ? (
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
             <span>{installMessage}</span>
-            <Button
-              onClick={clearInstallMessage}
-              size="sm"
-              type="button"
-              variant="ghost"
-            >
+            <Button onClick={clearInstallMessage} size="sm" type="button" variant="ghost">
               Dismiss
             </Button>
           </div>
@@ -263,9 +219,7 @@ export function DiscoverModsSection({
           >
             <div
               className={
-                compact
-                  ? "grid gap-3 md:grid-cols-2"
-                  : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+                compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
               }
             >
               {Array.from({ length: compact ? 4 : 6 }).map((_, i) => (
@@ -302,9 +256,7 @@ export function DiscoverModsSection({
           >
             <div
               className={
-                compact
-                  ? "grid gap-3 md:grid-cols-2"
-                  : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+                compact ? "grid gap-3 md:grid-cols-2" : "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
               }
             >
               {results.map((project) => (
@@ -322,16 +274,12 @@ export function DiscoverModsSection({
                           src={project.iconUrl}
                         />
                       ) : (
-                        <span className="text-xs font-semibold text-textMuted">
-                          MOD
-                        </span>
+                        <span className="text-xs font-semibold text-textMuted">MOD</span>
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-semibold text-text">
-                        {project.title}
-                      </h3>
+                      <h3 className="truncate text-sm font-semibold text-text">{project.title}</h3>
                       <p className="truncate text-xs text-textMuted">
                         {project.author ?? "Unknown author"}
                       </p>
@@ -355,20 +303,14 @@ export function DiscoverModsSection({
                       onClick={() => void installProject(project)}
                       type="button"
                     >
-                      {installingId === project.id
-                        ? "Installing..."
-                        : "Install"}
+                      {installingId === project.id ? "Installing..." : "Install"}
                     </Button>
                     <Button
                       className="rounded-2xl"
                       disabled={!project.url}
                       onClick={() => {
                         if (!project.url) return;
-                        window.open(
-                          project.url,
-                          "_blank",
-                          "noopener,noreferrer",
-                        );
+                        window.open(project.url, "_blank", "noopener,noreferrer");
                       }}
                       type="button"
                       variant="outline"
