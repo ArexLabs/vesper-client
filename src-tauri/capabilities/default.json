@@ -1,6 +1,0 @@
-{
-  "identifier": "default",
-  "description": "Default capability for Vesper Launcher",
-  "windows": ["main"],
-  "permissions": ["core:default"]
-}
