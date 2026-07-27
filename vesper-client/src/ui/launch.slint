@@ -1,0 +1,38 @@
+import { VerticalBox, ProgressIndicator } from "std-widgets.slint";
+
+export component LaunchOverlay inherits Rectangle {
+    in property <string> stage: "";
+    in property <float> progress: 0.0;
+
+    if root.visible : Rectangle {
+        background: #000000cc;
+
+        VerticalBox {
+            alignment: center;
+            spacing: 16px;
+            padding: 40px;
+
+            Text {
+                text: "Vesper Client";
+                font-size: 20px;
+                font-weight: 700;
+                color: #cdd6f4;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text: root.stage;
+                font-size: 14px;
+                color: #a6adc8;
+                horizontal-alignment: center;
+            }
+
+            if root.progress >= 0.0 : ProgressIndicator {
+                progress: root.progress;
+            }
+            if root.progress < 0.0 : ProgressIndicator {
+                progress: -1;
+            }
+        }
+    }
+}

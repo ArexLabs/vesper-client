@@ -1,0 +1,140 @@
+import { VerticalBox, HorizontalBox, Button, LineEdit, ComboBox, ListView, ProgressIndicator } from "std-widgets.slint";
+import { ModEntry } from "types.slint";
+
+export component ModsPage inherits VerticalBox {
+    in-out property <string> search-query: "";
+    in property <[ModEntry]> search-results: [];
+    in property <[ModEntry]> installed-mods: [];
+    in-out property <string> active-source: "Modrinth";
+    in property <bool> is-searching: false;
+    in property <string> downloading-mod: "";
+    in property <float> download-progress: 0.0;
+
+    callback search-requested(query: string, source: string);
+    callback download-requested(project-id: string, file-id: string, name: string, source: string);
+
+    Rectangle {
+        background: #181825;
+        border-radius: 8px;
+        vertical-stretch: 1;
+
+        VerticalBox {
+            padding: 16px;
+            spacing: 12px;
+
+            Text {
+                text: "Mod Browser";
+                font-size: 22px;
+                font-weight: 700;
+                color: #cdd6f4;
+            }
+
+            HorizontalBox {
+                spacing: 8px;
+                LineEdit {
+                    text: root.search-query;
+                    placeholder-text: "Search mods...";
+                    edited(t) => { root.search-query = t; }
+                }
+                ComboBox {
+                    model: ["Modrinth", "CurseForge"];
+                    current-value: root.active-source;
+                    selected(v) => { root.active-source = v; }
+                }
+                Button {
+                    text: "Search";
+                    enabled: root.search-query != "" && !root.is-searching;
+                    clicked => { root.search-requested(root.search-query, root.active-source); }
+                }
+            }
+
+            if root.downloading-mod != "" : Rectangle {
+                background: #313244;
+                border-radius: 6px;
+                height: 40px;
+                horizontal-stretch: 0;
+                HorizontalBox {
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    Text {
+                        text: "Downloading: " + root.downloading-mod;
+                        font-size: 13px;
+                        color: #f9e2af;
+                        vertical-alignment: center;
+                        horizontal-stretch: 1;
+                    }
+                    ProgressIndicator {
+                        progress: root.download-progress;
+                    }
+                }
+            }
+
+            if root.is-searching : Text {
+                text: "Searching...";
+                font-size: 14px;
+                color: #6c7086;
+                horizontal-alignment: center;
+            }
+
+            if root.search-results.length > 0 : VerticalBox {
+                Text {
+                    text: "Search Results";
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #a6adc8;
+                }
+                ListView {
+                    for mod-item in root.search-results : Rectangle {
+                        background: #1e1e2e;
+                        border-radius: 6px;
+                        height: 64px;
+
+                        HorizontalBox {
+                            padding: 10px;
+                            spacing: 10px;
+                            VerticalBox {
+                                horizontal-stretch: 1;
+                                spacing: 2px;
+                                Text {
+                                    text: mod-item.name;
+                                    font-size: 14px;
+                                    font-weight: 700;
+                                    color: #cdd6f4;
+                                }
+                                Text {
+                                    text: mod-item.description;
+                                    font-size: 11px;
+                                    color: #6c7086;
+                                }
+                                Text {
+                                    text: "Downloads: " + mod-item.downloads + " (" + mod-item.source + ")";
+                                    font-size: 10px;
+                                    color: #585b70;
+                                }
+                            }
+                            Button {
+                                text: "Install";
+                                clicked => { root.download-requested(mod-item.project-id, "", mod-item.name, mod-item.source); }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if root.search-results.length == 0 && !root.is-searching : VerticalBox {
+                Text {
+                    text: "Installed Mods";
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #a6adc8;
+                }
+                if root.installed-mods.length == 0 : Text {
+                    text: "No mods installed yet";
+                    font-size: 13px;
+                    color: #6c7086;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}

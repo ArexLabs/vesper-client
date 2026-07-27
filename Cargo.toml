@@ -1,0 +1,3 @@
+[workspace]
+members = ["vesper-core", "vesper-client"]
+resolver = "2"

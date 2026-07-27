@@ -1,0 +1,181 @@
+import { VerticalBox, HorizontalBox, Button } from "std-widgets.slint";
+import { LoginPage } from "login.slint";
+import { InstancesPage } from "instances.slint";
+import { ModsPage } from "mods.slint";
+import { SettingsPage } from "settings.slint";
+import { LaunchOverlay } from "launch.slint";
+import { InstanceEntry, ModEntry } from "types.slint";
+
+component SidebarButton inherits Rectangle {
+    in property <string> label: "";
+    in property <bool> active: false;
+    callback clicked();
+
+    background: active ? #313244 : transparent;
+    border-radius: 6px;
+    height: 36px;
+
+    HorizontalBox {
+        padding-left: 12px;
+        Text {
+            text: root.label;
+            font-size: 14px;
+            color: root.active ? #cdd6f4 : #a6adc8;
+            vertical-alignment: center;
+        }
+    }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+}
+
+export component AppWindow inherits Window {
+    title: "Vesper Client";
+    preferred-width: 1100px;
+    preferred-height: 700px;
+    background: #11111b;
+
+    in property <int> current-page: 0;
+    in property <bool> is-logged-in: false;
+    in property <string> username: "";
+
+    in property <bool> launch-overlay-visible: false;
+    in property <string> launch-stage: "";
+    in property <float> launch-progress: 0.0;
+
+    in property <bool> is-polling: false;
+    in property <string> auth-error: "";
+
+    in property <[InstanceEntry]> instances: [];
+    in property <bool> show-create-form: false;
+
+    in property <string> search-query: "";
+    in property <[ModEntry]> search-results: [];
+    in property <[ModEntry]> installed-mods: [];
+    in property <string> active-source: "Modrinth";
+    in property <bool> is-searching: false;
+    in property <string> downloading-mod: "";
+    in property <float> download-progress: 0.0;
+
+    in property <string> java-path: "";
+    in property <int> max-memory: 4096;
+    in property <string> jvm-args: "";
+
+    callback login-requested();
+    callback logout-requested();
+    callback instance-create-requested(name: string, mc-version: string, loader: string, loader-version: string);
+    callback instance-delete-requested(id: string);
+    callback instance-launch-requested(id: string);
+    callback toggle-create-form();
+    callback mod-search-requested(query: string, source: string);
+    callback mod-download-requested(project-id: string, file-id: string, name: string, source: string);
+    callback settings-save-requested(java-path: string, max-memory: int, jvm-args: string, window-width: int, window-height: int);
+    callback settings-detect-java();
+    callback navigate(page: int);
+
+    HorizontalBox {
+        Rectangle {
+            background: #181825;
+            width: 200px;
+
+            VerticalBox {
+                padding: 16px;
+                spacing: 8px;
+
+                Text {
+                    text: "Vesper";
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: #cba6f7;
+                }
+                Text {
+                    text: root.is-logged-in ? root.username : "Not signed in";
+                    font-size: 12px;
+                    color: #6c7086;
+                }
+
+                Rectangle { height: 16px; }
+
+                SidebarButton {
+                    label: "Home";
+                    active: root.current-page == 0;
+                    clicked => { root.navigate(0); }
+                }
+                SidebarButton {
+                    label: "Instances";
+                    active: root.current-page == 1;
+                    clicked => { root.navigate(1); }
+                }
+                SidebarButton {
+                    label: "Mods";
+                    active: root.current-page == 2;
+                    clicked => { root.navigate(2); }
+                }
+                SidebarButton {
+                    label: "Settings";
+                    active: root.current-page == 3;
+                    clicked => { root.navigate(3); }
+                }
+            }
+        }
+
+        Rectangle {
+            background: #11111b;
+
+            if root.current-page == 0 : LoginPage {
+                is-logged-in: root.is-logged-in;
+                username: root.username;
+                is-polling: root.is-polling;
+                auth-error: root.auth-error;
+                login-requested => { root.login-requested(); }
+                logout-requested => { root.logout-requested(); }
+            }
+
+            if root.current-page == 1 : InstancesPage {
+                instances: root.instances;
+                show-create-form: root.show-create-form;
+                create-requested(name, mc-version, loader, loader-version) => {
+                    root.instance-create-requested(name, mc-version, loader, loader-version);
+                }
+                delete-requested(id) => { root.instance-delete-requested(id); }
+                launch-requested(id) => { root.instance-launch-requested(id); }
+                toggle-create-form => { root.toggle-create-form(); }
+            }
+
+            if root.current-page == 2 : ModsPage {
+                search-query: root.search-query;
+                search-results: root.search-results;
+                installed-mods: root.installed-mods;
+                active-source: root.active-source;
+                is-searching: root.is-searching;
+                downloading-mod: root.downloading-mod;
+                download-progress: root.download-progress;
+                search-requested(query, source) => { root.mod-search-requested(query, source); }
+                download-requested(project-id, file-id, name, source) => {
+                    root.mod-download-requested(project-id, file-id, name, source);
+                }
+            }
+
+            if root.current-page == 3 : SettingsPage {
+                java-path: root.java-path;
+                max-memory: root.max-memory;
+                jvm-args: root.jvm-args;
+                save-requested(java-path, max-memory, jvm-args, window-width, window-height) => {
+                    root.settings-save-requested(java-path, max-memory, jvm-args, window-width, window-height);
+                }
+                detect-java => { root.settings-detect-java(); }
+            }
+        }
+    }
+
+    LaunchOverlay {
+        x: 200px;
+        y: 0px;
+        width: root.width - 200px;
+        height: root.height;
+        visible: root.launch-overlay-visible;
+        stage: root.launch-stage;
+        progress: root.launch-progress;
+    }
+}

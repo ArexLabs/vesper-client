@@ -1,0 +1,39 @@
+[package]
+name = "vesper-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core library for the Vesper Client Minecraft launcher"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+mc-launcher-core = "0.1"
+minecraft-msa-auth = "0.4"
+oauth2 = { version = "5", features = ["reqwest"] }
+
+ferinth = "2"
+furse = "1"
+futures-util = "0.3"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+directories = "6"
+sysinfo = "0.35"
+sha1 = "0.10"
+zip = "2"
+
+thiserror = "2"
+anyhow = "1"
+urlencoding = "2"
+open = "5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+p256 = { version = "0.13", features = ["ecdsa", "jwk"] }
+p384 = { version = "0.13", features = ["ecdsa", "jwk"] }
+sha2 = "0.10"
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
