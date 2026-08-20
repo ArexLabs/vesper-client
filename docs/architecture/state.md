@@ -1,30 +1,45 @@
 # State Management Across Threads
 
-Vesper Client manages application state across two threads with different ownership models: the Slint UI thread holds a `Rc<RefCell<VesperConfig>>` for synchronous config access, while the Tokio runtime holds `Arc`-wrapped domain managers.
+Vesper Client manages application state across two threads with different ownership models: the GPUI main thread holds view structs implementing `Render`, while the background thread holds `Arc`-wrapped domain managers and writes updates via shared `Arc<Mutex<Option<UiUpdate>>>`.
 
 ## State Ownership
 
-### Main Thread (Slint)
+### Main Thread (GPUI)
+
+Each view is a GPUI entity with owned state:
 
 ```rust
-let config = Rc::new(std::cell::RefCell::new(config));
+pub struct LoginView {
+    is_logged_in: bool,
+    username: SharedString,
+    is_polling: bool,
+    auth_error: SharedString,
+    cmd_tx: mpsc::Sender<BackendCommand>,
+    latest_update: Arc<Mutex<Option<UiUpdate>>>,
+}
 ```
 
-The config is wrapped in `Rc<RefCell<...>>` for single-threaded shared access. This is used during startup to check `active_profile_id` and populate initial UI state. The Slint event loop does not hold references to backend managers.
+Views are created via `cx.new(|cx| LoginView::new(...))` and stored as GPUI entities. State is modified in event handlers and polled during `Render::render()`.
 
-### Tokio Thread
+### Background Thread
+
+Domain managers live on the background thread:
 
 ```rust
-let instance_manager = Arc::new(InstanceManager::new()?);
-let auth_manager = AuthManager::new(MS_CLIENT_ID.to_string())?;
-let mod_manager = Arc::new(ModManager::new(instance_manager.as_ref().clone(), None)?);
+let auth_manager = AuthManager::new(client_id)?;
+let instance_manager = InstanceManager::new()?;
+let mod_manager = ModManager::new(instance_manager.clone(), None)?;
 ```
 
-Domain managers are cloned per-task or shared via `Arc`:
+Each background task clones or creates its own managers. They are not shared across threads.
 
-- `InstanceManager` is `Clone` (wraps a `PathBuf`). Cloned into each spawned task.
-- `AuthManager` uses a custom `clone_ref()` that re-creates the manager from the client ID.
-- `ModManager` is wrapped in `Arc` and cloned per-task.
+### Shared State Bridge
+
+```rust
+let latest_update: Arc<Mutex<Option<UiUpdate>>> = Arc::new(Mutex::new(None));
+```
+
+This is the primary communication channel. The background thread writes updates; the main thread polls and consumes them in `Render::render()`.
 
 ## Config Persistence
 
@@ -37,28 +52,14 @@ pub struct VesperConfig {
     pub profiles: Vec<AuthProfile>,
     pub active_profile_id: Option<String>,
     pub java_path: Option<String>,
-    pub max_memory_mb: u32,          // defaults to half system RAM (1024-8192 MB)
+    pub max_memory_mb: u32,
     pub jvm_args: Option<String>,
     pub window_width: u32,           // default: 1100
     pub window_height: u32,          // default: 700
 }
 ```
 
-Load/save is synchronous (`std::fs`), called from both threads:
-
-```rust
-// Loading (main thread, at startup)
-let config = VesperConfig::load().unwrap_or_default();
-
-// Saving (main thread, from settings callback)
-ui.on_settings_save_requested(move |java_path, max_memory, jvm_args, width, height| {
-    let mut config = VesperConfig::load().unwrap_or_default();
-    config.java_path = if jp.is_empty() { None } else { Some(jp) };
-    config.max_memory_mb = max_memory as u32;
-    // ...
-    let _ = config.save();
-});
-```
+Load/save is synchronous (`std::fs`), called from the main thread at startup and from background threads when saving settings.
 
 ### InstanceConfig
 
@@ -68,33 +69,32 @@ Per-instance configuration stored at `{data_dir}/instances/{id}/instance.toml`:
 pub struct InstanceConfig {
     pub name: String,
     pub mc_version: String,
-    pub loader_type: LoaderType,    // Vanilla | Fabric | NeoForge
+    pub loader_type: LoaderType,
     pub loader_version: Option<String>,
-    pub created_at: String,         // Unix timestamp as string
+    pub created_at: String,
     pub last_played: Option<String>,
 }
 ```
 
-Instance configs are managed by `InstanceManager` which reads/writes to the filesystem. The manager is created on the Tokio thread and accessed via `Arc` or `Clone`.
+Instance configs are managed by `InstanceManager` which reads/writes to the filesystem.
 
 ## Auth State Lifecycle
 
-1. **Startup**: `VesperConfig::load()` reads stored profiles. If `active_profile_id` is set, the UI is initialized with `is_logged_in = true` and the stored display name.
+1. **Startup**: `VesperConfig::load()` reads stored profiles. The view is initialized with default state (`is_logged_in: false`).
 
-2. **Login**: `AuthStartBrowserLogin` command triggers `start_browser_login()` which opens a browser and spawns a Tokio task to wait for the OAuth callback. On success, `UiUpdate::AuthSuccess { profile }` is sent. The profile contains the account type (Java or Bedrock), Minecraft username/UUID, and for Bedrock: device keys, identity keys, and the full Bedrock profile.
+2. **Login**: `handle_login()` spawns a background thread. `start_browser_login()` opens a browser and returns. The background thread waits for the OAuth callback, then writes `UiUpdate::AuthSuccess { profile }` to shared state.
 
-3. **Token Storage**: `StoredTokens` contains `access_token`, `refresh_token`, `expires_at`, and the Minecraft access token and profile. Tokens are checked via `is_token_expired()` which returns true if within 300 seconds of expiry.
+3. **Polling**: `Render::render()` calls `poll_updates()`, which takes the update from shared state and applies it to the view's fields.
 
-4. **Logout**: Sends `UiUpdate::AuthLoggedOut`. The UI resets `is_logged_in`, `is_polling`, and `username`.
+4. **Logout**: The view directly sets `is_logged_in = false` without going through shared state (no backend call needed).
 
 ## Instance State Management
 
-Instance state is entirely filesystem-based. There is no in-memory instance registry:
+Instance state is entirely filesystem-based:
 
 - `InstanceManager::list()` scans the `instances/` directory and reads each `instance.toml`
 - `InstanceManager::create()` generates a slug-based ID with a hash suffix, creates directories, and writes `instance.toml`
 - `InstanceManager::delete()` removes the entire instance directory
-- `InstanceManager::get()` reads a single `instance.toml`
 
 Each instance has an isolated directory structure:
 
@@ -105,12 +105,18 @@ Each instance has an isolated directory structure:
 └── .minecraft/            (game files managed by mc-launcher-core)
 ```
 
-The instance ID is generated by slugifying the name and appending a 6-character hex hash of the name + current time:
+## Future: Full Command/Update Bridge
 
-```rust
-fn generate_id(&self, name: &str) -> String {
-    let slug: String = name.chars().map(|c| /* slugify */).collect();
-    let uuid_suffix = format!("{:x}", hasher.finish()).chars().take(6).collect();
-    format!("{slug}-{uuid_suffix}")
-}
+The current prototype runs auth inline on background threads. A full migration will restore the MPSC bridge:
+
 ```
+View (main thread) ──[BackendCommand]──► Command dispatcher (background thread)
+                                                │
+View (main thread) ◄──[UiUpdate]────── Progress/task results
+```
+
+This separation allows:
+- Centralized command dispatch with proper error handling
+- Guaranteed event delivery (MPSC vs. overwrite-on-latest)
+- Multiple concurrent updates (progress bars, status messages)
+- Clean shutdown via channel drop

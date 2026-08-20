@@ -2,20 +2,21 @@
 
 ## Rust Toolchain Requirements
 
-- **Minimum**: Rust 1.75+ (edition 2021)
-- **Recommended**: Latest stable toolchain via `rustup`
+- **Minimum**: Rust 1.82+ (edition 2021, pinned via `mise`)
+- **Toolchain Manager**: [mise](https://mise.jdx.dev/) (reads `mise.toml`)
 - **Workspace**: Cargo workspace with `resolver = "2"`
 
 ```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Install mise
+curl https://mise.run | sh
 
-# Update to latest stable
-rustup update stable
+# Install project toolchain (Rust 1.82.0, just, cargo-binstall, etc.)
+mise install
 
 # Verify
 rustc --version
 cargo --version
+just --version
 ```
 
 ## Platform-Specific Dependencies
@@ -23,18 +24,18 @@ cargo --version
 ### Linux (Ubuntu/Debian)
 
 ```bash
-# Slint requires these for native rendering
+# GPUI requires these for GPU-accelerated rendering
 sudo apt install -y \
     libfontconfig1-dev \
-    libxcb-shape0-dev \
-    libxcb-xfixes0-dev \
-    libxcb-render0-dev \
-    libxcb1-dev \
     libxkbcommon-dev \
-    libwayland-dev
+    libwayland-dev \
+    libvulkan-dev \
+    libssl-dev \
+    pkg-config \
+    cmake
 
-# For OpenSSL (reqwest)
-sudo apt install -y libssl-dev pkg-config
+# Optional: for clipboard support (arboard)
+sudo apt install -y libxcb-shape0-dev libxcb-xfixes0-dev libxcb-render0-dev libxcb1-dev
 ```
 
 ### Linux (Fedora)
@@ -42,11 +43,12 @@ sudo apt install -y libssl-dev pkg-config
 ```bash
 sudo dnf install -y \
     fontconfig-devel \
-    libxcb-devel \
     libxkbcommon-devel \
     wayland-devel \
+    vulkan-devel \
     openssl-devel \
-    pkg-config
+    pkg-config \
+    cmake
 ```
 
 ### macOS
@@ -55,13 +57,13 @@ sudo dnf install -y \
 # Xcode command line tools
 xcode-select --install
 
-# No additional dependencies required for Slint on macOS
+# GPUI uses Metal on macOS — no additional dependencies needed
 ```
 
 ### Windows
 
 - Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with "Desktop development with C++" workload
-- Slint uses Direct3D on Windows (no additional libs needed)
+- GPUI uses Direct3D on Windows (no additional libs needed)
 
 ## Build Configuration
 
@@ -99,46 +101,39 @@ tracing = "0.1"
 
 ### vesper-client (binary)
 
-Contains the Slint UI and main entry point:
+Contains the GPUI native UI and main entry point:
 
 ```toml
 [dependencies]
 vesper-core = { path = "../vesper-core" }
-slint = "1.17"
+gpui = "0.2.2"
 tokio = { version = "1", features = ["full"] }
-anyhow = "1"
+directories = "6"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
-
-[build-dependencies]
-slint-build = "1.17"
+arboard = "3"
+open = "5"
 ```
 
-The UI is compiled at build time via `build.rs`:
-
-```rust
-fn main() {
-    slint_build::compile("src/ui/app.slint").unwrap();
-}
-```
+The UI is pure Rust — no build script needed. Views are GPUI entities that implement the `Render` trait.
 
 ## Build Commands
 
 ```bash
-# Debug build
-cargo build
+# Using just (recommended)
+just check          # cargo check (fast)
+just test           # cargo test
+just build          # cargo build --release
+just run            # cargo run --release
+just clippy         # cargo clippy --all-features
+just format         # cargo fmt
+just all            # check + test + clippy + build
 
-# Release build
-cargo build --release
-
-# Check without building
+# Using cargo directly
 cargo check
-
-# Run
-cargo run --release
-
-# Run tests
+cargo build --release
 cargo test
+cargo run --release
 ```
 
 ## IDE Setup Recommendations
@@ -146,8 +141,8 @@ cargo test
 ### VS Code
 
 Recommended extensions:
-- **rust-analyzer** - Rust language server
-- **CodeLLDB** - Debugging support
+- **rust-analyzer** — Rust language server
+- **CodeLLDB** — Debugging support
 
 Settings (`.vscode/settings.json`):
 ```json
@@ -160,6 +155,18 @@ Settings (`.vscode/settings.json`):
 ### RustRover / IntelliJ
 
 Native Rust support is built-in. Open the workspace root directory.
+
+## GPUI Development Notes
+
+GPUI 0.2.2 is a pre-1.0 framework from the Zed editor project. Key points:
+
+- **No built-in Button widget** — buttons are built from `div()` + `.on_click()` + `.hover()`
+- **Tailwind-style API** — `.flex().flex_col().items_center().gap_4().bg().rounded_2xl()`
+- **Views are entities** — created with `cx.new(|cx| MyView { ... })`, stored as `Entity<MyView>`
+- **Event handling** — `cx.listener(|this, event, window, cx| { ... })` for click handlers
+- **Conditional rendering** — `.when(condition, |el| el.child(...))`
+- **Theme** — use `gpui::rgb()` for colors (see `ui/theme.rs`)
+- **Learn from Zed source** — the best reference for GPUI patterns is the Zed codebase itself
 
 ## CurseForge API Key (Optional)
 

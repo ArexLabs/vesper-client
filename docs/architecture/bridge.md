@@ -1,193 +1,163 @@
-# Bridge Architecture: Tokio <-> Slint
+# Bridge Architecture: GPUI <-> Tokio
 
-The Vesper Client uses a two-thread architecture where the Slint event loop runs on the main thread and the Tokio async runtime runs on a dedicated OS thread. Communication between them uses two unbounded MPSC channels.
+The Vesper Client uses a two-thread architecture where GPUI runs on the main thread with its event loop, and async domain work (auth, installs, downloads) runs on a dedicated OS thread with its own tokio runtime. Communication between them uses `Arc<Mutex<Option<UiUpdate>>>` shared state.
+
+## Why Not MPSC?
+
+Slint used unbounded MPSC channels with `slint::spawn_local` for cross-thread communication. GPUI 0.2.2 has different constraints:
+
+1. **`cx.spawn()` requires `AsyncFnOnce`** with lifetime bounds that prevent moving `!Send` types (like `AuthManager`) into async closures
+2. **No `slint::spawn_local` equivalent** — GPUI's render loop is synchronous; views update in `Render::render()`
+3. **`Arc<Mutex<Option<T>>>`** is simpler for single-value updates where the latest state matters more than a queue of events
+
+The current prototype uses shared state. A full migration may reintroduce MPSC for high-frequency updates (progress bars) or events that need guaranteed delivery.
 
 ## Threading Model
 
 ```
-┌──────────────────────────────┐     ┌──────────────────────────────────┐
-│  Main Thread (Slint)         │     │  OS Thread (Tokio Runtime)       │
-│                              │     │                                  │
-│  tracing_subscriber::init()  │     │  Builder::new_multi_thread()     │
-│  VesperConfig::load()        │     │    .enable_all()                 │
-│  AppWindow::new()            │     │    .build()                      │
-│                              │     │                                  │
-│  setup_ui_callbacks(ui, cmd) │     │  InstanceManager::new()          │
-│    │                         │     │  AuthManager::new(client_id)     │
-│    ▼                         │     │  ModManager::new(...)            │
-│  ui.run() ───────────────────┼─────┤                                  │
-│                              │     │  while let Some(cmd) =           │
-│  on_*_callback()             │     │    cmd_rx.recv().await {         │
-│    │                         │     │    tokio::spawn(                 │
-│    ▼                         │     │      handle_command(cmd, ...)     │
-│  cmd_tx.send(cmd) ───────────┼────►│    )                             │
-│                              │     │  }                               │
-│  spawn_local:                │     │                                  │
-│    while let Some(update) =  │     │    update_tx.send(UiUpdate) ─────┼──┐
-│      update_rx.recv() {      │     │                                  │  │
-│      upgrade_in_event_loop() │     └──────────────────────────────────┘  │
-│        apply_ui_update()     │                                          │
-│    }                         │◄─────────────────────────────────────────┘
-│                              │
-│  ui.run() returns            │
-│  drop(cmd_tx)                │
-│  backend_handle.join()       │
-└──────────────────────────────┘
+┌────────────────────────────────┐     ┌──────────────────────────────────┐
+│  Main Thread (GPUI)            │     │  Background Thread                │
+│                                │     │  (dedicated tokio runtime)        │
+│  tracing_subscriber::init()    │     │                                  │
+│  Application::new()            │     │  Builder::new_current_thread()    │
+│    .run(|cx| {                 │     │    .enable_all().build()          │
+│      cx.open_window(..., |cx| { │     │                                  │
+│        cx.new(|cx| {           │     │  AuthManager::new(client_id)      │
+│          LoginView::new(       │     │  InstanceManager::new()           │
+│            cmd_tx,             │     │  ModManager::new(...)             │
+│            latest_update       │     │                                  │
+│          )                     │     │  // Work writes to shared state:  │
+│        })                      │     │  *guard = Some(UiUpdate::...);   │
+│      })                        │     │                                  │
+│    });                         │     └──────────────────────────────────┘
+│                                │
+│  Render::render()              │     Shared state read on render:
+│    self.poll_updates();        │     if let Some(update) = guard.take()
+│    // applies state changes    │
+└────────────────────────────────┘
 ```
 
-## Channel Types
+## Shared State Types
 
 ```rust
-// UI -> Backend: structured commands from Slint callbacks
-let (cmd_tx, cmd_rx) = mpsc::unbounded_channel::<BackendCommand>();
+// Single latest-update slot (used for auth results, errors, etc.)
+let latest_update: Arc<Mutex<Option<UiUpdate>>> = Arc::new(Mutex::new(None));
 
-// Backend -> UI: status updates, progress, results
-let (update_tx, update_rx) = mpsc::unbounded_channel::<UiUpdate>();
+// MPSC channel for commands (reserved for future use)
+let (cmd_tx, cmd_rx) = mpsc::channel::<BackendCommand>(64);
 ```
 
-Both channels use `tokio::sync::mpsc::unbounded_channel`. Unbounded channels are used because the UI thread is synchronous and must never block waiting for channel capacity.
+`Arc<Mutex<Option<UiUpdate>>>` works well for:
+- Auth success/error results
+- One-shot status updates
+- State that changes infrequently (login status, instance list)
 
-## BackendCommand
+It does NOT work well for:
+- High-frequency progress updates (download progress bars)
+- Multiple queued events that must not be dropped
+- Command dispatch (the MPSC channel is retained for this)
 
-Commands sent from the UI to the Tokio runtime. Each command is an independent variant that maps to a specific user action.
+## Background Thread Spawning
 
-```rust
-pub enum BackendCommand {
-    AuthStartBrowserLogin { account_type: String },
-    AuthRefreshToken,
-    AuthLogout,
-    AuthGetStatus,
-
-    InstanceCreate { name, mc_version, loader: LoaderType, loader_version },
-    InstanceList,
-    InstanceDelete { id },
-
-    ModSearch { query, source: ModSource },
-    ModDownload { instance_id, project_id, file_id, file_name, source },
-    ModListInstalled { instance_id },
-
-    LaunchInstall { instance_id },
-    LaunchStart { instance_id },
-
-    BedrockLaunch { profile_id },
-    BedrockDetectLauncher,
-}
-```
-
-### Command Dispatch
-
-Each command is spawned as an independent Tokio task, allowing concurrent processing:
+Each async operation spawns a dedicated thread with its own tokio runtime:
 
 ```rust
-while let Some(cmd) = cmd_rx.recv().await {
-    let update_tx = update_tx.clone();
-    // clone Arc references...
-    tokio::spawn(async move {
-        handle_command(cmd, &update_tx, &instance_manager, &auth_manager, &mod_manager).await;
+fn handle_login(&mut self, cx: &mut Context<Self>) {
+    let update = self.latest_update.clone();
+
+    std::thread::spawn(move || {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+
+        rt.block_on(async move {
+            let auth_manager = AuthManager::new(MS_CLIENT_ID.to_string())?;
+            let (auth_url, csrf, pkce, port) =
+                auth_manager.start_browser_login().await?;
+
+            open::that(auth_url.as_str())?;
+
+            match auth_manager.complete_browser_login(port, &pkce, &csrf).await {
+                Ok(tokens) => {
+                    let profile = /* build AuthProfile from tokens */;
+                    set_update(&update, UiUpdate::AuthSuccess { profile });
+                }
+                Err(e) => {
+                    set_update(&update, UiUpdate::AuthError { message: e.to_string() });
+                }
+            }
+        });
     });
 }
 ```
 
-The `handle_command` function pattern-matches on the command variant and dispatches to the appropriate domain function. Errors are sent back as `UiUpdate` error variants.
-
-## UiUpdate
-
-Updates sent from backend tasks to the UI. Applied via `slint::spawn_local` and `upgrade_in_event_loop`.
+The helper writes the result to shared state:
 
 ```rust
-pub enum UiUpdate {
-    // Auth
-    AuthBrowserLoginStarted,
-    AuthSuccess { profile: AuthProfile },
-    AuthError { message: String },
-    AuthLoggedOut,
-    AuthStatus { is_logged_in: bool, profile: Option<AuthProfile> },
-
-    // Instances
-    InstanceListResult(Vec<InstanceInfo>),
-    InstanceCreated { id, name },
-    InstanceDeleted { id },
-    InstanceError { message: String },
-
-    // Mods
-    ModSearchResults(Vec<ModInfo>),
-    ModDownloadProgress { project_name, progress: f32 },
-    ModDownloadComplete { project_name },
-    ModListResult(Vec<InstalledModInfo>),
-    ModError { message: String },
-
-    // Install / Launch
-    InstallProgress { stage: String, progress: f32 },
-    InstallComplete,
-    LaunchStarted,
-    LaunchError { message: String },
-
-    // Bedrock
-    BedrockLauncherFound { path },
-    BedrockLauncherNotFound,
-    BedrockLaunched,
-    BedrockLaunchError { message: String },
-
-    // System
-    SystemMessage { text: String },
+fn set_update(target: &Arc<Mutex<Option<UiUpdate>>>, update: UiUpdate) {
+    if let Ok(mut guard) = target.lock() {
+        *guard = Some(update);
+    }
 }
 ```
 
-### UI Update Application
+## Polling in Render
+
+Every view polls shared state at the start of `Render::render()`:
 
 ```rust
-slint::spawn_local(async move {
-    while let Some(update) = update_rx.recv().await {
-        let ui_weak = ui_weak.clone();
-        let _ = ui_weak.upgrade_in_event_loop(move |ui| {
-            apply_ui_update(&ui, update);
-        });
+impl Render for LoginView {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // Consume any pending async updates
+        self.poll_updates();
+
+        // ... build UI tree based on current state
     }
-});
+}
 ```
 
-`apply_ui_update` pattern-matches on each variant and sets Slint UI properties accordingly (e.g., `ui.set_is_logged_in(true)`, `ui.set_instances(...)`).
+`poll_updates` takes the latest update and applies it:
+
+```rust
+fn poll_updates(&mut self) {
+    if let Ok(mut guard) = self.latest_update.lock() {
+        if let Some(update) = guard.take() {
+            match update {
+                UiUpdate::AuthSuccess { profile } => {
+                    self.is_logged_in = true;
+                    self.is_polling = false;
+                    self.username = profile.display_name.into();
+                }
+                UiUpdate::AuthError { message } => {
+                    self.is_polling = false;
+                    self.auth_error = message.into();
+                }
+                // ... other variants
+            }
+        }
+    }
+}
+```
 
 ## Error Propagation Across the Bridge
 
 Errors flow back to the UI through `UiUpdate` variants:
 
 ```rust
-// In handle_command:
-match instance_manager.create(&name, &mc_version, loader, loader_version) {
-    Ok(info) => {
-        let _ = update_tx.send(UiUpdate::InstanceCreated { id: info.id, name: info.config.name });
+// In background thread:
+match auth_manager.complete_browser_login(port, &pkce, &csrf).await {
+    Ok(tokens) => {
+        set_update(&update, UiUpdate::AuthSuccess { profile });
     }
     Err(e) => {
-        let _ = update_tx.send(UiUpdate::InstanceError { message: e.to_string() });
+        set_update(&update, UiUpdate::AuthError { message: e.to_string() });
     }
 }
 ```
 
-The UI thread never receives raw `CoreError` values. All errors are converted to `String` messages inside `UiUpdate` error variants before crossing the bridge. The `apply_ui_update` function handles these by logging via `tracing::error!` and optionally displaying them in the UI.
-
-## UI Callback Registration
-
-Callbacks are registered in `setup_ui_callbacks`, where each Slint callback sends a `BackendCommand` through the channel:
-
-```rust
-fn setup_ui_callbacks(ui: &AppWindow, cmd_tx: &mpsc::UnboundedSender<BackendCommand>) {
-    let tx = cmd_tx.clone();
-    ui.on_login_requested(move |account_type| {
-        let _ = tx.send(BackendCommand::AuthStartBrowserLogin {
-            account_type: account_type.to_string(),
-        });
-    });
-
-    let tx = cmd_tx.clone();
-    ui.on_instance_create_requested(move |name, mc_version, loader, loader_version| {
-        let loader_type = LoaderType::from_str_loose(&loader);
-        let _ = tx.send(BackendCommand::InstanceCreate { ... });
-    });
-    // ... more callbacks
-}
-```
+The UI never receives raw `CoreError` values. All errors are converted to `String` messages inside `UiUpdate` error variants. The `poll_updates` function handles these by setting error state on the view.
 
 ## Shutdown
 
-When `ui.run()` returns (user closes the window), the main thread drops both channel senders. The Tokio runtime's `cmd_rx.recv()` returns `None`, the `while let` loop exits, and `block_on` completes. The OS thread is then joined via `backend_handle.join()`.
+When the user closes the window, GPUI's event loop exits and `Application::run()` returns. The `cmd_tx` sender is dropped, and background threads finish their current work and exit when they no longer hold references to shared state.

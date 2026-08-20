@@ -9,12 +9,12 @@ This document outlines the complete technical stack, architectural boundaries, a
 The project is a Cargo workspace with two crates:
 
 - **`vesper-core`** — Library crate containing all domain logic: auth, instance management, mod downloading, launcher integration, config, and the UI-bridge layer.
-- **`vesper-client`** — Binary crate containing the Slint UI screens, main entry point, and Tokio-Slint bridge wiring.
+- **`vesper-client`** — Binary crate containing the GPUI native UI screens, main entry point, and Tokio-async bridge wiring.
 
 ```
 vesper-client/            (workspace root)
 ├── vesper-core/          (library)
-└── vesper-client/        (binary)
+└── vesper-client/        (binary — GPUI)
 ```
 
 ---
@@ -23,7 +23,7 @@ vesper-client/            (workspace root)
 
 | Category             | Component / Crate | Purpose in Vesper Client                                                                                                 |
 | -------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **User Interface**   | `slint`           | Hardware-accelerated native UI engine handling reactive views via a dedicated design DSL.                                |
+| **User Interface**   | `gpui`            | GPU-accelerated native UI framework (from Zed editor). Pure Rust, no DSL. Renders via wgpu with Tailwind-style API.      |
 | **Async Runtime**    | `tokio`           | Driving the non-blocking background thread pool, async I/O tasks, and network worker processes.                          |
 | **Networking**       | `reqwest`         | Async HTTP client for fetching game manifests, API communication, and downloading assets.                                |
 
@@ -59,19 +59,24 @@ vesper-client/            (workspace root)
 
 ---
 
-## Bridge Architecture (Slint <-> Tokio)
+## Bridge Architecture (GPUI <-> Tokio)
 
-The UI thread (Slint event loop) and backend (Tokio runtime) communicate via two unbounded MPSC channels:
+The UI runs on GPUI's main thread event loop. Async work (auth, installs, downloads) runs on dedicated background threads with their own tokio runtimes.
 
-- **`BackendCommand`** channel: UI callbacks fire structured commands to a dedicated Tokio runtime thread.
-- **`UiUpdate`** channel: Async backend tasks push status, progress, and results back to the UI via `slint::invoke_from_event_loop`.
+Communication uses two patterns:
 
-The Tokio runtime runs on a **dedicated OS thread** (not `#[tokio::main]`), using `Runtime::Builder::new_multi_thread().enable_all().build()` + `block_on()`. The Slint event loop runs on the main thread via `ui.run()`.
+- **`Arc<Mutex<Option<UiUpdate>>>`**: Shared state for one-shot async results (auth success/error, status updates). Background threads write; GPUI views poll in `Render::render()`.
+- **`mpsc::channel<BackendCommand>`**: MPSC channel reserved for future command dispatch (currently auth runs inline on background threads).
+
+The background thread uses `tokio::runtime::Builder::new_current_thread().enable_all().build()` + `block_on()`. GPUI runs on the main thread via `Application::new().run()`.
+
+### Why Not MPSC for Everything?
+
+GPUI 0.2.2's `cx.spawn()` requires `AsyncFnOnce` with lifetime bounds that prevent moving `!Send` types (like `AuthManager`) into async closures. The workaround is spawning dedicated OS threads per operation. `Arc<Mutex<Option<T>>>` is simpler for single-value updates where the latest state matters more than a queue of events.
 
 ---
 
 ## Diagnostics & Error Architecture
 
 - **`thiserror`**: Generates cleanly structured, typed domain errors inside internal operational and backend modules.
-- **`anyhow`**: High-level flexible error catcher used at the Slint UI callback boundaries to smoothly capture and display unexpected exceptions.
 - **`tracing` & `tracing-subscriber`**: Provides structured, asynchronous contextual logging routed simultaneously to standard output and local rotating log files for post-crash diagnostics.

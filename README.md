@@ -2,11 +2,18 @@
 
 A modern, lightweight, isolated multi-version Minecraft launcher built for VOMLabs.
 
+> **⚠️ WARNING: Active Migration In Progress**
+>
+> This project is currently undergoing a major UI framework migration from Slint to GPUI.
+> **This software is NOT secure and should NOT be used in production.**
+> Only the Login page prototype has been migrated so far. The full UI migration
+> is actively being worked on. See `MIGRATION_PLAN.md` for details.
+
 ## Tech Stack
 
 | Category | Technology | Purpose |
 |---|---|---|
-| UI Framework | Slint 1.17 | Hardware-accelerated native UI via DSL |
+| UI Framework | GPUI 0.2.2 | GPU-accelerated Rust-native UI framework (Zed editor's UI layer) |
 | Async Runtime | Tokio 1.x | Background thread pool, async I/O, network workers |
 | HTTP Client | reqwest 0.12 | Async HTTP for APIs, manifests, and downloads |
 | Minecraft Core | mc-launcher-core 0.1 | Vanilla/Fabric/NeoForge install, asset resolution, launch |
@@ -17,7 +24,7 @@ A modern, lightweight, isolated multi-version Minecraft launcher built for VOMLa
 | Serialization | serde, serde_json, toml | JSON manifests, TOML configs |
 | Filesystem | directories 6.x | Cross-platform OS storage paths |
 | System Info | sysinfo 0.35 | Memory detection for Java heap sizing |
-| Error Handling | thiserror 2.x, anyhow 1.x | Domain errors (thiserror), UI boundary (anyhow) |
+| Error Handling | thiserror 2.x | Domain errors |
 | Logging | tracing, tracing-subscriber | Structured async logging with env-filter |
 
 ## Architecture
@@ -25,6 +32,9 @@ A modern, lightweight, isolated multi-version Minecraft launcher built for VOMLa
 ```
 vesper-client/
 ├── Cargo.toml              (workspace root, resolver = "2")
+├── justfile                 (20 task recipes)
+├── mise.toml                (Rust 1.82.0 pinned, tools, env)
+│
 ├── vesper-core/            (library crate — all domain logic)
 │   └── src/
 │       ├── lib.rs
@@ -36,32 +46,61 @@ vesper-client/
 │       ├── launcher/         GameInstaller, ProgressUpdate, launch command
 │       └── mods/             ModManager, ModrinthClient, CurseForgeClient
 │
-└── vesper-client/          (binary crate — Slint UI)
+└── vesper-client/          (binary crate — GPUI native UI)
     ├── Cargo.toml
-    ├── build.rs             (compiles app.slint)
     └── src/
-        ├── main.rs           main(), setup_ui_callbacks(), handle_command()
-        └── ui/mod.rs         placeholder for Rust-side UI utilities
+        ├── main.rs           GPUI Application lifecycle, window creation
+        └── ui/
+            ├── mod.rs          module exports
+            ├── login_view.rs   Login page (GPUI Render entity)
+            ├── instances_view.rs  Instances page (planned)
+            ├── mods_view.rs    Mods page (planned)
+            ├── settings_view.rs   Settings page (planned)
+            ├── sidebar.rs      Navigation sidebar (planned)
+            ├── theme.rs        Catppuccin Mocha color tokens
+            └── components/     Reusable UI components (planned)
 ```
 
-### Bridge Diagram (Tokio <-> Slint)
+### GPUI Threading Model
+
+GPUI runs on the main thread with an event loop. Async work must be offloaded
+to a dedicated background thread:
 
 ```
-┌──────────────────────┐     ┌──────────────────────────┐
-│  Main Thread (Slint)  │     │ OS Thread (Tokio Runtime) │
-│                       │     │                           │
-│  ui.run()             │     │  rt.block_on(async {      │
-│    │                  │     │    while let Some(cmd) =   │
-│  on_*_callback        │     │      cmd_rx.recv().await { │
-│    │                  │     │      tokio::spawn(         │
-│    ▼                  │     │        handle_command()    │
-│  cmd_tx.send()  ──────┼────►│      )                    │
-│                       │     │    }                       │
-│  update_rx      ◄─────┼─────┤    update_tx.send() ──────┤
-│    │                  │     │                           │
-│    ▼                  │     └──────────────────────────┘
-│  apply_ui_update()    │
-└──────────────────────┘
+┌──────────────────────────┐     ┌──────────────────────────────┐
+│  Main Thread (GPUI)       │     │  Background Thread            │
+│                            │     │  (tokio Runtime)              │
+│  Application::new()        │     │                                │
+│    .run(|cx| {             │     │  rt.block_on(async {           │
+│      cx.open_window(...)   │     │    // auth, install, mods      │
+│    })                      │     │    Arc<Mutex<Option<UiUpdate>>> │
+│                            │◄────│      shared state              │
+│  cx.spawn(async {          │     │  })                            │
+│    poll_updates()          │     │                                │
+│  })                        │     └──────────────────────────────┘
+│                            │
+│  Render::render()          │     Each view checks shared state
+│    .poll_updates()         │     and updates its fields accordingly.
+└──────────────────────────┘
+```
+
+Auth, install, and mod operations run on a dedicated OS thread with its own
+tokio runtime. This works around GPUI 0.2.2's `AsyncFnOnce` lifetime
+constraints and domain managers being `!Send`.
+
+### Shared State Pattern
+
+Views use `Arc<Mutex<Option<UiUpdate>>>` for cross-thread communication.
+Background work writes updates; the render loop polls and consumes them:
+
+```rust
+// Background thread writes:
+*guard = Some(UiUpdate::AuthSuccess { profile });
+
+// Main thread polls (in Render::render):
+if let Some(update) = guard.take() {
+    // apply state changes
+}
 ```
 
 ## Features
@@ -77,8 +116,8 @@ vesper-client/
 
 ## Prerequisites
 
-- Rust 1.75+ (edition 2021)
-- Linux: wayland-dev or X11 dev libs, fontconfig, OpenSSL
+- Rust 1.82+ (edition 2021, pinned via `mise`)
+- Linux: wayland-dev or X11 dev libs, fontconfig, OpenSSL, libxkbcommon, vulkan-loader
 - macOS: Xcode command line tools
 - Windows: MSVC build tools
 
@@ -87,6 +126,9 @@ vesper-client/
 ```bash
 git clone https://github.com/VOMLabs/vesper-client.git
 cd vesper-client
+
+# Install toolchain (requires mise)
+mise install
 
 # Build in release mode
 cargo build --release
@@ -98,11 +140,14 @@ cargo run --release
 ## Development
 
 ```bash
-# Check for compile errors without full build
-cargo check
-
-# Run tests
-cargo test
+# Use just for common tasks
+just check          # cargo check (fast)
+just test           # cargo test
+just build          # cargo build --release
+just run            # cargo run --release
+just clippy         # lint
+just format         # fmt
+just all            # check + test + clippy + build
 
 # Run with debug logging
 RUST_LOG=debug cargo run
