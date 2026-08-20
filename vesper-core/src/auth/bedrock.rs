@@ -52,8 +52,13 @@ pub struct BedrockAuthManager {
 
 impl BedrockAuthManager {
     pub fn new() -> Self {
+        let http_client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .build()
+            .expect("failed to build HTTP client");
         Self {
-            http_client: reqwest::Client::new(),
+            http_client,
         }
     }
 
@@ -80,7 +85,7 @@ impl BedrockAuthManager {
             "/device/authenticate",
             "",
             &body_str,
-        );
+        )?;
 
         let resp: serde_json::Value = self
             .http_client
@@ -134,7 +139,7 @@ impl BedrockAuthManager {
             "/authorize",
             "",
             &body_str,
-        );
+        )?;
 
         let resp: serde_json::Value = self
             .http_client
@@ -226,7 +231,7 @@ impl BedrockAuthManager {
         user_hash: &str,
         xsts_token: &str,
     ) -> CoreResult<(String, String)> {
-        let auth_header = format!("XBL3.0 x={user_hash};{xsts_token}");
+        let _auth_header = format!("XBL3.0 x={user_hash};{xsts_token}");
 
         let resp: serde_json::Value = self
             .http_client
@@ -451,7 +456,7 @@ pub fn launch_mcpelauncher(game_dir: &str) -> CoreResult<std::process::Child> {
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .spawn()
-        .map_err(|e| CoreError::Launch(format!("Failed to launch mcpelauncher-client: {e}")))?;
+        .map_err(|e| CoreError::Launcher(format!("Failed to launch mcpelauncher-client: {e}")))?;
 
     tracing::info!("[bedrock] Launched mcpelauncher-client with game_dir={game_dir}");
     Ok(cmd)

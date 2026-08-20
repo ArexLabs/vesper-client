@@ -45,7 +45,11 @@ pub struct AuthManager {
 
 impl AuthManager {
     pub fn new(client_id: String) -> CoreResult<Self> {
-        let http_client = reqwest::Client::new();
+        let http_client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .build()
+            .map_err(CoreError::Http)?;
 
         let auth_url =
             AuthUrl::new(MS_AUTH_URL.to_string()).map_err(|e| CoreError::Auth(e.to_string()))?;
@@ -70,7 +74,16 @@ impl AuthManager {
         &self.client_id
     }
 
+    /// Clone the AuthManager by creating a new instance with the same client_id.
+    /// This is used when spawning tasks that need their own AuthManager instance.
+    pub fn clone_auth(&self) -> Self {
+        Self::new(self.client_id.clone()).expect("failed to clone AuthManager")
+    }
+
     pub async fn start_browser_login(&self) -> CoreResult<(oauth2::url::Url, String, String, u16)> {
+        // Bind to a free port to discover it, then drop the listener.
+        // The race window is minimal: tokio's TcpListener::bind uses SO_REUSEADDR
+        // on Linux/macOS, so the rebind in complete_browser_login will succeed.
         let listener = TcpListener::bind("127.0.0.1:0")
             .await
             .map_err(|e| CoreError::Auth(format!("Failed to bind local server: {e}")))?;

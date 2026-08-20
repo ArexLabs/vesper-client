@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::sync::Arc;
 
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Semaphore};
 
 use vesper_core::auth::bedrock::{BedrockAuthManager, find_mcpelauncher};
 use vesper_core::auth::keys::{DeviceKeys, IdentityKeys};
@@ -36,12 +36,11 @@ fn main() -> Result<(), slint::PlatformError> {
 
     let ui = AppWindow::new()?;
 
-    let (cmd_tx, cmd_rx) = mpsc::unbounded_channel::<BackendCommand>();
-    let (update_tx, update_rx) = mpsc::unbounded_channel::<UiUpdate>();
+    // P2-2: Use bounded channels for backpressure
+    let (cmd_tx, mut cmd_rx) = mpsc::channel::<BackendCommand>(64);
+    let (update_tx, update_rx) = mpsc::channel::<UiUpdate>(128);
 
     setup_ui_callbacks(&ui, &cmd_tx);
-
-    let config = Rc::new(std::cell::RefCell::new(config));
 
     let backend_handle = {
         let update_tx = update_tx.clone();
@@ -61,7 +60,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 };
 
                 let auth_manager = match AuthManager::new(MS_CLIENT_ID.to_string()) {
-                    Ok(am) => am,
+                    Ok(am) => Arc::new(am),
                     Err(e) => {
                         tracing::error!("Failed to initialize auth manager: {e}");
                         return;
@@ -76,14 +75,18 @@ fn main() -> Result<(), slint::PlatformError> {
                     }
                 };
 
-                let mut cmd_rx = cmd_rx;
+                // P2-5: Limit concurrent task spawning
+                let semaphore = Arc::new(Semaphore::new(8));
+
                 while let Some(cmd) = cmd_rx.recv().await {
                     let update_tx = update_tx.clone();
                     let instance_manager = Arc::clone(&instance_manager);
-                    let auth_manager = auth_manager.clone_ref();
+                    let auth_manager = Arc::clone(&auth_manager);
                     let mod_manager = Arc::clone(&mod_manager);
+                    let permit = semaphore.clone().acquire_owned().await.unwrap();
 
                     tokio::spawn(async move {
+                        let _permit = permit;
                         handle_command(
                             cmd,
                             &update_tx,
@@ -110,9 +113,9 @@ fn main() -> Result<(), slint::PlatformError> {
     })
     .map_err(|e| slint::PlatformError::Other(e.to_string()))?;
 
-    if let Some(_active_id) = config.borrow().active_profile_id.clone() {
-        let profile = config.borrow().active_profile().cloned();
-        if let Some(p) = profile {
+    // P3-4: Use owned config directly instead of Rc<RefCell<>>
+    if let Some(active_id) = &config.active_profile_id {
+        if let Some(p) = config.profiles.iter().find(|p| p.id == *active_id) {
             ui.set_is_logged_in(true);
             ui.set_username(p.display_name.as_str().into());
         }
@@ -127,23 +130,28 @@ fn main() -> Result<(), slint::PlatformError> {
     Ok(())
 }
 
-fn setup_ui_callbacks(ui: &AppWindow, cmd_tx: &mpsc::UnboundedSender<BackendCommand>) {
+fn setup_ui_callbacks(ui: &AppWindow, cmd_tx: &mpsc::Sender<BackendCommand>) {
+    // P0 Error 3: Slint `login-requested()` takes 0 args — default to "Java"
     let tx = cmd_tx.clone();
-    ui.on_login_requested(move |account_type| {
-        let _ = tx.send(BackendCommand::AuthStartBrowserLogin {
-            account_type: account_type.to_string(),
-        });
+    ui.on_login_requested(move || {
+        if tx.try_send(BackendCommand::AuthStartBrowserLogin {
+            account_type: "Java".to_string(),
+        }).is_err() {
+            tracing::warn!("Backend channel closed — login command dropped");
+        }
     });
 
     let tx = cmd_tx.clone();
     ui.on_logout_requested(move || {
-        let _ = tx.send(BackendCommand::AuthLogout);
+        if tx.try_send(BackendCommand::AuthLogout).is_err() {
+            tracing::warn!("Backend channel closed — logout command dropped");
+        }
     });
 
     let tx = cmd_tx.clone();
     ui.on_instance_create_requested(move |name, mc_version, loader, loader_version| {
         let loader_type = LoaderType::from_str_loose(&loader);
-        let _ = tx.send(BackendCommand::InstanceCreate {
+        if tx.try_send(BackendCommand::InstanceCreate {
             name: name.to_string(),
             mc_version: mc_version.to_string(),
             loader: loader_type,
@@ -151,21 +159,27 @@ fn setup_ui_callbacks(ui: &AppWindow, cmd_tx: &mpsc::UnboundedSender<BackendComm
                 let v = loader_version.to_string();
                 if v.is_empty() { None } else { Some(v) }
             },
-        });
+        }).is_err() {
+            tracing::warn!("Backend channel closed — instance create command dropped");
+        }
     });
 
     let tx = cmd_tx.clone();
     ui.on_instance_delete_requested(move |id| {
-        let _ = tx.send(BackendCommand::InstanceDelete {
+        if tx.try_send(BackendCommand::InstanceDelete {
             id: id.to_string(),
-        });
+        }).is_err() {
+            tracing::warn!("Backend channel closed — instance delete command dropped");
+        }
     });
 
     let tx = cmd_tx.clone();
     ui.on_instance_launch_requested(move |id| {
-        let _ = tx.send(BackendCommand::LaunchStart {
+        if tx.try_send(BackendCommand::LaunchStart {
             instance_id: id.to_string(),
-        });
+        }).is_err() {
+            tracing::warn!("Backend channel closed — launch command dropped");
+        }
     });
 
     ui.on_toggle_create_form(move || {
@@ -179,10 +193,12 @@ fn setup_ui_callbacks(ui: &AppWindow, cmd_tx: &mpsc::UnboundedSender<BackendComm
         } else {
             ModSource::Modrinth
         };
-        let _ = tx.send(BackendCommand::ModSearch {
+        if tx.try_send(BackendCommand::ModSearch {
             query: query.to_string(),
             source: src,
-        });
+        }).is_err() {
+            tracing::warn!("Backend channel closed — mod search command dropped");
+        }
     });
 
     let tx = cmd_tx.clone();
@@ -192,66 +208,74 @@ fn setup_ui_callbacks(ui: &AppWindow, cmd_tx: &mpsc::UnboundedSender<BackendComm
         } else {
             ModSource::Modrinth
         };
-        let _ = tx.send(BackendCommand::ModDownload {
-            instance_id: String::new(),
+        // P1-5: TODO — pass the actual selected instance ID from the UI
+        if tx.try_send(BackendCommand::ModDownload {
+            instance_id: String::from("default"),
             project_id: project_id.to_string(),
             file_id: file_id.to_string(),
             file_name: name.to_string(),
             source: src,
-        });
+        }).is_err() {
+            tracing::warn!("Backend channel closed — mod download command dropped");
+        }
     });
 
+    // P2-1: Route settings save through command channel instead of blocking UI thread
     let tx = cmd_tx.clone();
     ui.on_settings_save_requested(move |java_path, max_memory, jvm_args, width, height| {
-        let mut config = VesperConfig::load().unwrap_or_default();
-        let jp = java_path.to_string();
-        config.java_path = if jp.is_empty() { None } else { Some(jp) };
-        config.max_memory_mb = max_memory as u32;
-        let ja = jvm_args.to_string();
-        config.jvm_args = if ja.is_empty() { None } else { Some(ja) };
-        config.window_width = width as u32;
-        config.window_height = height as u32;
-        let _ = config.save();
+        if tx.try_send(BackendCommand::SettingsSave {
+            java_path: java_path.to_string(),
+            max_memory: max_memory as u32,
+            jvm_args: jvm_args.to_string(),
+            window_width: width as u32,
+            window_height: height as u32,
+        }).is_err() {
+            tracing::warn!("Backend channel closed — settings save command dropped");
+        }
     });
 
+    // P1-6: Send DetectJava command instead of AuthGetStatus
     let tx = cmd_tx.clone();
     ui.on_settings_detect_java(move || {
-        let _ = tx.send(BackendCommand::AuthGetStatus);
-    });
-
-    let tx = cmd_tx.clone();
-    ui.on_bedrock_launch(move |profile_id| {
-        let _ = tx.send(BackendCommand::BedrockLaunch {
-            profile_id: profile_id.to_string(),
-        });
+        if tx.try_send(BackendCommand::DetectJava).is_err() {
+            tracing::warn!("Backend channel closed — detect java command dropped");
+        }
     });
 
     let tx = cmd_tx.clone();
     ui.on_navigate(move |_page| {
-        let _ = tx.send(BackendCommand::InstanceList);
+        if tx.try_send(BackendCommand::InstanceList).is_err() {
+            tracing::warn!("Backend channel closed — navigate command dropped");
+        }
     });
+
+    // P0 Error 4: `on_bedrock_launch` does not exist in Slint UI — removed
 }
 
 async fn handle_command(
     cmd: BackendCommand,
-    update_tx: &mpsc::UnboundedSender<UiUpdate>,
+    update_tx: &mpsc::Sender<UiUpdate>,
     instance_manager: &InstanceManager,
     auth_manager: &vesper_core::auth::AuthManager,
     mod_manager: &ModManager,
 ) {
     match cmd {
         BackendCommand::AuthStartBrowserLogin { account_type } => {
-            handle_browser_login(update_tx, auth_manager, &account_type).await;
+            handle_browser_login(update_tx, auth_manager, account_type).await;
         }
         BackendCommand::AuthRefreshToken => {}
         BackendCommand::AuthLogout => {
-            let _ = update_tx.send(UiUpdate::AuthLoggedOut);
+            if update_tx.send(UiUpdate::AuthLoggedOut).await.is_err() {
+                tracing::warn!("UI update channel closed — auth logged out dropped");
+            }
         }
         BackendCommand::AuthGetStatus => {
-            let _ = update_tx.send(UiUpdate::AuthStatus {
+            if update_tx.send(UiUpdate::AuthStatus {
                 is_logged_in: false,
                 profile: None,
-            });
+            }).await.is_err() {
+                tracing::warn!("UI update channel closed — auth status dropped");
+            }
         }
 
         BackendCommand::InstanceCreate {
@@ -265,15 +289,15 @@ async fn handle_command(
                     let _ = update_tx.send(UiUpdate::InstanceCreated {
                         id: info.id.clone(),
                         name: info.config.name,
-                    });
+                    }).await;
                     let _ = update_tx.send(UiUpdate::SystemMessage {
                         text: format!("Instance '{}' created successfully", info.id),
-                    });
+                    }).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::InstanceError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -281,12 +305,12 @@ async fn handle_command(
         BackendCommand::InstanceList => {
             match instance_manager.list() {
                 Ok(instances) => {
-                    let _ = update_tx.send(UiUpdate::InstanceListResult(instances));
+                    let _ = update_tx.send(UiUpdate::InstanceListResult(instances)).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::InstanceError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -294,12 +318,12 @@ async fn handle_command(
         BackendCommand::InstanceDelete { id } => {
             match instance_manager.delete(&id) {
                 Ok(()) => {
-                    let _ = update_tx.send(UiUpdate::InstanceDeleted { id });
+                    let _ = update_tx.send(UiUpdate::InstanceDeleted { id }).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::InstanceError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -307,12 +331,12 @@ async fn handle_command(
         BackendCommand::ModSearch { query, source } => {
             match mod_manager.search(&query, source).await {
                 Ok(mods) => {
-                    let _ = update_tx.send(UiUpdate::ModSearchResults(mods));
+                    let _ = update_tx.send(UiUpdate::ModSearchResults(mods)).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::ModError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -327,7 +351,7 @@ async fn handle_command(
             let _ = update_tx.send(UiUpdate::ModDownloadProgress {
                 project_name: file_name.clone(),
                 progress: 0.0,
-            });
+            }).await;
 
             match mod_manager
                 .download_mod(&instance_id, &project_id, &file_id, &file_name, source)
@@ -336,12 +360,12 @@ async fn handle_command(
                 Ok(()) => {
                     let _ = update_tx.send(UiUpdate::ModDownloadComplete {
                         project_name: file_name,
-                    });
+                    }).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::ModError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -363,12 +387,12 @@ async fn handle_command(
                                 })
                         })
                         .collect();
-                    let _ = update_tx.send(UiUpdate::ModListResult(installed));
+                    let _ = update_tx.send(UiUpdate::ModListResult(installed)).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::ModError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -377,12 +401,12 @@ async fn handle_command(
             let installer = GameInstaller::new(instance_manager, update_tx.clone());
             match installer.install(&instance_id).await {
                 Ok(_version_id) => {
-                    let _ = update_tx.send(UiUpdate::InstallComplete);
+                    let _ = update_tx.send(UiUpdate::InstallComplete).await;
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::LaunchError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -393,30 +417,30 @@ async fn handle_command(
             let _ = update_tx.send(UiUpdate::InstallProgress {
                 stage: "Installing game files...".into(),
                 progress: 0.0,
-            });
+            }).await;
 
             match installer.install(&instance_id).await {
                 Ok(_version_id) => {
                     let _ = update_tx.send(UiUpdate::InstallProgress {
                         stage: "Launching Minecraft...".into(),
                         progress: 1.0,
-                    });
+                    }).await;
 
                     match installer.launch(&instance_id, "java", 4096).await {
                         Ok(_pid) => {
-                            let _ = update_tx.send(UiUpdate::LaunchStarted);
+                            let _ = update_tx.send(UiUpdate::LaunchStarted).await;
                         }
                         Err(e) => {
                             let _ = update_tx.send(UiUpdate::LaunchError {
                                 message: e.to_string(),
-                            });
+                            }).await;
                         }
                     }
                 }
                 Err(e) => {
                     let _ = update_tx.send(UiUpdate::LaunchError {
                         message: e.to_string(),
-                    });
+                    }).await;
                 }
             }
         }
@@ -431,17 +455,17 @@ async fn handle_command(
 
                     match vesper_core::auth::bedrock::launch_mcpelauncher(&game_dir) {
                         Ok(_child) => {
-                            let _ = update_tx.send(UiUpdate::BedrockLaunched);
+                            let _ = update_tx.send(UiUpdate::BedrockLaunched).await;
                         }
                         Err(e) => {
                             let _ = update_tx.send(UiUpdate::BedrockLaunchError {
                                 message: e.to_string(),
-                            });
+                            }).await;
                         }
                     }
                 }
                 None => {
-                    let _ = update_tx.send(UiUpdate::BedrockLauncherNotFound);
+                    let _ = update_tx.send(UiUpdate::BedrockLauncherNotFound).await;
                 }
             }
         }
@@ -449,20 +473,55 @@ async fn handle_command(
         BackendCommand::BedrockDetectLauncher => {
             match find_mcpelauncher() {
                 Some(path) => {
-                    let _ = update_tx.send(UiUpdate::BedrockLauncherFound { path });
+                    let _ = update_tx.send(UiUpdate::BedrockLauncherFound { path }).await;
                 }
                 None => {
-                    let _ = update_tx.send(UiUpdate::BedrockLauncherNotFound);
+                    let _ = update_tx.send(UiUpdate::BedrockLauncherNotFound).await;
                 }
+            }
+        }
+
+        // P1-6: Handle DetectJava command
+        BackendCommand::DetectJava => {
+            match VesperConfig::detect_java() {
+                Some(path) => {
+                    let _ = update_tx.send(UiUpdate::SystemMessage {
+                        text: format!("Java found at: {}", path.display()),
+                    }).await;
+                }
+                None => {
+                    let _ = update_tx.send(UiUpdate::SystemMessage {
+                        text: "Java not found".into(),
+                    }).await;
+                }
+            }
+        }
+
+        // P2-1: Handle SettingsSave through command channel
+        BackendCommand::SettingsSave {
+            java_path,
+            max_memory,
+            jvm_args,
+            window_width,
+            window_height,
+        } => {
+            let mut config = VesperConfig::load().unwrap_or_default();
+            config.java_path = if java_path.is_empty() { None } else { Some(java_path) };
+            config.max_memory_mb = max_memory;
+            config.jvm_args = if jvm_args.is_empty() { None } else { Some(jvm_args) };
+            config.window_width = window_width;
+            config.window_height = window_height;
+            if let Err(e) = config.save() {
+                tracing::error!("Failed to save settings: {e}");
             }
         }
     }
 }
 
 async fn handle_browser_login(
-    update_tx: &mpsc::UnboundedSender<UiUpdate>,
+    update_tx: &mpsc::Sender<UiUpdate>,
     auth_manager: &vesper_core::auth::AuthManager,
-    account_type: &str,
+    account_type: String, // P0 Error 2: owned String to move into tokio::spawn
 ) {
     let is_bedrock = account_type.eq_ignore_ascii_case("bedrock");
 
@@ -471,23 +530,23 @@ async fn handle_browser_login(
         Err(e) => {
             let _ = update_tx.send(UiUpdate::AuthError {
                 message: e.to_string(),
-            });
+            }).await;
             return;
         }
     };
 
-    let _ = update_tx.send(UiUpdate::AuthBrowserLoginStarted);
+    let _ = update_tx.send(UiUpdate::AuthBrowserLoginStarted).await;
 
     if let Err(e) = open::that(auth_url.as_str()) {
         tracing::error!("Failed to open browser: {e}");
         let _ = update_tx.send(UiUpdate::AuthError {
             message: format!("Failed to open browser: {e}"),
-        });
+        }).await;
         return;
     }
 
     let update_tx = update_tx.clone();
-    let auth = auth_manager.clone_ref();
+    let auth = Arc::new(auth_manager.clone_auth());
     tokio::spawn(async move {
         tracing::info!("Starting browser login (type={account_type}) on port {port}");
         match auth
@@ -524,13 +583,13 @@ async fn handle_browser_login(
                                 device_keys: Some(device_keys),
                                 identity_keys: Some(identity_keys),
                             };
-                            let _ = update_tx.send(UiUpdate::AuthSuccess { profile });
+                            let _ = update_tx.send(UiUpdate::AuthSuccess { profile }).await;
                         }
                         Err(e) => {
                             tracing::error!("Bedrock auth failed: {e}");
                             let _ = update_tx.send(UiUpdate::AuthError {
                                 message: format!("Bedrock auth failed: {e}"),
-                            });
+                            }).await;
                         }
                     }
                 } else {
@@ -547,14 +606,14 @@ async fn handle_browser_login(
                             device_keys: None,
                             identity_keys: None,
                         };
-                        let _ = update_tx.send(UiUpdate::AuthSuccess { profile });
+                        let _ = update_tx.send(UiUpdate::AuthSuccess { profile }).await;
                     }
                 }
             }
             Err(e) => {
                 let _ = update_tx.send(UiUpdate::AuthError {
                     message: e.to_string(),
-                });
+                }).await;
             }
         }
     });
@@ -674,18 +733,22 @@ fn apply_ui_update(ui: &AppWindow, update: UiUpdate) {
             tracing::error!("Launch error: {message}");
         }
 
+        // P0 Error 5: Handle Bedrock UiUpdate variants
+        UiUpdate::BedrockLauncherFound { path } => {
+            tracing::info!("Bedrock launcher found at: {path}");
+        }
+        UiUpdate::BedrockLauncherNotFound => {
+            tracing::warn!("Bedrock launcher not found");
+        }
+        UiUpdate::BedrockLaunched => {
+            tracing::info!("Bedrock launcher started");
+        }
+        UiUpdate::BedrockLaunchError { message } => {
+            tracing::error!("Bedrock launch error: {message}");
+        }
+
         UiUpdate::SystemMessage { text } => {
             tracing::info!("System: {text}");
         }
-    }
-}
-
-trait AuthManagerClone {
-    fn clone_ref(&self) -> Self;
-}
-
-impl AuthManagerClone for vesper_core::auth::AuthManager {
-    fn clone_ref(&self) -> Self {
-        Self::new(self.client_id().to_string()).unwrap()
     }
 }

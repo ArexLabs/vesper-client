@@ -46,6 +46,15 @@ pub enum BackendCommand {
         profile_id: String,
     },
     BedrockDetectLauncher,
+
+    DetectJava,
+    SettingsSave {
+        java_path: String,
+        max_memory: u32,
+        jvm_args: String,
+        window_width: u32,
+        window_height: u32,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

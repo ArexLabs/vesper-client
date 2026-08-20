@@ -26,11 +26,10 @@ sha1 = "0.10"
 zip = "2"
 
 thiserror = "2"
-anyhow = "1"
+
 urlencoding = "2"
 open = "5"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 
 p256 = { version = "0.13", features = ["ecdsa", "jwk"] }
 p384 = { version = "0.13", features = ["ecdsa", "jwk"] }

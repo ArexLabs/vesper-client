@@ -5,7 +5,9 @@ use p256::EncodedPoint;
 use p384::ecdsa::SigningKey as P384SigningKey;
 use p384::EncodedPoint as P384EncodedPoint;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
+use sha2::{Digest, Sha256, Sha384};
+
+use crate::error::{CoreError, CoreResult};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceKeys {
@@ -41,9 +43,9 @@ impl DeviceKeys {
         }
     }
 
-    pub fn signing_key(&self) -> P256SigningKey {
+    pub fn signing_key(&self) -> CoreResult<P256SigningKey> {
         P256SigningKey::from_bytes(self.signing_key.as_slice().into())
-            .expect("invalid stored P-256 key")
+            .map_err(|e| CoreError::Auth(format!("invalid stored P-256 key: {e}")))
     }
 
     pub fn proof_key_jwk(&self) -> serde_json::Value {
@@ -61,16 +63,17 @@ impl DeviceKeys {
         format!("{{{}}}", self.device_id)
     }
 
-    pub fn sign(&self, data: &[u8]) -> Vec<u8> {
+    pub fn sign(&self, data: &[u8]) -> CoreResult<Vec<u8>> {
         use p256::ecdsa::signature::DigestSigner;
         let hasher = Sha256::new().chain_update(data);
-        let sig: p256::ecdsa::Signature = self.signing_key().sign_digest(hasher);
+        let key = self.signing_key()?;
+        let sig: p256::ecdsa::Signature = key.sign_digest(hasher);
         let r = sig.r().to_bytes();
         let s = sig.s().to_bytes();
         let mut out = Vec::with_capacity(64);
         out.extend_from_slice(&r);
         out.extend_from_slice(&s);
-        out
+        Ok(out)
     }
 }
 
@@ -86,16 +89,16 @@ impl IdentityKeys {
         }
     }
 
-    pub fn signing_key(&self) -> P384SigningKey {
+    pub fn signing_key(&self) -> CoreResult<P384SigningKey> {
         P384SigningKey::from_bytes(self.signing_key.as_slice().into())
-            .expect("invalid stored P-384 key")
+            .map_err(|e| CoreError::Auth(format!("invalid stored P-384 key: {e}")))
     }
 
     pub fn public_key_base64(&self) -> String {
         URL_SAFE_NO_PAD.encode(&self.public_key_der)
     }
 
-    pub fn sign_jwt(&self, payload: &serde_json::Value) -> String {
+    pub fn sign_jwt(&self, payload: &serde_json::Value) -> CoreResult<String> {
         use p384::ecdsa::signature::DigestSigner;
         let header = serde_json::json!({
             "typ": "JWT",
@@ -104,15 +107,16 @@ impl IdentityKeys {
         let header_b64 = URL_SAFE_NO_PAD.encode(header.to_string().as_bytes());
         let payload_b64 = URL_SAFE_NO_PAD.encode(payload.to_string().as_bytes());
         let signing_input = format!("{header_b64}.{payload_b64}");
-        let hasher = Sha256::new().chain_update(signing_input.as_bytes());
-        let sig: p384::ecdsa::Signature = self.signing_key().sign_digest(hasher);
+        let hasher = Sha384::new().chain_update(signing_input.as_bytes());
+        let key = self.signing_key()?;
+        let (sig, _recovery_id) = key.sign_digest(hasher);
         let r = sig.r().to_bytes();
         let s = sig.s().to_bytes();
         let mut sig_bytes = Vec::with_capacity(96);
         sig_bytes.extend_from_slice(&r);
         sig_bytes.extend_from_slice(&s);
         let sig_b64 = URL_SAFE_NO_PAD.encode(&sig_bytes);
-        format!("{signing_input}.{sig_b64}")
+        Ok(format!("{signing_input}.{sig_b64}"))
     }
 }
 
@@ -122,7 +126,7 @@ pub fn build_xbox_signature(
     path: &str,
     authorization: &str,
     body: &str,
-) -> String {
+) -> CoreResult<String> {
     let now_secs = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
@@ -157,14 +161,14 @@ pub fn build_xbox_signature(
     buf.extend_from_slice(body_bytes);
     buf.push(0);
 
-    let sig_raw = device_keys.sign(&buf);
+    let sig_raw = device_keys.sign(&buf)?;
 
     let mut out = Vec::with_capacity(76);
     out.extend_from_slice(&1u32.to_le_bytes());
     out.extend_from_slice(&filetime.to_le_bytes());
     out.extend_from_slice(&sig_raw);
 
-    URL_SAFE_NO_PAD.encode(&out)
+    Ok(URL_SAFE_NO_PAD.encode(&out))
 }
 
 fn split_point(ep: &EncodedPoint) -> (Vec<u8>, Vec<u8>) {

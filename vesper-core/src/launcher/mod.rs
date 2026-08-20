@@ -1,4 +1,3 @@
-pub mod command;
 pub mod installer;
 pub mod progress;
 

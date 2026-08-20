@@ -7,13 +7,13 @@ use tokio::sync::mpsc;
 
 pub struct GameInstaller {
     instance_manager: InstanceManager,
-    progress_tx: mpsc::UnboundedSender<UiUpdate>,
+    progress_tx: mpsc::Sender<UiUpdate>,
 }
 
 impl GameInstaller {
     pub fn new(
         instance_manager: &InstanceManager,
-        progress_tx: mpsc::UnboundedSender<UiUpdate>,
+        progress_tx: mpsc::Sender<UiUpdate>,
     ) -> Self {
         Self {
             instance_manager: instance_manager.clone(),
@@ -52,42 +52,49 @@ impl GameInstaller {
     ) -> CoreResult<u32> {
         let config = self.instance_manager.get(instance_id)?;
         let mc_dir = self.instance_manager.minecraft_dir(instance_id);
-        let launcher = Launcher::new(&mc_dir);
+        let java_path = java_path.to_string();
 
-        let request = build_install_request(&config);
-        let install_result = launcher
-            .install(request)
-            .map_err(|e| CoreError::Launcher(format!("Pre-launch install failed: {e}")))?;
+        let (executable, args, working_dir) = tokio::task::spawn_blocking(move || {
+            let launcher = Launcher::new(&mc_dir);
+            let request = build_install_request(&config);
+            let install_result = launcher
+                .install(request)
+                .map_err(|e| CoreError::Launcher(format!("Pre-launch install failed: {e}")))?;
+            let version = launcher
+                .load_version(&install_result.version_id)
+                .map_err(|e| CoreError::Launcher(format!("Failed to load version: {e}")))?;
 
-        let version = launcher
-            .load_version(&install_result.version_id)
-            .map_err(|e| CoreError::Launcher(format!("Failed to load version: {e}")))?;
+            let launch_options = LaunchOptions {
+                account: Account::offline("VesperPlayer"),
+                java_executable: Some(java_path.into()),
+                ..Default::default()
+            };
 
-        let launch_options = LaunchOptions {
-            account: Account::offline("VesperPlayer"),
-            java_executable: Some(java_path.into()),
-            ..Default::default()
-        };
+            let launch_command = launcher
+                .build_launch_command_from_version(&version, launch_options)
+                .map_err(|e| CoreError::Launcher(format!("Failed to build launch command: {e}")))?;
 
-        let launch_command = launcher
-            .build_launch_command_from_version(&version, launch_options)
-            .map_err(|e| CoreError::Launcher(format!("Failed to build launch command: {e}")))?;
+            Ok::<_, CoreError>((
+                launch_command.executable,
+                launch_command.args,
+                launch_command.working_dir,
+            ))
+        })
+        .await
+        .map_err(|e| CoreError::Launcher(format!("Launch task panicked: {e}")))??;
 
-        tracing::info!(
-            "Launching Minecraft: {:?} {:?}",
-            launch_command.executable,
-            launch_command.args
-        );
+        tracing::info!("Launching Minecraft: {executable:?} {args:?}");
 
-        let mut child = std::process::Command::new(&launch_command.executable)
-            .args(&launch_command.args)
-            .current_dir(&launch_command.working_dir)
+        // Use tokio::process::Command for non-blocking spawn
+        let mut child = tokio::process::Command::new(&executable)
+            .args(&args)
+            .current_dir(&working_dir)
             .spawn()
             .map_err(|e| CoreError::Launcher(format!("Failed to spawn Minecraft: {e}")))?;
 
-        let pid = child.id();
-        tokio::task::spawn_blocking(move || {
-            let _ = child.wait();
+        let pid = child.id().unwrap_or(0);
+        tokio::spawn(async move {
+            let _ = child.wait().await;
         });
 
         Ok(pid)
@@ -121,12 +128,12 @@ fn build_install_request(config: &InstanceConfig) -> InstallRequest {
 }
 
 struct UiProgressReporter {
-    tx: mpsc::UnboundedSender<UiUpdate>,
+    tx: mpsc::Sender<UiUpdate>,
     last_update: std::time::Instant,
 }
 
 impl UiProgressReporter {
-    fn new(tx: mpsc::UnboundedSender<UiUpdate>) -> Self {
+    fn new(tx: mpsc::Sender<UiUpdate>) -> Self {
         Self {
             tx,
             last_update: std::time::Instant::now(),
@@ -157,6 +164,6 @@ impl ProgressReporter for UiProgressReporter {
             _ => return,
         };
 
-        let _ = self.tx.send(update);
+        let _ = self.tx.try_send(update);
     }
 }

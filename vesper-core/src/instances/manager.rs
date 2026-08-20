@@ -139,19 +139,7 @@ impl InstanceManager {
             })
             .collect();
 
-        let uuid_suffix = {
-            use std::collections::hash_map::DefaultHasher;
-            use std::hash::{Hash, Hasher};
-            let mut hasher = DefaultHasher::new();
-            name.hash(&mut hasher);
-            let now = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos();
-            now.hash(&mut hasher);
-            format!("{:x}", hasher.finish()).chars().take(6).collect::<String>()
-        };
-
+        let uuid_suffix = uuid::Uuid::new_v4().to_string()[..6].to_string();
         format!("{slug}-{uuid_suffix}")
     }
 }
