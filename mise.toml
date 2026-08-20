@@ -1,0 +1,72 @@
+# mise.toml — Vesper Client toolchain & environment configuration
+# https://mise.jdx.dev
+#
+# Usage:
+#   mise install          — install all pinned tools
+#   mise use rust@1.82.0  — pin a specific Rust version
+#   eval "$(mise activate bash)" — activate in your shell
+
+# ─── Tools ────────────────────────────────────────────────────────────────────
+# Rust toolchain and cargo utilities managed by mise.
+
+[tools]
+# Pin Rust to a specific stable release for reproducible builds.
+# Update this when upgrading the toolchain.
+rust = "1.82.0"
+
+# Command runner — provides `just` for project recipes.
+just = "latest"
+
+# Cargo utilities (installable via `cargo binstall` or `mise use`).
+cargo-binstall = "latest"   # binary installer — fast tool installs
+cargo-edit    = "latest"    # cargo add / cargo rm / cargo upgrade
+cargo-deny    = "latest"    # dependency license & vulnerability auditing
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+# Shell environment variables set when mise is active.
+
+[env]
+# Always show full backtraces on panics.
+RUST_BACKTRACE = "1"
+
+# Force colored output from Cargo even in non-TTY contexts.
+CARGO_TERM_COLOR = "always"
+
+# Default log level for the Vesper Client binary.
+RUST_LOG = "info"
+
+# ─── Tasks ────────────────────────────────────────────────────────────────────
+# Quick task runners accessible via `mise run <task>`.
+# These mirror the most common justfile recipes for CI integration.
+
+[tasks.lint]
+description = "Run Clippy + format check"
+run = "cargo clippy -- -D warnings && cargo fmt --check"
+
+[tasks.test]
+description = "Run the test suite"
+run = "cargo test"
+
+[tasks.build]
+description = "Build all workspace crates"
+run = "cargo build"
+
+[tasks.build-release]
+description = "Build all workspace crates in release mode"
+run = "cargo build --release"
+
+[tasks.clean]
+description = "Remove build artifacts"
+run = "cargo clean"
+
+[tasks.check]
+description = "Fast compile-time check"
+run = "cargo check"
+
+[tasks.fmt]
+description = "Format all code"
+run = "cargo fmt"
+
+[tasks.doc]
+description = "Generate and open docs"
+run = "cargo doc --open"
